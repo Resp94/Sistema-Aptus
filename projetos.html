@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aptus · Projetos</title>
+  <link rel="stylesheet" href="aptus.css" />
+  <style>
+    .projeto-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4); margin-bottom: var(--space-5); }
+    .projeto-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); margin-bottom: var(--space-5); }
+    @media (max-width: 1024px) {
+      .projeto-summary { grid-template-columns: repeat(2, 1fr); }
+      .projeto-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+      .projeto-summary { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body data-od-id="projetos">
+<div class="app-shell">
+  <aside class="app-sidebar">
+    <div class="logo"><span class="logo-dot"></span>Aptus</div>
+    <div class="nav-section">Principal</div>
+    <nav>
+      <a href="dashboard.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+      <a href="financeiro.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 6v2M12 16v2M9.5 9.5c0-1.5 1-2.5 2.5-2.5s2.5 1 2.5 2.5-1 2.5-2.5 2.5-2.5 1-2.5 2.5 1 2.5 2.5 2.5 2.5-1 2.5-2.5"/></svg>Financeiro</a>
+      <a href="clientes.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Clientes</a>
+      <a href="propostas.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Propostas</a>
+      <a href="contratos.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg>Contratos</a>
+      <a href="cobrancas.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M18 20v-2a4 4 0 0 0-4-4h-4a4 4 0 0 0-4 4v2"/></svg>Cobranças</a>
+      <a href="projetos.html" class="active"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"/><path d="M13 3h6a2 2 0 0 1 2 2v7"/><path d="M18 13v8"/><path d="M15 18l3 3 4-4"/></svg>Projetos</a>
+    </nav>
+    <div class="user-info">
+      <div class="avatar">AM</div>
+      <div><div class="user-name">Ana Martins</div><div class="user-role">Administradora</div></div>
+    </div>
+  </aside>
+
+  <header class="app-header">
+    <div class="page-title">Projetos</div>
+    <div class="header-actions">
+      <button class="btn btn-primary btn-sm" onclick="openModal('projetoModal')">+ Novo Projeto</button>
+    </div>
+  </header>
+
+  <main class="app-content">
+    <div class="projeto-summary" data-od-id="projeto-summary">
+      <div class="metric-card">
+        <div class="metric-icon green">P</div>
+        <div class="metric-label">Projetos Ativos</div>
+        <div class="metric-value">7</div>
+        <div class="metric-sub">4 em andamento · 3 em planejamento</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon blue">T</div>
+        <div class="metric-label">Tarefas Abertas</div>
+        <div class="metric-value">24</div>
+        <div class="metric-sub">12 em andamento · 12 pendentes</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon orange">$</div>
+        <div class="metric-label">Orçamento Total</div>
+        <div class="metric-value">R$ 420.000</div>
+        <div class="metric-sub">67% utilizado</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon red">!</div>
+        <div class="metric-label">Em Risco</div>
+        <div class="metric-value">3</div>
+        <div class="metric-change down">Atraso acima de 15 dias</div>
+      </div>
+    </div>
+
+    <div class="projeto-grid" data-od-id="projeto-grid">
+      <div class="card">
+        <div class="card-header">
+          <h3>Progresso dos Projetos</h3>
+        </div>
+        <div class="card-body">
+          <div class="project-progress-list" style="display:flex;flex-direction:column;gap:var(--space-4)">
+            <div class="project-progress-item">
+              <div class="pp-name"><span>Plataforma Omnichannel</span><span class="pp-percent" style="color:var(--accent)">72%</span></div>
+              <div class="progress-bar"><div class="fill" style="width:72%"></div></div>
+            </div>
+            <div class="project-progress-item">
+              <div class="pp-name"><span>Dashboard IA — Cliente A</span><span class="pp-percent" style="color:var(--warn)">45%</span></div>
+              <div class="progress-bar"><div class="fill" style="width:45%;background:var(--warn)"></div></div>
+            </div>
+            <div class="project-progress-item">
+              <div class="pp-name"><span>Migração DataLake</span><span class="pp-percent" style="color:var(--success)">88%</span></div>
+              <div class="progress-bar"><div class="fill" style="width:88%;background:var(--success)"></div></div>
+            </div>
+            <div class="project-progress-item">
+              <div class="pp-name"><span>Chatbot Suporte — Fase 2</span><span class="pp-percent" style="color:var(--danger)">30%</span></div>
+              <div class="progress-bar"><div class="fill" style="width:30%;background:var(--danger)"></div></div>
+            </div>
+            <div class="project-progress-item">
+              <div class="pp-name"><span>App Mobile — Vistoria</span><span class="pp-percent">60%</span></div>
+              <div class="progress-bar"><div class="fill" style="width:60%"></div></div>
+            </div>
+            <div class="project-progress-item">
+              <div class="pp-name"><span>Automação de Relatórios</span><span class="pp-percent" style="color:var(--warn)">35%</span></div>
+              <div class="progress-bar"><div class="fill" style="width:35%;background:var(--warn)"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>Distribuição por Cliente</h3>
+        </div>
+        <div class="card-body">
+          <div class="chart-pie">
+            <div class="pie-visual" style="background:conic-gradient(var(--accent) 0% 30%, var(--success) 30% 52%, var(--info) 52% 68%, var(--warn) 68% 82%, var(--danger-soft) 82% 100%)"></div>
+            <div class="pie-legend">
+              <div class="legend-item"><span class="legend-dot" style="background:var(--accent)"></span> Inovatec (30%)</div>
+              <div class="legend-item"><span class="legend-dot" style="background:var(--success)"></span> DataFlow (22%)</div>
+              <div class="legend-item"><span class="legend-dot" style="background:var(--info)"></span> Nexum AI (16%)</div>
+              <div class="legend-item"><span class="legend-dot" style="background:var(--warn)"></span> OmniTech (14%)</div>
+              <div class="legend-item"><span class="legend-dot" style="background:var(--danger-soft)"></span> ZapFlow (18%)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" data-od-id="kanban-section">
+      <div class="card-header">
+        <h3>Kanban — Tarefas</h3>
+        <button class="btn btn-ghost btn-sm" onclick="openModal('tarefaModal')">+ Adicionar Tarefa</button>
+      </div>
+      <div class="card-body">
+        <div class="kanban" data-od-id="kanban">
+          <div class="kanban-column">
+            <div class="column-header">
+              <span>A Fazer</span>
+              <span class="column-count">5</span>
+            </div>
+            <div class="kanban-card">
+              <div class="card-title">Definir arquitetura do módulo de IA</div>
+              <div class="card-meta">
+                <span>Alta prioridade</span>
+                <span>·</span>
+                <span>Prazo: 30 jun</span>
+              </div>
+              <div class="card-tags">
+                <span class="tag">Plataforma Omnichannel</span>
+              </div>
+            </div>
+            <div class="kanban-card">
+              <div class="card-title">Revisar protótipo do dashboard</div>
+              <div class="card-meta">
+                <span>Média prioridade</span>
+                <span>·</span>
+                <span>Prazo: 02 jul</span>
+              </div>
+              <div class="card-tags">
+                <span class="tag">Dashboard IA</span>
+              </div>
+            </div>
+            <div class="kanban-card">
+              <div class="card-title">Criar script de migração</div>
+              <div class="card-meta">
+                <span>Média prioridade</span>
+                <span>·</span>
+                <span>Prazo: 28 jun</span>
+              </div>
+              <div class="card-tags">
+                <span class="tag">Migração DataLake</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="kanban-column">
+            <div class="column-header">
+              <span>Em Andamento</span>
+              <span class="column-count">4</span>
+            </div>
+            <div class="kanban-card" style="border-left: 3px solid var(--accent);">
+              <div class="card-title">Implementar API de integração</div>
+              <div class="card-meta">
+                <span>Alta prioridade</span>
+                <span>·</span>
+                <span>Responsável: Lucas</span>
+              </div>
+              <div class="card-tags">
+                <span class="tag">Plataforma Omnichannel</span>
+                <span class="tag">API</span>
+              </div>
+            </div>
+            <div class="kanban-card">
+              <div class="card-title">Desenvolver tela de login</div>
+              <div class="card-meta">
+                <span>Média prioridade</span>
+                <span>·</span>
+                <span>Responsável: Marina</span>
+              </div>
+              <div class="card-tags">
+                <span class="tag">Dashboard IA</span>
+              </div>
+            </div>
+            <div class="kanban-card">
+              <div class="card-title">Testes de carga no pipeline</div>
+              <div class="card-meta">
+                <span>Alta prioridade</span>
+                <span>·</span>
+                <span>Responsável: Carlos</span>
+              </div>
+              <div class="card-tags">
+                <span class="tag">Chatbot Fase 2</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="kanban-column">
+            <div class="column-header">
+              <span>Concluído</span>
+              <span class="column-count">8</span>
+            </div>
+            <div class="kanban-card">
+              <div class="card-title">Setup do ambiente de staging</div>
+              <div class="card-meta">
+                <span>Concluído em 20 jun</span>
+              </div>
+              <div class="card-tags">
+                <span class="tag">Infraestrutura</span>
+              </div>
+            </div>
+            <div class="kanban-card">
+              <div class="card-title">Documentação da API v1</div>
+              <div class="card-meta">
+                <span>Concluído em 18 jun</span>
+              </div>
+              <div class="card-tags">
+                <span class="tag">Plataforma Omnichannel</span>
+              </div>
+            </div>
+            <div class="kanban-card">
+              <div class="card-title">Wireframes aprovados</div>
+              <div class="card-meta">
+                <span>Concluído em 15 jun</span>
+              </div>
+              <div class="card-tags">
+                <span class="tag">Dashboard IA</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="projetoModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Novo Projeto</h2>
+      <button class="modal-close" onclick="closeModal('projetoModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="field">
+          <label>Nome do Projeto</label>
+          <input class="input" type="text" placeholder="Ex: Plataforma Omnichannel" />
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Cliente</label>
+            <select class="select">
+              <option>Selecione</option>
+              <option>Inovatec</option>
+              <option>DataFlow Solutions</option>
+              <option>Nexum AI</option>
+              <option>OmniTech</option>
+              <option>ZapFlow</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Orçamento</label>
+            <input class="input" type="text" placeholder="R$ 0,00" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Data de Início</label>
+            <input class="input" type="date" />
+          </div>
+          <div class="field">
+            <label>Data de Entrega</label>
+            <input class="input" type="date" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Descrição</label>
+          <textarea class="textarea" placeholder="Escopo e objetivos do projeto…"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('projetoModal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="alert('Projeto criado!');closeModal('projetoModal')">Criar Projeto</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="tarefaModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Nova Tarefa</h2>
+      <button class="modal-close" onclick="closeModal('tarefaModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="field">
+          <label>Título da Tarefa</label>
+          <input class="input" type="text" placeholder="Ex: Implementar API de integração" />
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Projeto</label>
+            <select class="select">
+              <option>Plataforma Omnichannel</option>
+              <option>Dashboard IA — Cliente A</option>
+              <option>Migração DataLake</option>
+              <option>Chatbot Suporte — Fase 2</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Responsável</label>
+            <select class="select">
+              <option>Lucas</option>
+              <option>Marina</option>
+              <option>Carlos</option>
+              <option>Juliana</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Prioridade</label>
+            <select class="select">
+              <option>Alta</option>
+              <option>Média</option>
+              <option>Baixa</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Prazo</label>
+            <input class="input" type="date" />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('tarefaModal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="alert('Tarefa adicionada ao Kanban!');closeModal('tarefaModal')">Adicionar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+</script>
+</body>
+</html>

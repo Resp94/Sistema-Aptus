@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "financeiro.html",
+  "entry": "financeiro.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-06-25T21:32:20.009Z",
+  "updatedAt": "2026-06-25T21:32:20.009Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

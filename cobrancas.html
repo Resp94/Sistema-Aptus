@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aptus · Cobranças</title>
+  <link rel="stylesheet" href="aptus.css" />
+  <style>
+    .cobranca-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4); margin-bottom: var(--space-5); }
+    @media (max-width: 1024px) {
+      .cobranca-summary { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 480px) {
+      .cobranca-summary { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body data-od-id="cobrancas">
+<div class="app-shell">
+  <aside class="app-sidebar">
+    <div class="logo"><span class="logo-dot"></span>Aptus</div>
+    <div class="nav-section">Principal</div>
+    <nav>
+      <a href="dashboard.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+      <a href="financeiro.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 6v2M12 16v2M9.5 9.5c0-1.5 1-2.5 2.5-2.5s2.5 1 2.5 2.5-1 2.5-2.5 2.5-2.5 1-2.5 2.5 1 2.5 2.5 2.5 2.5-1 2.5-2.5"/></svg>Financeiro</a>
+      <a href="clientes.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Clientes</a>
+      <a href="propostas.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Propostas</a>
+      <a href="contratos.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg>Contratos</a>
+      <a href="cobrancas.html" class="active"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M18 20v-2a4 4 0 0 0-4-4h-4a4 4 0 0 0-4 4v2"/></svg>Cobranças</a>
+      <a href="projetos.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"/><path d="M13 3h6a2 2 0 0 1 2 2v7"/><path d="M18 13v8"/><path d="M15 18l3 3 4-4"/></svg>Projetos</a>
+    </nav>
+    <div class="user-info">
+      <div class="avatar">AM</div>
+      <div><div class="user-name">Ana Martins</div><div class="user-role">Administradora</div></div>
+    </div>
+  </aside>
+
+  <header class="app-header">
+    <div class="page-title">Cobranças</div>
+    <div class="header-actions">
+      <button class="btn btn-secondary btn-sm" onclick="alert('Emitindo boleto…')">Emitir Boleto</button>
+      <button class="btn btn-primary btn-sm" onclick="openModal('pagamentoModal')">Registrar Pagamento</button>
+    </div>
+  </header>
+
+  <main class="app-content">
+    <div class="cobranca-summary" data-od-id="cobranca-summary">
+      <div class="metric-card">
+        <div class="metric-icon green">$</div>
+        <div class="metric-label">Recebido no Mês</div>
+        <div class="metric-value">R$ 38.200</div>
+        <div class="metric-change up">92% das faturas do mês</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon yellow">!</div>
+        <div class="metric-label">A Vencer (7 dias)</div>
+        <div class="metric-value">R$ 22.500</div>
+        <div class="metric-sub">5 faturas a vencer</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon red">X</div>
+        <div class="metric-label">Vencidas</div>
+        <div class="metric-value">R$ 12.800</div>
+        <div class="metric-change down">3 faturas vencidas</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon blue">C</div>
+        <div class="metric-label">Taxa de Inadimplência</div>
+        <div class="metric-value">4,2%</div>
+        <div class="metric-sub">Média do setor: 6,8%</div>
+      </div>
+    </div>
+
+    <div class="filter-bar" data-od-id="filter-bar">
+      <input class="search-input" type="text" placeholder="Buscar cobranças..." oninput="filterTable(this.value)" />
+      <select class="select" style="width:auto;min-width:140px;">
+        <option>Todos os status</option>
+        <option>Pago</option>
+        <option>Pendente</option>
+        <option>Vencido</option>
+      </select>
+    </div>
+
+    <div class="card" data-od-id="cobrancas-table">
+      <div class="card-body compact">
+        <table class="ds-table" id="cobrancasTable">
+          <thead>
+            <tr>
+              <th>Fatura</th>
+              <th>Cliente</th>
+              <th>Vencimento</th>
+              <th class="num-col">Valor</th>
+              <th>Status</th>
+              <th class="cell-actions"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>FT-2026-0421</strong></td>
+              <td>Inovatec</td>
+              <td>25 jun 2026</td>
+              <td class="num-col">R$ 8.000</td>
+              <td><span class="status-badge pendente">Pendente</span></td>
+              <td class="cell-actions">
+                <button class="btn btn-ghost btn-sm" onclick="alert('Emitindo boleto…')">Boleto</button>
+                <button class="btn btn-ghost btn-sm" onclick="alert('Lembrete enviado ao cliente!')">Lembrete</button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>FT-2026-0420</strong></td>
+              <td>DataFlow Solutions</td>
+              <td>22 jun 2026</td>
+              <td class="num-col">R$ 4.500</td>
+              <td><span class="status-badge atrasado">Vencido</span></td>
+              <td class="cell-actions">
+                <button class="btn btn-ghost btn-sm" onclick="alert('Emitindo boleto…')">Boleto</button>
+                <button class="btn btn-ghost btn-sm" onclick="alert('Lembrete enviado ao cliente!')">Lembrete</button>
+                <button class="btn btn-ghost btn-sm" onclick="openModal('pagamentoModal')">Pagar</button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>FT-2026-0419</strong></td>
+              <td>Nexum AI</td>
+              <td>20 jun 2026</td>
+              <td class="num-col">R$ 3.200</td>
+              <td><span class="status-badge atrasado">Vencido</span></td>
+              <td class="cell-actions">
+                <button class="btn btn-ghost btn-sm" onclick="alert('Emitindo boleto…')">Boleto</button>
+                <button class="btn btn-ghost btn-sm" onclick="alert('Lembrete enviado ao cliente!')">Lembrete</button>
+                <button class="btn btn-ghost btn-sm" onclick="openModal('pagamentoModal')">Pagar</button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>FT-2026-0418</strong></td>
+              <td>OmniTech</td>
+              <td>18 jun 2026</td>
+              <td class="num-col">R$ 5.800</td>
+              <td><span class="status-badge pago">Pago</span></td>
+              <td class="cell-actions">
+                <button class="btn btn-ghost btn-sm" onclick="alert('Visualizando…')">Ver</button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>FT-2026-0417</strong></td>
+              <td>ZapFlow</td>
+              <td>15 jun 2026</td>
+              <td class="num-col">R$ 2.900</td>
+              <td><span class="status-badge pago">Pago</span></td>
+              <td class="cell-actions">
+                <button class="btn btn-ghost btn-sm" onclick="alert('Visualizando…')">Ver</button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>FT-2026-0416</strong></td>
+              <td>Inovatec</td>
+              <td>15 jun 2026</td>
+              <td class="num-col">R$ 8.000</td>
+              <td><span class="status-badge pago">Pago</span></td>
+              <td class="cell-actions">
+                <button class="btn btn-ghost btn-sm" onclick="alert('Visualizando…')">Ver</button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>FT-2026-0415</strong></td>
+              <td>DataFlow Solutions</td>
+              <td>22 mai 2026</td>
+              <td class="num-col">R$ 4.500</td>
+              <td><span class="status-badge pago">Pago</span></td>
+              <td class="cell-actions">
+                <button class="btn btn-ghost btn-sm" onclick="alert('Visualizando…')">Ver</button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>FT-2026-0414</strong></td>
+              <td>Nexum AI</td>
+              <td>10 mai 2026</td>
+              <td class="num-col">R$ 5.100</td>
+              <td><span class="status-badge atrasado">Vencido</span></td>
+              <td class="cell-actions">
+                <button class="btn btn-ghost btn-sm" onclick="alert('Emitindo boleto…')">Boleto</button>
+                <button class="btn btn-ghost btn-sm" onclick="alert('Lembrete enviado ao cliente!')">Lembrete</button>
+                <button class="btn btn-ghost btn-sm" onclick="openModal('pagamentoModal')">Pagar</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="pagamentoModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Registrar Pagamento</h2>
+      <button class="modal-close" onclick="closeModal('pagamentoModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="field">
+          <label>Fatura</label>
+          <select class="select">
+            <option>FT-2026-0420 — DataFlow Solutions (R$ 4.500)</option>
+            <option>FT-2026-0419 — Nexum AI (R$ 3.200)</option>
+            <option>FT-2026-0414 — Nexum AI (R$ 5.100)</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Valor Pago</label>
+            <input class="input" type="text" placeholder="R$ 0,00" />
+          </div>
+          <div class="field">
+            <label>Data do Pagamento</label>
+            <input class="input" type="date" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Forma de Pagamento</label>
+          <select class="select">
+            <option>Pix</option>
+            <option>Boleto</option>
+            <option>Cartão de Crédito</option>
+            <option>Transferência Bancária</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('pagamentoModal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="alert('Pagamento registrado!');closeModal('pagamentoModal')">Confirmar Pagamento</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+function filterTable(query) {
+  const rows = document.querySelectorAll('#cobrancasTable tbody tr');
+  const q = query.toLowerCase();
+  rows.forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>

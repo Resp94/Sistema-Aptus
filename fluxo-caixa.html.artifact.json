@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "fluxo-caixa.html",
+  "entry": "fluxo-caixa.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-06-25T21:38:20.095Z",
+  "updatedAt": "2026-06-25T21:38:20.095Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

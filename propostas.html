@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aptus · Propostas</title>
+  <link rel="stylesheet" href="aptus.css" />
+  <style>
+    .proposal-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); margin-bottom: var(--space-5); }
+    @media (max-width: 768px) {
+      .proposal-summary { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body data-od-id="propostas">
+<div class="app-shell">
+  <aside class="app-sidebar">
+    <div class="logo"><span class="logo-dot"></span>Aptus</div>
+    <div class="nav-section">Principal</div>
+    <nav>
+      <a href="dashboard.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+      <a href="financeiro.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 6v2M12 16v2M9.5 9.5c0-1.5 1-2.5 2.5-2.5s2.5 1 2.5 2.5-1 2.5-2.5 2.5-2.5 1-2.5 2.5 1 2.5 2.5 2.5 2.5-1 2.5-2.5"/></svg>Financeiro</a>
+      <a href="clientes.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Clientes</a>
+      <a href="propostas.html" class="active"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Propostas</a>
+      <a href="contratos.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg>Contratos</a>
+      <a href="cobrancas.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M18 20v-2a4 4 0 0 0-4-4h-4a4 4 0 0 0-4 4v2"/></svg>Cobranças</a>
+      <a href="projetos.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"/><path d="M13 3h6a2 2 0 0 1 2 2v7"/><path d="M18 13v8"/><path d="M15 18l3 3 4-4"/></svg>Projetos</a>
+    </nav>
+    <div class="user-info">
+      <div class="avatar">AM</div>
+      <div><div class="user-name">Ana Martins</div><div class="user-role">Administradora</div></div>
+    </div>
+  </aside>
+
+  <header class="app-header">
+    <div class="page-title">Propostas</div>
+    <div class="header-actions">
+      <button class="btn btn-primary btn-sm" onclick="openModal('propostaModal')">+ Nova Proposta</button>
+    </div>
+  </header>
+
+  <main class="app-content">
+    <div class="proposal-summary" data-od-id="proposal-summary">
+      <div class="metric-card">
+        <div class="metric-label">Propostas do Mês</div>
+        <div class="metric-value">8</div>
+        <div class="metric-sub">5 abertas · 3 convertidas</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Taxa de Conversão</div>
+        <div class="metric-value">62%</div>
+        <div class="metric-change up">+8% vs. mês passado</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Valor Total em Propostas</div>
+        <div class="metric-value">R$ 287.000</div>
+        <div class="metric-sub">Média de R$ 35.875 por proposta</div>
+      </div>
+    </div>
+
+    <div class="filter-bar" data-od-id="filter-bar">
+      <input class="search-input" type="text" placeholder="Buscar propostas..." oninput="filterTable(this.value)" />
+      <select class="select" style="width:auto;min-width:140px;">
+        <option>Todos os status</option>
+        <option>Rascunho</option>
+        <option>Enviado</option>
+        <option>Em análise</option>
+        <option>Aprovado</option>
+        <option>Rejeitado</option>
+      </select>
+    </div>
+
+    <div class="card" data-od-id="propostas-table">
+      <div class="card-body compact">
+        <table class="ds-table" id="propostasTable">
+          <thead>
+            <tr>
+              <th>Proposta</th>
+              <th>Cliente</th>
+              <th>Data</th>
+              <th class="num-col">Valor</th>
+              <th>Status</th>
+              <th class="cell-actions"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Plataforma IA — Módulo Analytics</strong></td>
+              <td>Inovatec</td>
+              <td>20 jun 2026</td>
+              <td class="num-col">R$ 72.000</td>
+              <td><span class="status-badge analise">Em análise</span></td>
+              <td class="cell-actions"><button class="btn btn-ghost btn-sm" onclick="alert('Visualizando proposta…')">Ver</button><button class="btn btn-ghost btn-sm" onclick="alert('Enviando por e-mail…')">Enviar</button></td>
+            </tr>
+            <tr>
+              <td><strong>Suporte Premium 24h</strong></td>
+              <td>DataFlow Solutions</td>
+              <td>18 jun 2026</td>
+              <td class="num-col">R$ 36.000</td>
+              <td><span class="status-badge enviado">Enviado</span></td>
+              <td class="cell-actions"><button class="btn btn-ghost btn-sm" onclick="alert('Visualizando proposta…')">Ver</button><button class="btn btn-ghost btn-sm" onclick="alert('Reenviando…')">Enviar</button></td>
+            </tr>
+            <tr>
+              <td><strong>Automação de Processos</strong></td>
+              <td>Nexum AI</td>
+              <td>15 jun 2026</td>
+              <td class="num-col">R$ 45.000</td>
+              <td><span class="status-badge aprovado">Aprovado</span></td>
+              <td class="cell-actions"><button class="btn btn-ghost btn-sm" onclick="alert('Visualizando proposta…')">Ver</button><button class="btn btn-ghost btn-sm" onclick="alert('Convertendo em contrato…')">Converter</button></td>
+            </tr>
+            <tr>
+              <td><strong>Chatbot Omnichannel</strong></td>
+              <td>OmniTech</td>
+              <td>10 jun 2026</td>
+              <td class="num-col">R$ 58.000</td>
+              <td><span class="status-badge rascunho">Rascunho</span></td>
+              <td class="cell-actions"><button class="btn btn-ghost btn-sm" onclick="alert('Editando…')">Editar</button></td>
+            </tr>
+            <tr>
+              <td><strong>Implantação Pipeline IA</strong></td>
+              <td>ZapFlow</td>
+              <td>05 jun 2026</td>
+              <td class="num-col">R$ 32.000</td>
+              <td><span class="status-badge aprovado">Aprovado</span></td>
+              <td class="cell-actions"><button class="btn btn-ghost btn-sm" onclick="alert('Visualizando proposta…')">Ver</button><button class="btn btn-ghost btn-sm" onclick="alert('Convertendo em contrato…')">Converter</button></td>
+            </tr>
+            <tr>
+              <td><strong>Consultoria — Otimização GPU</strong></td>
+              <td>AlphaTech</td>
+              <td>28 mai 2026</td>
+              <td class="num-col">R$ 18.500</td>
+              <td><span class="status-badge rejeitado">Rejeitado</span></td>
+              <td class="cell-actions"><button class="btn btn-ghost btn-sm" onclick="alert('Visualizando…')">Ver</button></td>
+            </tr>
+            <tr>
+              <td><strong>Treinamento Equipe ML</strong></td>
+              <td>Inovatec</td>
+              <td>25 mai 2026</td>
+              <td class="num-col">R$ 25.500</td>
+              <td><span class="status-badge enviado">Enviado</span></td>
+              <td class="cell-actions"><button class="btn btn-ghost btn-sm" onclick="alert('Visualizando proposta…')">Ver</button><button class="btn btn-ghost btn-sm">Enviar</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="propostaModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Nova Proposta</h2>
+      <button class="modal-close" onclick="closeModal('propostaModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="field">
+          <label>Título da Proposta</label>
+          <input class="input" type="text" placeholder="Ex: Implantação de Módulo IA" />
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Cliente</label>
+            <select class="select">
+              <option>Selecione</option>
+              <option>Inovatec</option>
+              <option>DataFlow Solutions</option>
+              <option>Nexum AI</option>
+              <option>OmniTech</option>
+              <option>ZapFlow</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Valor</label>
+            <input class="input" type="text" placeholder="R$ 0,00" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Descrição</label>
+          <textarea class="textarea" placeholder="Escopo da proposta…"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('propostaModal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="alert('Proposta criada!');closeModal('propostaModal')">Criar Proposta</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+function filterTable(query) {
+  const rows = document.querySelectorAll('#propostasTable tbody tr');
+  const q = query.toLowerCase();
+  rows.forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>

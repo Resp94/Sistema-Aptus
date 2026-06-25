@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aptus Flow · Configurações</title>
+  <link rel="stylesheet" href="aptus.css" />
+  <style>
+    .config-layout { display: grid; grid-template-columns: 220px 1fr; gap: var(--space-5); align-items: start; margin-top: var(--space-4); }
+    .config-nav { display: flex; flex-direction: column; gap: 2px; position: sticky; top: calc(var(--header-height) + var(--space-4)); }
+    .config-nav a { display: block; padding: 8px var(--space-3); border-radius: var(--radius-md); font-family: var(--font-ui); font-size: 13px; color: var(--muted); transition: var(--motion-fast) var(--ease-standard); }
+    .config-nav a:hover { color: var(--fg); background: var(--border-soft); }
+    .config-nav a.active { color: var(--fg); background: var(--border); font-weight: 500; }
+    .config-section { display: none; }
+    .config-section.active { display: block; }
+    .config-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .config-card + .config-card { margin-top: var(--space-5); }
+    .config-card-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) var(--space-5); border-bottom: 1px solid var(--border); }
+    .config-card-header h3 { font-family: var(--font-display); font-size: 15px; letter-spacing: -0.005em; margin: 0; }
+    .config-card-body { padding: var(--space-5); }
+    .config-row { display: flex; align-items: center; justify-content: space-between; padding: var(--space-3) 0; border-bottom: 1px solid var(--border-soft); }
+    .config-row:last-child { border-bottom: none; }
+    .config-row .cr-label { font-family: var(--font-ui); font-size: 14px; }
+    .config-row .cr-desc { font-family: var(--font-ui); font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .toggle-switch { width: 40px; height: 22px; background: var(--border); border-radius: var(--radius-pill); position: relative; cursor: pointer; border: none; padding: 0; transition: var(--motion-fast) var(--ease-standard); }
+    .toggle-switch::after { content: ''; position: absolute; width: 18px; height: 18px; border-radius: 50%; background: var(--surface); top: 2px; left: 2px; transition: var(--motion-fast) var(--ease-standard); }
+    .toggle-switch.on { background: var(--accent); }
+    .toggle-switch.on::after { left: 20px; }
+    @media (max-width: 768px) { .config-layout { grid-template-columns: 1fr; } .config-nav { position: static; flex-direction: row; flex-wrap: wrap; gap: var(--space-2); } .config-nav a { padding: 6px 14px; } }
+  </style>
+</head>
+<body data-od-id="configuracoes">
+<script>
+(function(){try{var t=localStorage.getItem('aptus-theme');if(t){document.documentElement.setAttribute('data-theme',t);}else{var m=window.matchMedia('(prefers-color-scheme:dark)');if(m.matches){document.documentElement.setAttribute('data-theme','dark');}}}catch(e){}})();
+function toggleTheme(){var h=document.documentElement;var c=h.getAttribute('data-theme');var n=c==='dark'?'light':'dark';h.setAttribute('data-theme',n);try{localStorage.setItem('aptus-theme',n);}catch(e){}}
+function switchConfig(sectionId,btn){document.querySelectorAll('.config-section').forEach(function(s){s.classList.remove('active');});document.querySelectorAll('.config-nav a').forEach(function(a){a.classList.remove('active');});document.getElementById(sectionId).classList.add('active');btn.classList.add('active');}
+function toggleSwitch(el){el.classList.toggle('on');}
+</script>
+<div class="app-shell">
+  <aside class="app-sidebar">
+    <div class="logo"><span class="logo-dot"></span>Aptus Flow</div>
+    <div class="nav-section">Principal</div>
+    <nav>
+      <a href="dashboard.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+      <a href="fluxo-caixa.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Fluxo de Caixa</a>
+      <a href="contas-pagar.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Contas a Pagar</a>
+      <a href="contas-receber.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2v20M6 7l6-5 6 5"/><path d="M6 17l6 5 6-5"/></svg>Contas a Receber</a>
+    </nav>
+    <div class="nav-section">Gestão</div>
+    <nav>
+      <a href="clientes.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Clientes / Fornecedores</a>
+      <a href="relatorios.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><circle cx="10" cy="13" r="2" fill="currentColor" opacity="0.3"/></svg>Relatórios / Exportação</a>
+      <a href="configuracoes.html" class="active"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>Configurações</a>
+    </nav>
+    <div class="user-info"><div class="avatar">AM</div><div><div class="user-name">Ana Martins</div><div class="user-role">Administradora</div></div></div>
+  </aside>
+
+  <header class="app-header">
+    <div class="page-title">Configurações</div>
+    <div class="header-actions">
+      <button class="btn-icon" onclick="toggleTheme()" title="Alternar tema"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></button>
+    </div>
+  </header>
+
+  <main class="app-content">
+    <div class="config-layout" data-od-id="config-layout">
+      <nav class="config-nav">
+        <a href="#" class="active" onclick="switchConfig('sec-geral',this);return false;">Geral</a>
+        <a href="#" onclick="switchConfig('sec-financeiro',this);return false;">Financeiro</a>
+        <a href="#" onclick="switchConfig('sec-notificacoes',this);return false;">Notificações</a>
+        <a href="#" onclick="switchConfig('sec-usuarios',this);return false;">Usuários</a>
+        <a href="#" onclick="switchConfig('sec-integracoes',this);return false;">Integrações</a>
+        <a href="#" onclick="switchConfig('sec-aparencia',this);return false;">Aparência</a>
+      </nav>
+
+      <div>
+        <div class="config-section active" id="sec-geral">
+          <div class="config-card"><div class="config-card-header"><h3>Informações da Empresa</h3></div>
+            <div class="config-card-body"><div class="form-group">
+              <div class="form-row"><div class="field"><label>Nome da Empresa</label><input class="input" type="text" value="Aptus Flow Tecnologia Ltda" /></div><div class="field"><label>CNPJ</label><input class="input" type="text" value="12.345.678/0001-90" /></div></div>
+              <div class="field"><label>E-mail de Contato</label><input class="input" type="email" value="contato@aptusflow.com" /></div>
+              <div class="field"><label>Telefone</label><input class="input" type="text" value="(11) 3333-4444" /></div>
+            </div></div>
+          </div>
+          <div class="config-card"><div class="config-card-header"><h3>Preferências do Sistema</h3></div>
+            <div class="config-card-body">
+              <div class="config-row"><div><div class="cr-label">Idioma</div><div class="cr-desc">Idioma padrão da interface</div></div><select class="select" style="width:auto;"><option>Português (BR)</option><option>English</option><option>Español</option></select></div>
+              <div class="config-row"><div><div class="cr-label">Formato de Data</div><div class="cr-desc">Como as datas são exibidas no sistema</div></div><select class="select" style="width:auto;"><option>DD/MM/AAAA</option><option>MM/DD/AAAA</option><option>AAAA-MM-DD</option></select></div>
+              <div class="config-row"><div><div class="cr-label">Moeda Padrão</div><div class="cr-desc">Moeda usada em valores financeiros</div></div><select class="select" style="width:auto;"><option>BRL (R$)</option><option>USD ($)</option><option>EUR (€)</option></select></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="config-section" id="sec-financeiro">
+          <div class="config-card"><div class="config-card-header"><h3>Configurações Financeiras</h3></div>
+            <div class="config-card-body"><div class="form-group">
+              <div class="form-row"><div class="field"><label>Dia de Fechamento</label><input class="input" type="text" value="15" /><p class="help-text">Dia do mês para fechamento financeiro</p></div><div class="field"><label>Ano Fiscal</label><select class="select"><option>Janeiro a Dezembro</option><option>Julho a Junho</option></select></div></div>
+              <div class="form-row"><div class="field"><label>Dia de Vencimento Padrão</label><input class="input" type="text" value="30" /></div><div class="field"><label>Multa por Atraso (%)</label><input class="input" type="text" value="2,00" /></div></div>
+              <div class="config-row"><div><div class="cr-label">Cobrança Automática</div><div class="cr-desc">Enviar lembretes automáticos para faturas vencidas</div></div><button class="toggle-switch on" onclick="toggleSwitch(this)" aria-label="Cobrança automática"></button></div>
+            </div></div>
+          </div>
+        </div>
+
+        <div class="config-section" id="sec-notificacoes">
+          <div class="config-card"><div class="config-card-header"><h3>Notificações</h3></div>
+            <div class="config-card-body">
+              <div class="config-row"><div><div class="cr-label">Lembretes de Vencimento</div><div class="cr-desc">Notificar X dias antes do vencimento de contas</div></div><select class="select" style="width:auto;"><option>3 dias antes</option><option>5 dias antes</option><option selected>7 dias antes</option><option>14 dias antes</option></select></div>
+              <div class="config-row"><div><div class="cr-label">Notificações por E-mail</div><div class="cr-desc">Receber alertas financeiros por e-mail</div></div><button class="toggle-switch on" onclick="toggleSwitch(this)" aria-label="Notificações por e-mail"></button></div>
+              <div class="config-row"><div><div class="cr-label">Notificações no Sistema</div><div class="cr-desc">Exibir notificações no canto superior direito</div></div><button class="toggle-switch on" onclick="toggleSwitch(this)" aria-label="Notificações no sistema"></button></div>
+              <div class="config-row"><div><div class="cr-label">Relatório Semanal</div><div class="cr-desc">Receber resumo financeiro toda segunda-feira</div></div><button class="toggle-switch" onclick="toggleSwitch(this)" aria-label="Relatório semanal"></button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="config-section" id="sec-usuarios">
+          <div class="config-card"><div class="config-card-header"><h3>Usuários do Sistema</h3><button class="btn btn-primary btn-sm" onclick="alert('Formulário de convite')">+ Convidar</button></div>
+            <div class="config-card-body compact">
+              <table class="ds-table"><thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th><th class="cell-actions"></th></tr></thead>
+              <tbody>
+                <tr><td><strong>Ana Martins</strong></td><td>ana@aptusflow.com</td><td>Administradora</td><td><span class="status-badge ativo">Ativo</span></td><td class="cell-actions"><button class="btn btn-ghost btn-sm">Editar</button></td></tr>
+                <tr><td><strong>Carlos Silva</strong></td><td>carlos@aptusflow.com</td><td>Financeiro</td><td><span class="status-badge ativo">Ativo</span></td><td class="cell-actions"><button class="btn btn-ghost btn-sm">Editar</button></td></tr>
+                <tr><td><strong>Marina Costa</strong></td><td>marina@aptusflow.com</td><td>Operacional</td><td><span class="status-badge ativo">Ativo</span></td><td class="cell-actions"><button class="btn btn-ghost btn-sm">Editar</button></td></tr>
+                <tr><td><strong>Pedro Oliveira</strong></td><td>pedro@aptusflow.com</td><td>Visualizador</td><td><span class="status-badge inactive">Inativo</span></td><td class="cell-actions"><button class="btn btn-ghost btn-sm">Editar</button></td></tr>
+              </tbody></table>
+            </div>
+          </div>
+        </div>
+
+        <div class="config-section" id="sec-integracoes">
+          <div class="config-card"><div class="config-card-header"><h3>Integrações</h3></div>
+            <div class="config-card-body">
+              <div class="config-row"><div><div class="cr-label">API Pública</div><div class="cr-desc">Chave de API para integrações externas</div></div><button class="btn btn-secondary btn-sm" onclick="alert('Chave gerada: aptus_sk_••••••••')">Gerar Chave</button></div>
+              <div class="config-row"><div><div class="cr-label">Webhook</div><div class="cr-desc">URL para webhook de eventos financeiros</div></div><input class="input" type="text" value="https://hooks.aptusflow.com/events" style="width:300px;" /></div>
+              <div class="config-row"><div><div class="cr-label">Exportação Automática</div><div class="cr-desc">Exportar dados automaticamente para Google Sheets</div></div><button class="toggle-switch" onclick="toggleSwitch(this)" aria-label="Exportação automática"></button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="config-section" id="sec-aparencia">
+          <div class="config-card"><div class="config-card-header"><h3>Tema</h3></div>
+            <div class="config-card-body">
+              <div class="config-row"><div><div class="cr-label">Tema do Sistema</div><div class="cr-desc">Alternar entre tema claro e escuro</div></div>
+                <div style="display:flex;gap:var(--space-2);">
+                  <button class="btn btn-secondary btn-sm" onclick="document.documentElement.setAttribute('data-theme','light');localStorage.setItem('aptus-theme','light');" style="background:var(--surface);border:2px solid var(--accent);">☀️ Claro</button>
+                  <button class="btn btn-secondary btn-sm" onclick="document.documentElement.setAttribute('data-theme','dark');localStorage.setItem('aptus-theme','dark');">🌙 Escuro</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="config-card"><div class="config-card-header"><h3>Sidebar</h3></div>
+            <div class="config-card-body">
+              <div class="config-row"><div><div class="cr-label">Sidebar Colapsada</div><div class="cr-desc">Reduzir a sidebar para ícones apenas</div></div><button class="toggle-switch" onclick="toggleSwitch(this)" aria-label="Sidebar colapsada"></button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

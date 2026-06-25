@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aptus · Financeiro</title>
+  <link rel="stylesheet" href="aptus.css" />
+  <style>
+    .finance-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4); margin-bottom: var(--space-5); }
+    .finance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); }
+    @media (max-width: 1024px) {
+      .finance-summary { grid-template-columns: repeat(2, 1fr); }
+      .finance-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+      .finance-summary { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body data-od-id="financeiro">
+<div class="app-shell">
+  <aside class="app-sidebar">
+    <div class="logo"><span class="logo-dot"></span>Aptus</div>
+    <div class="nav-section">Principal</div>
+    <nav>
+      <a href="dashboard.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+      <a href="financeiro.html" class="active"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 6v2M12 16v2M9.5 9.5c0-1.5 1-2.5 2.5-2.5s2.5 1 2.5 2.5-1 2.5-2.5 2.5-2.5 1-2.5 2.5 1 2.5 2.5 2.5 2.5-1 2.5-2.5"/></svg>Financeiro</a>
+      <a href="clientes.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Clientes</a>
+      <a href="propostas.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Propostas</a>
+      <a href="contratos.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg>Contratos</a>
+      <a href="cobrancas.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M18 20v-2a4 4 0 0 0-4-4h-4a4 4 0 0 0-4 4v2"/></svg>Cobranças</a>
+      <a href="projetos.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"/><path d="M13 3h6a2 2 0 0 1 2 2v7"/><path d="M18 13v8"/><path d="M15 18l3 3 4-4"/></svg>Projetos</a>
+    </nav>
+    <div class="user-info">
+      <div class="avatar">AM</div>
+      <div><div class="user-name">Ana Martins</div><div class="user-role">Administradora</div></div>
+    </div>
+  </aside>
+
+  <header class="app-header">
+    <div class="page-title">Financeiro</div>
+    <div class="header-actions">
+      <span style="font-family:var(--font-ui);font-size:12px;color:var(--muted);">Jun 2026</span>
+      <button class="btn btn-secondary btn-sm" onclick="openModal('receitaModal')">+ Receita</button>
+      <button class="btn btn-primary btn-sm" onclick="openModal('despesaModal')">+ Despesa</button>
+    </div>
+  </header>
+
+  <main class="app-content">
+    <div class="finance-summary" data-od-id="finance-summary">
+      <div class="metric-card">
+        <div class="metric-label">Receitas (mês)</div>
+        <div class="metric-value" style="color:var(--success)">R$ 142.300</div>
+        <div class="metric-change up">+8,2% vs. mês passado</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Despesas (mês)</div>
+        <div class="metric-value" style="color:var(--danger)">R$ 87.500</div>
+        <div class="metric-change down">+3,1% vs. mês passado</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Saldo do Período</div>
+        <div class="metric-value">R$ 54.800</div>
+        <div class="metric-change up">+18,5% vs. mês passado</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">A Receber (aberto)</div>
+        <div class="metric-value" style="color:var(--warn)">R$ 89.450</div>
+        <div class="metric-sub">12 faturas pendentes</div>
+      </div>
+    </div>
+
+    <div class="filter-bar" data-od-id="filter-bar">
+      <input class="search-input" type="text" placeholder="Buscar lançamentos..." oninput="filterTable(this.value)" />
+      <select class="select" style="width:auto;min-width:140px;">
+        <option>Todos os períodos</option>
+        <option>Este mês</option>
+        <option>Últimos 3 meses</option>
+        <option>Este ano</option>
+      </select>
+      <select class="select" style="width:auto;min-width:140px;">
+        <option>Todas as categorias</option>
+        <option>Receitas</option>
+        <option>Despesas</option>
+      </select>
+      <button class="btn btn-secondary btn-sm" onclick="alert('Exportando CSV…')">Exportar CSV</button>
+    </div>
+
+    <div class="finance-grid" data-od-id="finance-grid">
+      <div class="card" style="grid-column:1/-1">
+        <div class="card-header">
+          <h3>Lançamentos Financeiros</h3>
+          <span style="font-family:var(--font-ui);font-size:12px;color:var(--muted);">42 registros</span>
+        </div>
+        <div class="card-body compact">
+          <table class="ds-table" id="lancamentosTable">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Descrição</th>
+                <th>Categoria</th>
+                <th>Cliente</th>
+                <th class="num-col">Valor</th>
+                <th>Status</th>
+                <th class="cell-actions"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>25 jun</td>
+                <td>Desenvolvimento Módulo IA</td>
+                <td>Projeto</td>
+                <td>Inovatec</td>
+                <td class="num-col" style="color:var(--success)">+R$ 12.400</td>
+                <td><span class="status-badge pago">Pago</span></td>
+                <td class="cell-actions"><button class="btn btn-ghost btn-sm">Detalhes</button></td>
+              </tr>
+              <tr>
+                <td>24 jun</td>
+                <td>Hospedagem AWS</td>
+                <td>Infraestrutura</td>
+                <td>—</td>
+                <td class="num-col" style="color:var(--danger)">-R$ 2.450</td>
+                <td><span class="status-badge pago">Pago</span></td>
+                <td class="cell-actions"><button class="btn btn-ghost btn-sm">Detalhes</button></td>
+              </tr>
+              <tr>
+                <td>23 jun</td>
+                <td>Consultoria em Automação</td>
+                <td>Consultoria</td>
+                <td>DataFlow Solutions</td>
+                <td class="num-col" style="color:var(--success)">+R$ 8.900</td>
+                <td><span class="status-badge pendente">Pendente</span></td>
+                <td class="cell-actions"><button class="btn btn-ghost btn-sm">Detalhes</button></td>
+              </tr>
+              <tr>
+                <td>22 jun</td>
+                <td>Licenças GitHub Copilot</td>
+                <td>Ferramentas</td>
+                <td>—</td>
+                <td class="num-col" style="color:var(--danger)">-R$ 1.200</td>
+                <td><span class="status-badge pago">Pago</span></td>
+                <td class="cell-actions"><button class="btn btn-ghost btn-sm">Detalhes</button></td>
+              </tr>
+              <tr>
+                <td>20 jun</td>
+                <td>Manutenção Mensal — Suporte</td>
+                <td>Suporte</td>
+                <td>Nexum AI</td>
+                <td class="num-col" style="color:var(--success)">+R$ 5.500</td>
+                <td><span class="status-badge pago">Pago</span></td>
+                <td class="cell-actions"><button class="btn btn-ghost btn-sm">Detalhes</button></td>
+              </tr>
+              <tr>
+                <td>18 jun</td>
+                <td>Treinamento Equipe — Pipeline IA</td>
+                <td>Treinamento</td>
+                <td>OmniTech</td>
+                <td class="num-col" style="color:var(--success)">+R$ 3.200</td>
+                <td><span class="status-badge pendente">Pendente</span></td>
+                <td class="cell-actions"><button class="btn btn-ghost btn-sm">Detalhes</button></td>
+              </tr>
+              <tr>
+                <td>15 jun</td>
+                <td>Salários + Encargos</td>
+                <td>Folha</td>
+                <td>—</td>
+                <td class="num-col" style="color:var(--danger)">-R$ 38.000</td>
+                <td><span class="status-badge pago">Pago</span></td>
+                <td class="cell-actions"><button class="btn btn-ghost btn-sm">Detalhes</button></td>
+              </tr>
+              <tr>
+                <td>12 jun</td>
+                <td>Servidor GPU — Treinamento</td>
+                <td>Infraestrutura</td>
+                <td>—</td>
+                <td class="num-col" style="color:var(--danger)">-R$ 4.800</td>
+                <td><span class="status-badge pago">Pago</span></td>
+                <td class="cell-actions"><button class="btn btn-ghost btn-sm">Detalhes</button></td>
+              </tr>
+              <tr>
+                <td>10 jun</td>
+                <td>Implantação Chatbot</td>
+                <td>Projeto</td>
+                <td>ZapFlow</td>
+                <td class="num-col" style="color:var(--success)">+R$ 18.500</td>
+                <td><span class="status-badge pago">Pago</span></td>
+                <td class="cell-actions"><button class="btn btn-ghost btn-sm">Detalhes</button></td>
+              </tr>
+              <tr>
+                <td>05 jun</td>
+                <td>Assinatura Ferramentas IA</td>
+                <td>Ferramentas</td>
+                <td>—</td>
+                <td class="num-col" style="color:var(--danger)">-R$ 980</td>
+                <td><span class="status-badge pendente">Pendente</span></td>
+                <td class="cell-actions"><button class="btn btn-ghost btn-sm">Detalhes</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h3>Receitas vs Despesas</h3></div>
+        <div class="card-body">
+          <div class="chart-bar" style="padding-top:var(--space-6)">
+            <div class="bar" style="height:80%"><span class="bar-value">R$48k</span><span class="bar-label">Jan</span></div>
+            <div class="bar" style="height:55%"><span class="bar-value">R$29k</span><span class="bar-label">Fev</span></div>
+            <div class="bar" style="height:70%"><span class="bar-value">R$42k</span><span class="bar-label">Mar</span></div>
+            <div class="bar" style="height:90%"><span class="bar-value">R$55k</span><span class="bar-label">Abr</span></div>
+            <div class="bar" style="height:65%"><span class="bar-value">R$39k</span><span class="bar-label">Mai</span></div>
+            <div class="bar" style="height:95%;background:var(--accent)"><span class="bar-value" style="color:var(--fg)">R$55k</span><span class="bar-label">Jun</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h3>Distribuição de Despesas</h3></div>
+        <div class="card-body">
+          <div class="chart-pie">
+            <div class="pie-visual" style="background:conic-gradient(var(--danger) 0% 43%, var(--info) 43% 60%, var(--warn) 60% 72%, var(--success-soft) 72% 83%, var(--accent-soft) 83% 91%, var(--muted) 91% 100%)"></div>
+            <div class="pie-legend">
+              <div class="legend-item"><span class="legend-dot" style="background:var(--danger)"></span> Folha (43%)</div>
+              <div class="legend-item"><span class="legend-dot" style="background:var(--info)"></span> Infraestrutura (17%)</div>
+              <div class="legend-item"><span class="legend-dot" style="background:var(--warn)"></span> Ferramentas (12%)</div>
+              <div class="legend-item"><span class="legend-dot" style="background:var(--success-soft)"></span> Marketing (11%)</div>
+              <div class="legend-item"><span class="legend-dot" style="background:var(--accent-soft)"></span> Viagens (9%)</div>
+              <div class="legend-item"><span class="legend-dot" style="background:var(--muted)"></span> Outros (8%)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="receitaModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Nova Receita</h2>
+      <button class="modal-close" onclick="closeModal('receitaModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="field">
+          <label>Descrição</label>
+          <input class="input" type="text" placeholder="Ex: Desenvolvimento de módulo" />
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Valor</label>
+            <input class="input" type="text" placeholder="R$ 0,00" />
+          </div>
+          <div class="field">
+            <label>Data</label>
+            <input class="input" type="date" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Categoria</label>
+            <select class="select">
+              <option>Projeto</option>
+              <option>Consultoria</option>
+              <option>Suporte</option>
+              <option>Treinamento</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Cliente</label>
+            <select class="select">
+              <option>Selecione um cliente</option>
+              <option>Inovatec</option>
+              <option>DataFlow Solutions</option>
+              <option>Nexum AI</option>
+              <option>OmniTech</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('receitaModal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="alert('Receita registrada!');closeModal('receitaModal')">Registrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="despesaModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Nova Despesa</h2>
+      <button class="modal-close" onclick="closeModal('despesaModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="field">
+          <label>Descrição</label>
+          <input class="input" type="text" placeholder="Ex: Hospedagem AWS" />
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Valor</label>
+            <input class="input" type="text" placeholder="R$ 0,00" />
+          </div>
+          <div class="field">
+            <label>Data</label>
+            <input class="input" type="date" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Categoria</label>
+            <select class="select">
+              <option>Infraestrutura</option>
+              <option>Ferramentas</option>
+              <option>Folha</option>
+              <option>Marketing</option>
+              <option>Viagens</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Forma de Pagamento</label>
+            <select class="select">
+              <option>Pix</option>
+              <option>Boleto</option>
+              <option>Cartão</option>
+              <option>Transferência</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('despesaModal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="alert('Despesa registrada!');closeModal('despesaModal')">Registrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => {
+    if (e.target === el) el.classList.remove('open');
+  });
+});
+function filterTable(query) {
+  const rows = document.querySelectorAll('#lancamentosTable tbody tr');
+  const q = query.toLowerCase();
+  rows.forEach(row => {
+    const text = row.textContent.toLowerCase();
+    row.style.display = text.includes(q) ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>

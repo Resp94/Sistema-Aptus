@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aptus Flow · Clientes</title>
+  <link rel="stylesheet" href="aptus.css" />
+  <style>
+    /* ─── Clientes / Fornecedores ─── page-specific craft */
+
+    /* Abas toggle em pill (Cursor signature) */
+    .tab-pills {
+      display: flex;
+      gap: var(--space-2);
+      margin-bottom: var(--space-4);
+    }
+    .tab-pills .pill {
+      font-family: var(--font-ui);
+      font-size: 13px;
+      padding: 6px 20px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: background var(--motion-fast) var(--ease-standard),
+                  color var(--motion-fast) var(--ease-standard),
+                  border-color var(--motion-fast) var(--ease-standard),
+                  box-shadow var(--motion-fast) var(--ease-standard);
+    }
+    .tab-pills .pill:hover {
+      color: var(--fg);
+      border-color: var(--border-medium);
+    }
+    .tab-pills .pill.active {
+      background: var(--surface);
+      color: var(--fg);
+      border-color: var(--accent);
+      box-shadow: var(--focus-ring);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .tab-pills .pill { transition: none; }
+      .client-detail-panel { transition: none; }
+      .toast { transition: none; }
+    }
+
+    /* Painel de detalhes — slide + fade */
+    .client-detail-panel {
+      display: block;
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease, opacity 0.25s ease, margin 0.35s ease, padding 0.35s ease;
+      margin-top: 0;
+    }
+    .client-detail-panel.open {
+      max-height: 640px;
+      opacity: 1;
+      margin-top: var(--space-5);
+    }
+
+    .client-info-grid {
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      gap: var(--space-5);
+    }
+    .client-avatar-large {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--surface-warm);
+      display: grid;
+      place-items: center;
+      font-family: var(--font-display);
+      font-size: 26px;
+      letter-spacing: var(--tracking-display);
+      color: var(--fg);
+    }
+    .info-row {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: var(--space-2) 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .info-row .info-label {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .info-row .info-value {
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--fg);
+    }
+    .info-row .info-value.mono {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .history-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+    .history-item {
+      display: flex;
+      gap: var(--space-3);
+      padding-left: var(--space-3);
+      border-left: 2px solid var(--border-medium);
+      padding-bottom: var(--space-2);
+    }
+    .history-item:last-child {
+      border-left-color: var(--accent);
+    }
+    .history-item .hi-date {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+      min-width: 64px;
+      padding-top: 1px;
+    }
+    .history-item .hi-title {
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .history-item .hi-desc {
+      font-family: var(--font-body);
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* Estado vazio */
+    .empty-state {
+      display: none;
+      text-align: center;
+      padding: var(--space-12) var(--space-5);
+      color: var(--muted);
+    }
+    .empty-state.visible {
+      display: block;
+    }
+    .empty-state .empty-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto var(--space-4);
+      border-radius: 50%;
+      background: var(--border-soft);
+      display: grid;
+      place-items: center;
+      color: var(--meta);
+    }
+    .empty-state .empty-title {
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      letter-spacing: -0.01em;
+      color: var(--fg);
+      margin: 0 0 var(--space-2);
+    }
+    .empty-state .empty-desc {
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      color: var(--muted);
+      margin: 0;
+      max-width: 36ch;
+      margin-inline: auto;
+    }
+
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 200;
+      background: var(--surface);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--elev-raised);
+      padding: 12px 20px;
+      font-family: var(--font-ui);
+      font-size: 13px;
+      color: var(--fg);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      pointer-events: none;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .toast .toast-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--success-soft);
+      color: var(--success);
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    /* Stats bar — agregador de dados */
+    .stats-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      padding: var(--space-3) var(--space-4);
+      margin-bottom: var(--space-4);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .stat-value {
+      font-family: var(--font-mono);
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--fg);
+      font-variant-numeric: tabular-nums;
+    }
+    .stat-label {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .stat-divider {
+      width: 1px;
+      height: 28px;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+
+    /* Clickable table rows */
+    .ds-table tbody tr[data-clickable] {
+      cursor: pointer;
+    }
+    .ds-table tbody tr[data-clickable]:hover {
+      background: var(--border);
+    }
+  </style>
+</head>
+<body data-od-id="clientes">
+<script>
+(function(){
+  try{var t=localStorage.getItem('aptus-theme');if(t){document.documentElement.setAttribute('data-theme',t);}else{var m=window.matchMedia('(prefers-color-scheme:dark)');if(m.matches){document.documentElement.setAttribute('data-theme','dark');}}}catch(e){}
+})();
+function toggleTheme(){
+  var h=document.documentElement;
+  var c=h.getAttribute('data-theme');
+  var n=c==='dark'?'light':'dark';
+  h.setAttribute('data-theme',n);
+  try{localStorage.setItem('aptus-theme',n);}catch(e){}
+}
+function openModal(i){document.getElementById(i).classList.add('open');}
+function closeModal(i){document.getElementById(i).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(function(e){
+  e.addEventListener('click',function(ev){if(ev.target===e)e.classList.remove('open');});
+});
+
+/* ─── Filtro por texto ─── */
+function filterTable(q){
+  var rows=document.querySelectorAll('#clientesTable tbody tr');
+  var query=q.toLowerCase();
+  var empty=document.getElementById('emptyState');
+  var hasVisible=false;
+  var activeTab=document.querySelector('.tab-pills .pill.active');
+  var currentFilter=activeTab?activeTab.getAttribute('data-filter'):'cliente';
+  rows.forEach(function(r){
+    var tipo=r.getAttribute('data-tipo');
+    var text=r.textContent.toLowerCase();
+    var matchFilter=tipo===currentFilter;
+    var matchQuery=text.includes(query);
+    var show=matchFilter && matchQuery;
+    r.style.display=show?'':'none';
+    if(show) hasVisible=true;
+  });
+  if(empty){
+    empty.classList.toggle('visible',!hasVisible);
+  }
+}
+
+/* ─── Abas Clientes / Fornecedores ─── */
+function switchTab(type,btn){
+  var rows=document.querySelectorAll('#clientesTable tbody tr');
+  var empty=document.getElementById('emptyState');
+  var searchInput=document.querySelector('.search-input');
+  var query=searchInput?searchInput.value.toLowerCase():'';
+  var hasVisible=false;
+  rows.forEach(function(r){
+    var tipo=r.getAttribute('data-tipo');
+    var text=r.textContent.toLowerCase();
+    var match=tipo===type && text.includes(query);
+    r.style.display=match?'':'none';
+    if(match) hasVisible=true;
+  });
+  document.querySelectorAll('.tab-pills .pill').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  if(empty) empty.classList.toggle('visible',!hasVisible);
+}
+
+/* ─── Dados de clientes ─── */
+const clientData={
+  'Inovatec':{avatar:'LA',contact:'Lucas Andrade',email:'lucas@inovatec.com',phone:'(11) 99999-0001',total:'R$ 142.300',company:'Inovatec'},
+  'DataFlow Solutions':{avatar:'CR',contact:'Camila Rocha',email:'camila@dataflow.com',phone:'(21) 98888-0002',total:'R$ 87.600',company:'DataFlow Solutions'},
+  'Nexum AI':{avatar:'RO',contact:'Rafael Oliveira',email:'rafael@nexum.ai',phone:'(31) 97777-0003',total:'R$ 54.200',company:'Nexum AI'},
+  'OmniTech':{avatar:'JC',contact:'Juliana Costa',email:'juliana@omnitech.com',phone:'(41) 96666-0004',total:'R$ 32.100',company:'OmniTech'},
+  'ZapFlow':{avatar:'TM',contact:'Thiago Martins',email:'thiago@zapflow.io',phone:'(51) 95555-0005',total:'R$ 28.900',company:'ZapFlow'},
+  'AlphaTech':{avatar:'FL',contact:'Fernanda Lopes',email:'fernanda@alphatech.com',phone:'(11) 94444-0006',total:'R$ 12.500',company:'AlphaTech'},
+  'CloudNest Servers':{avatar:'RA',contact:'Roberto Alves',email:'roberto@cloudnest.io',phone:'(11) 93333-0007',total:'R$ 45.200',company:'CloudNest Servers'},
+  'Contabilizei':{avatar:'ML',contact:'Marta Lima',email:'marta@contabilizei.com',phone:'(11) 92222-0008',total:'R$ 12.800',company:'Contabilizei'}
+};
+
+/* ─── Painel de detalhes ─── */
+function showClientDetail(name){
+  var panel=document.getElementById('clientDetail');
+  var data=clientData[name];
+  if(!data) return;
+  panel.classList.add('open');
+  document.getElementById('detailClientName').textContent=name;
+  document.getElementById('detailAvatar').textContent=data.avatar;
+  document.getElementById('detailContact').textContent=data.contact;
+  document.getElementById('detailEmail').textContent=data.email;
+  document.getElementById('detailPhone').textContent=data.phone;
+  document.getElementById('detailTotal').textContent=data.total;
+}
+function closeDetail(){
+  document.getElementById('clientDetail').classList.remove('open');
+}
+
+/* ─── Toast ─── */
+function showToast(msg){
+  var t=document.getElementById('toast');
+  if(!t) return;
+  t.querySelector('.toast-msg').textContent=msg;
+  t.classList.add('show');
+  clearTimeout(t._hide);
+  t._hide=setTimeout(function(){t.classList.remove('show');},2800);
+}
+function saveCliente(){
+  showToast('Cadastro realizado com sucesso');
+  closeModal('clienteModal');
+}
+
+/* ─── Init: active tab → filter on load ─── */
+document.addEventListener('DOMContentLoaded',function(){
+  var activePill=document.querySelector('.tab-pills .pill.active');
+  if(activePill) switchTab(activePill.getAttribute('data-filter'),activePill);
+});
+</script>
+
+<div class="app-shell">
+  <aside class="app-sidebar">
+    <div class="logo"><span class="logo-dot"></span>Aptus Flow</div>
+    <div class="nav-section">Principal</div>
+    <nav>
+      <a href="dashboard.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+      <a href="fluxo-caixa.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Fluxo de Caixa</a>
+      <a href="contas-pagar.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Contas a Pagar</a>
+      <a href="contas-receber.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2v20M6 7l6-5 6 5"/><path d="M6 17l6 5 6-5"/></svg>Contas a Receber</a>
+    </nav>
+    <div class="nav-section">Gestão</div>
+    <nav>
+      <a href="clientes.html" class="active"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Clientes / Fornecedores</a>
+      <a href="relatorios.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Relatórios / Exportação</a>
+      <a href="configuracoes.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>Configurações</a>
+    </nav>
+    <div class="user-info"><div class="avatar">AM</div><div><div class="user-name">Ana Martins</div><div class="user-role">Administradora</div></div></div>
+  </aside>
+
+  <header class="app-header">
+    <div class="page-title">Clientes / Fornecedores</div>
+    <div class="header-actions">
+      <button class="btn-icon" onclick="toggleTheme()" title="Alternar tema"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></button>
+      <button class="btn btn-primary btn-sm" onclick="openModal('clienteModal')">+ Novo</button>
+    </div>
+  </header>
+
+  <main class="app-content">
+    <div class="tab-pills" data-od-id="tab-toggle">
+      <button class="pill active" data-filter="cliente" onclick="switchTab('cliente',this)">Clientes</button>
+      <button class="pill" data-filter="fornecedor" onclick="switchTab('fornecedor',this)">Fornecedores</button>
+    </div>
+
+    <div class="filter-bar" data-od-id="filter-bar">
+      <input class="search-input" type="text" placeholder="Buscar por nome, email ou empresa..." oninput="filterTable(this.value)" />
+      <select class="select" style="width:auto;min-width:140px;"><option>Todos os status</option><option>Ativo</option><option>Inativo</option></select>
+    </div>
+
+      <div class="stats-row">
+        <div class="stat-item"><span class="stat-value">8</span><span class="stat-label">cadastros</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat-item"><span class="stat-value">R$ 415.600</span><span class="stat-label">receita total</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat-item"><span class="stat-value">6</span><span class="stat-label">ativos</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat-item"><span class="stat-value">2</span><span class="stat-label">fornecedores</span></div>
+      </div>
+
+      <div class="card" data-od-id="clientes-table">
+      <div class="card-body compact">
+        <table class="ds-table" id="clientesTable">
+          <thead><tr><th>Nome</th><th>Empresa</th><th>E-mail</th><th>Telefone</th><th>Tipo</th><th>Status</th><th>Total Gasto</th><th class="cell-actions"></th></tr></thead>
+          <tbody>
+            <tr data-clickable data-tipo="cliente" data-nome="Inovatec">
+              <td><strong>Lucas Andrade</strong></td><td>Inovatec</td><td>lucas@inovatec.com</td><td>(11) 99999-0001</td><td>Cliente</td><td><span class="status-badge ativo">Ativo</span></td><td class="num-col">R$ 142.300</td><td class="cell-actions"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();showClientDetail('Inovatec')">Detalhes</button></td></tr>
+            <tr data-clickable data-tipo="cliente" data-nome="DataFlow Solutions">
+              <td><strong>Camila Rocha</strong></td><td>DataFlow Solutions</td><td>camila@dataflow.com</td><td>(21) 98888-0002</td><td>Cliente</td><td><span class="status-badge ativo">Ativo</span></td><td class="num-col">R$ 87.600</td><td class="cell-actions"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();showClientDetail('DataFlow Solutions')">Detalhes</button></td></tr>
+            <tr data-clickable data-tipo="cliente" data-nome="Nexum AI">
+              <td><strong>Rafael Oliveira</strong></td><td>Nexum AI</td><td>rafael@nexum.ai</td><td>(31) 97777-0003</td><td>Cliente</td><td><span class="status-badge ativo">Ativo</span></td><td class="num-col">R$ 54.200</td><td class="cell-actions"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();showClientDetail('Nexum AI')">Detalhes</button></td></tr>
+            <tr data-clickable data-tipo="cliente" data-nome="OmniTech">
+              <td><strong>Juliana Costa</strong></td><td>OmniTech</td><td>juliana@omnitech.com</td><td>(41) 96666-0004</td><td>Cliente</td><td><span class="status-badge ativo">Ativo</span></td><td class="num-col">R$ 32.100</td><td class="cell-actions"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();showClientDetail('OmniTech')">Detalhes</button></td></tr>
+            <tr data-clickable data-tipo="cliente" data-nome="ZapFlow">
+              <td><strong>Thiago Martins</strong></td><td>ZapFlow</td><td>thiago@zapflow.io</td><td>(51) 95555-0005</td><td>Cliente</td><td><span class="status-badge ativo">Ativo</span></td><td class="num-col">R$ 28.900</td><td class="cell-actions"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();showClientDetail('ZapFlow')">Detalhes</button></td></tr>
+            <tr data-clickable data-tipo="cliente" data-nome="AlphaTech">
+              <td><strong>Fernanda Lopes</strong></td><td>AlphaTech</td><td>fernanda@alphatech.com</td><td>(11) 94444-0006</td><td>Cliente</td><td><span class="status-badge inactive">Inativo</span></td><td class="num-col">R$ 12.500</td><td class="cell-actions"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();showClientDetail('AlphaTech')">Detalhes</button></td></tr>
+            <tr data-clickable data-tipo="fornecedor" data-nome="CloudNest Servers">
+              <td><strong>Roberto Alves</strong></td><td>CloudNest Servers</td><td>roberto@cloudnest.io</td><td>(11) 93333-0007</td><td>Fornecedor</td><td><span class="status-badge ativo">Ativo</span></td><td class="num-col">R$ 45.200</td><td class="cell-actions"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();showClientDetail('CloudNest Servers')">Detalhes</button></td></tr>
+            <tr data-clickable data-tipo="fornecedor" data-nome="Contabilizei">
+              <td><strong>Marta Lima</strong></td><td>Contabilizei</td><td>marta@contabilizei.com</td><td>(11) 92222-0008</td><td>Fornecedor</td><td><span class="status-badge ativo">Ativo</span></td><td class="num-col">R$ 12.800</td><td class="cell-actions"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();showClientDetail('Contabilizei')">Detalhes</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="empty-state" id="emptyState" data-od-id="empty-state">
+      <div class="empty-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+      <h3 class="empty-title">Nenhum resultado encontrado</h3>
+      <p class="empty-desc">Tente ajustar o filtro ou a busca para encontrar o que precisa.</p>
+    </div>
+
+    <div class="client-detail-panel" id="clientDetail" data-od-id="client-detail">
+      <div class="card">
+        <div class="card-header">
+          <h3 id="detailClientName">Inovatec</h3>
+          <button class="btn btn-ghost btn-sm" onclick="closeDetail()">Fechar</button>
+        </div>
+        <div class="card-body">
+          <div class="client-info-grid">
+            <div class="client-avatar-large" id="detailAvatar">LA</div>
+            <div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);">
+                <div class="info-row"><span class="info-label">Contato</span><span class="info-value" id="detailContact">Lucas Andrade</span></div>
+                <div class="info-row"><span class="info-label">E-mail</span><span class="info-value" id="detailEmail">lucas@inovatec.com</span></div>
+                <div class="info-row"><span class="info-label">Telefone</span><span class="info-value" id="detailPhone">(11) 99999-0001</span></div>
+                <div class="info-row"><span class="info-label">Total Gasto</span><span class="info-value mono" id="detailTotal">R$ 142.300</span></div>
+              </div>
+              <div style="margin-top:var(--space-5)">
+                <h4 style="font-family:var(--font-ui);font-size:13px;font-weight:600;margin:0 0 var(--space-3);text-transform:uppercase;letter-spacing:0.04em;color:var(--muted);">Histórico de Atendimento</h4>
+                <div class="history-timeline">
+                  <div class="history-item"><span class="hi-date">25 jun</span><div><div class="hi-title">Reunião de alinhamento</div><div class="hi-desc">Apresentação do roadmap do módulo de IA</div></div></div>
+                  <div class="history-item"><span class="hi-date">18 jun</span><div><div class="hi-title">Proposta enviada</div><div class="hi-desc">Expansão - suporte 24h</div></div></div>
+                  <div class="history-item"><span class="hi-date">10 mai</span><div><div class="hi-title">Contrato assinado</div><div class="hi-desc">Renovação anual - R$ 96.000</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="clienteModal" data-od-id="cliente-modal">
+  <div class="modal">
+    <div class="modal-header"><h2>Novo Cadastro</h2><button class="modal-close" onclick="closeModal('clienteModal')">&times;</button></div>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="form-row">
+          <div class="field"><label>Nome</label><input class="input" type="text" placeholder="Nome completo" /></div>
+          <div class="field"><label>Empresa</label><input class="input" type="text" placeholder="Nome da empresa" /></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Tipo</label><select class="select"><option>Cliente</option><option>Fornecedor</option></select></div>
+          <div class="field"><label>Status</label><select class="select"><option>Ativo</option><option>Inativo</option></select></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>E-mail</label><input class="input" type="email" placeholder="email@empresa.com" /></div>
+          <div class="field"><label>Telefone</label><input class="input" type="text" placeholder="(11) 99999-0000" /></div>
+        </div>
+        <div class="field"><label>Observações</label><textarea class="textarea" placeholder="Anotações…"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('clienteModal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveCliente()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <span class="toast-icon" aria-hidden="true">&#10003;</span>
+  <span class="toast-msg">Cadastro realizado</span>
+</div>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "dashboard.html",
+  "entry": "dashboard.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-06-25T21:31:42.947Z",
+  "updatedAt": "2026-06-25T21:31:42.947Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

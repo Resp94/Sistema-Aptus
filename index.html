@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aptus Flow App</title>
+  <link rel="stylesheet" href="aptus.css" />
+  <style>
+    .launcher { min-height: 100vh; background: var(--bg); display: flex; flex-direction: column; }
+    .launcher-header { padding: var(--space-6); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .launcher-header .brand { font-family: var(--font-display); font-size: 22px; letter-spacing: var(--tracking-display); display: flex; align-items: center; gap: var(--space-2); }
+    .launcher-header .brand .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); display: inline-block; }
+    .launcher-main { flex: 1; max-width: 1100px; margin: 0 auto; padding: var(--space-8) var(--space-6); width: 100%; }
+    .launcher-main h1 { font-family: var(--font-display); font-size: var(--text-3xl); letter-spacing: -0.015em; margin: 0 0 var(--space-2); }
+    .launcher-main .sub { font-family: var(--font-body); font-size: var(--text-lg); color: var(--muted); margin: 0 0 var(--space-8); line-height: 1.6; }
+    .screen-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-4); }
+    .screen-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-5); cursor: pointer; transition: var(--motion-fast) var(--ease-standard); text-decoration: none; color: var(--fg); display: flex; flex-direction: column; }
+    .screen-card:hover { border-color: var(--border-medium); box-shadow: var(--elev-raised); }
+    .screen-card .sc-icon { width: 40px; height: 40px; border-radius: var(--radius-md); display: grid; place-items: center; margin-bottom: var(--space-3); font-size: 18px; }
+    .screen-card .sc-name { font-family: var(--font-ui); font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .screen-card .sc-desc { font-family: var(--font-ui); font-size: 12px; color: var(--muted); line-height: 1.5; flex: 1; }
+    .footer-links { margin-top: var(--space-8); padding-top: var(--space-5); border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-family: var(--font-ui); font-size: 12px; color: var(--muted); }
+    .footer-links a { color: var(--accent); }
+    .theme-btn { width: 36px; height: 36px; border: 1px solid var(--border); background: transparent; border-radius: var(--radius-md); display: grid; place-items: center; color: var(--muted); cursor: pointer; transition: var(--motion-fast) var(--ease-standard); }
+    .theme-btn:hover { color: var(--fg); border-color: var(--border-medium); }
+  </style>
+</head>
+<body>
+<script>
+(function(){try{var t=localStorage.getItem('aptus-theme');if(t){document.documentElement.setAttribute('data-theme',t);}else{var m=window.matchMedia('(prefers-color-scheme:dark)');if(m.matches){document.documentElement.setAttribute('data-theme','dark');}}}catch(e){}})();
+function toggleTheme(){var h=document.documentElement;var c=h.getAttribute('data-theme');var n=c==='dark'?'light':'dark';h.setAttribute('data-theme',n);try{localStorage.setItem('aptus-theme',n);}catch(e){}}
+</script>
+<div class="launcher">
+  <div class="launcher-header">
+    <span class="brand"><span class="dot"></span>Aptus Flow App</span>
+    <button class="theme-btn" onclick="toggleTheme()" title="Alternar tema">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+    </button>
+  </div>
+  <main class="launcher-main">
+    <h1>Bem-vindo ao Aptus Flow</h1>
+    <p class="sub">Sistema de gestão administrativa e financeira. Selecione uma tela para começar.</p>
+    <div class="screen-grid">
+      <a class="screen-card" href="login.html">
+        <div class="sc-icon" style="background:var(--accent-soft);color:var(--accent);">L</div>
+        <div class="sc-name">Login / Autenticação</div>
+        <div class="sc-desc">Acesso ao sistema com autenticação e recuperação de senha.</div>
+      </a>
+      <a class="screen-card" href="dashboard.html">
+        <div class="sc-icon" style="background:var(--accent-soft);color:var(--accent);">D</div>
+        <div class="sc-name">Dashboard Financeiro</div>
+        <div class="sc-desc">Visão geral com métricas, gráficos e resumo financeiro.</div>
+      </a>
+      <a class="screen-card" href="fluxo-caixa.html">
+        <div class="sc-icon" style="background:var(--success-soft);color:var(--success);">F</div>
+        <div class="sc-name">Fluxo de Caixa</div>
+        <div class="sc-desc">Movimentações financeiras, entradas, saídas e projeções.</div>
+      </a>
+      <a class="screen-card" href="contas-pagar.html">
+        <div class="sc-icon" style="background:var(--danger-soft);color:var(--danger);">P</div>
+        <div class="sc-name">Contas a Pagar</div>
+        <div class="sc-desc">Gerenciamento de obrigações, vencimentos e fornecedores.</div>
+      </a>
+      <a class="screen-card" href="contas-receber.html">
+        <div class="sc-icon" style="background:var(--info-soft);color:var(--info);">R</div>
+        <div class="sc-name">Contas a Receber</div>
+        <div class="sc-desc">Faturas emitidas, recebimentos e cobranças.</div>
+      </a>
+      <a class="screen-card" href="clientes.html">
+        <div class="sc-icon" style="background:var(--warn-soft);color:var(--warn);">C</div>
+        <div class="sc-name">Clientes / Fornecedores</div>
+        <div class="sc-desc">Cadastro de clientes e fornecedores com histórico.</div>
+      </a>
+      <a class="screen-card" href="relatorios.html">
+        <div class="sc-icon" style="background:var(--accent-soft);color:var(--accent);">#</div>
+        <div class="sc-name">Relatórios / Exportação</div>
+        <div class="sc-desc">Relatórios financeiros, DRE, exportação PDF/CSV.</div>
+      </a>
+      <a class="screen-card" href="configuracoes.html">
+        <div class="sc-icon" style="background:var(--success-soft);color:var(--success);">S</div>
+        <div class="sc-name">Configurações</div>
+        <div class="sc-desc">Preferências do sistema, usuários e integrações.</div>
+      </a>
+    </div>
+    <div class="footer-links">
+      <span>Aptus Flow App © 2026</span>
+      <a href="#" onclick="alert('Aptus Flow - Sistema de Gestão v1.0')">Sobre</a>
+    </div>
+  </main>
+</div>
+</body>
+</html>

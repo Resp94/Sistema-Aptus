@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aptus · Contratos</title>
+  <link rel="stylesheet" href="aptus.css" />
+  <style>
+    .contract-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4); margin-bottom: var(--space-5); }
+    @media (max-width: 1024px) {
+      .contract-summary { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 480px) {
+      .contract-summary { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body data-od-id="contratos">
+<div class="app-shell">
+  <aside class="app-sidebar">
+    <div class="logo"><span class="logo-dot"></span>Aptus</div>
+    <div class="nav-section">Principal</div>
+    <nav>
+      <a href="dashboard.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+      <a href="financeiro.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 6v2M12 16v2M9.5 9.5c0-1.5 1-2.5 2.5-2.5s2.5 1 2.5 2.5-1 2.5-2.5 2.5-2.5 1-2.5 2.5 1 2.5 2.5 2.5 2.5-1 2.5-2.5"/></svg>Financeiro</a>
+      <a href="clientes.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Clientes</a>
+      <a href="propostas.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Propostas</a>
+      <a href="contratos.html" class="active"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg>Contratos</a>
+      <a href="cobrancas.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M18 20v-2a4 4 0 0 0-4-4h-4a4 4 0 0 0-4 4v2"/></svg>Cobranças</a>
+      <a href="projetos.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"/><path d="M13 3h6a2 2 0 0 1 2 2v7"/><path d="M18 13v8"/><path d="M15 18l3 3 4-4"/></svg>Projetos</a>
+    </nav>
+    <div class="user-info">
+      <div class="avatar">AM</div>
+      <div><div class="user-name">Ana Martins</div><div class="user-role">Administradora</div></div>
+    </div>
+  </aside>
+
+  <header class="app-header">
+    <div class="page-title">Contratos</div>
+    <div class="header-actions">
+      <button class="btn btn-primary btn-sm" onclick="openModal('contratoModal')">+ Novo Contrato</button>
+    </div>
+  </header>
+
+  <main class="app-content">
+    <div class="contract-summary" data-od-id="contract-summary">
+      <div class="metric-card">
+        <div class="metric-icon green">C</div>
+        <div class="metric-label">Contratos Vigentes</div>
+        <div class="metric-value">18</div>
+        <div class="metric-sub">+3 este trimestre</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon yellow">!</div>
+        <div class="metric-label">Próximos do Vencimento</div>
+        <div class="metric-value">4</div>
+        <div class="metric-sub">Vencem nos próximos 30 dias</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon blue">$</div>
+        <div class="metric-label">Receita Recorrente (MRR)</div>
+        <div class="metric-value">R$ 68.400</div>
+        <div class="metric-change up">+5,2% vs. mês passado</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon red">X</div>
+        <div class="metric-label">Contratos Encerrados</div>
+        <div class="metric-value">3</div>
+        <div class="metric-sub">Este ano</div>
+      </div>
+    </div>
+
+    <div class="filter-bar" data-od-id="filter-bar">
+      <input class="search-input" type="text" placeholder="Buscar contratos..." oninput="filterTable(this.value)" />
+      <select class="select" style="width:auto;min-width:140px;">
+        <option>Todos os status</option>
+        <option>Vigente</option>
+        <option>Próximo ao vencimento</option>
+        <option>Encerrado</option>
+      </select>
+    </div>
+
+    <div class="card" data-od-id="contratos-table">
+      <div class="card-body compact">
+        <table class="ds-table" id="contratosTable">
+          <thead>
+            <tr>
+              <th>Contrato</th>
+              <th>Cliente</th>
+              <th>Início</th>
+              <th>Vencimento</th>
+              <th class="num-col">Valor Mensal</th>
+              <th>Status</th>
+              <th class="cell-actions"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Suporte Premium — Anual</strong></td>
+              <td>Inovatec</td>
+              <td>15 jan 2026</td>
+              <td>15 jan 2027</td>
+              <td class="num-col">R$ 8.000</td>
+              <td><span class="status-badge vigente">Vigente</span></td>
+              <td class="cell-actions"><button class="btn btn-ghost btn-sm" onclick="alert('Anexar documento…')">Anexar</button><button class="btn btn-ghost btn-sm" onclick="alert('Renovando contrato…')">Renovar</button></td>
+            </tr>
+            <tr>
+              <td><strong>Plataforma IA — Manutenção</strong></td>
+              <td>DataFlow Solutions</td>
+              <td>01 mar 2026</td>
+              <td>01 mar 2027</td>
+              <td class="num-col">R$ 4.500</td>
+              <td><span class="status-badge vigente">Vigente</span></td>
+              <td class="cell-actions"><button class="btn btn-ghost btn-sm" onclick="alert('Anexar documento…')">Anexar</button><button class="btn btn-ghost btn-sm" onclick="alert('Renovando contrato…')">Renovar</button></td>
+            </tr>
+            <tr>
+              <td><strong>Consultoria Mensal — Automação</strong></td>
+              <td>Nexum AI</td>
+              <td>10 abr 2026</td>
+              <td>10 jul 2026</td>
+              <td class="num-col">R$ 3.200</td>
+              <td><span class="status-badge pendente">Próx. vencimento</span></td>
+              <td class="cell-actions"><button class="btn btn-ghost btn-sm" onclick="alert('Anexar documento…')">Anexar</button><button class="btn btn-ghost btn-sm" onclick="alert('Renovando contrato…')">Renovar</button></td>
+            </tr>
+            <tr>
+              <td><strong>Infraestrutura — SLA 99.9%</strong></td>
+              <td>OmniTech</td>
+              <td>20 fev 2026</td>
+              <td>20 fev 2027</td>
+              <td class="num-col">R$ 5.800</td>
+              <td><span class="status-badge vigente">Vigente</span></td>
+              <td class="cell-actions"><button class="btn btn-ghost btn-sm" onclick="alert('Anexar documento…')">Anexar</button><button class="btn btn-ghost btn-sm" onclick="alert('Renovando contrato…')">Renovar</button></td>
+            </tr>
+            <tr>
+              <td><strong>Chatbot Omnichannel</strong></td>
+              <td>ZapFlow</td>
+              <td>05 mai 2026</td>
+              <td>05 jun 2026</td>
+              <td class="num-col">R$ 2.900</td>
+              <td><span class="status-badge pendente">Próx. vencimento</span></td>
+              <td class="cell-actions"><button class="btn btn-ghost btn-sm" onclick="alert('Anexar documento…')">Anexar</button><button class="btn btn-ghost btn-sm" onclick="alert('Renovando contrato…')">Renovar</button></td>
+            </tr>
+            <tr>
+              <td><strong>Treinamento Corporativo</strong></td>
+              <td>AlphaTech</td>
+              <td>15 jan 2025</td>
+              <td>15 jan 2026</td>
+              <td class="num-col">—</td>
+              <td><span class="status-badge cancelado">Encerrado</span></td>
+              <td class="cell-actions"><button class="btn btn-ghost btn-sm" onclick="alert('Visualizando…')">Ver</button></td>
+            </tr>
+            <tr>
+              <td><strong>Suporte Básico — Mensal</strong></td>
+              <td>AlphaTech</td>
+              <td>01 mar 2025</td>
+              <td>01 mar 2026</td>
+              <td class="num-col">R$ 1.500</td>
+              <td><span class="status-badge cancelado">Encerrado</span></td>
+              <td class="cell-actions"><button class="btn btn-ghost btn-sm" onclick="alert('Visualizando…')">Ver</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="contratoModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Novo Contrato</h2>
+      <button class="modal-close" onclick="closeModal('contratoModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="field">
+          <label>Título do Contrato</label>
+          <input class="input" type="text" placeholder="Ex: Suporte Premium Anual" />
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Cliente</label>
+            <select class="select">
+              <option>Selecione</option>
+              <option>Inovatec</option>
+              <option>DataFlow Solutions</option>
+              <option>Nexum AI</option>
+              <option>OmniTech</option>
+              <option>ZapFlow</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Valor Mensal</label>
+            <input class="input" type="text" placeholder="R$ 0,00" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Data de Início</label>
+            <input class="input" type="date" />
+          </div>
+          <div class="field">
+            <label>Data de Vencimento</label>
+            <input class="input" type="date" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Escopo / Observações</label>
+          <textarea class="textarea" placeholder="Detalhes do contrato…"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('contratoModal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="alert('Contrato criado!');closeModal('contratoModal')">Criar Contrato</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+function filterTable(query) {
+  const rows = document.querySelectorAll('#contratosTable tbody tr');
+  const q = query.toLowerCase();
+  rows.forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>

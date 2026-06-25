@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aptus Flow · Contas a Pagar</title>
+  <link rel="stylesheet" href="aptus.css" />
+  <style>
+    .cp-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4); margin-bottom: var(--space-5); }
+    .cp-sec { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); }
+    .bill-card { display: flex; align-items: center; justify-content: space-between; padding: var(--space-3) 0; border-bottom: 1px solid var(--border-soft); }
+    .bill-card:last-child { border-bottom: none; }
+    .bill-card .bc-left { display: flex; flex-direction: column; gap: 2px; }
+    .bill-card .bc-title { font-family: var(--font-ui); font-size: 13px; font-weight: 500; }
+    .bill-card .bc-meta { font-family: var(--font-ui); font-size: 11px; color: var(--muted); }
+    .bill-card .bc-value { font-family: var(--font-mono); font-size: 14px; font-weight: 500; }
+    .bill-card .bc-right { text-align: right; }
+    .overdue-badge { background: var(--danger-soft); color: var(--danger); }
+    @media (max-width: 1024px) { .cp-summary { grid-template-columns: repeat(2, 1fr); } .cp-sec { grid-template-columns: 1fr; } }
+    @media (max-width: 480px) { .cp-summary { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body data-od-id="contas-pagar">
+<script>
+(function(){try{var t=localStorage.getItem('aptus-theme');if(t){document.documentElement.setAttribute('data-theme',t);}else{var m=window.matchMedia('(prefers-color-scheme:dark)');if(m.matches){document.documentElement.setAttribute('data-theme','dark');}}}catch(e){}})();
+function toggleTheme(){var h=document.documentElement;var c=h.getAttribute('data-theme');var n=c==='dark'?'light':'dark';h.setAttribute('data-theme',n);try{localStorage.setItem('aptus-theme',n);}catch(e){}}
+function openModal(i){document.getElementById(i).classList.add('open');}
+function closeModal(i){document.getElementById(i).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(function(e){e.addEventListener('click',function(ev){if(ev.target===e)e.classList.remove('open');});});
+function filterTable(q){var rows=document.querySelectorAll('#cpTable tbody tr');var query=q.toLowerCase();rows.forEach(function(r){r.style.display=r.textContent.toLowerCase().includes(query)?'':'none';});}
+</script>
+<div class="app-shell">
+  <aside class="app-sidebar">
+    <div class="logo"><span class="logo-dot"></span>Aptus Flow</div>
+    <div class="nav-section">Principal</div>
+    <nav>
+      <a href="dashboard.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+      <a href="fluxo-caixa.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Fluxo de Caixa</a>
+      <a href="contas-pagar.html" class="active"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Contas a Pagar</a>
+      <a href="contas-receber.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2v20M6 7l6-5 6 5"/><path d="M6 17l6 5 6-5"/></svg>Contas a Receber</a>
+    </nav>
+    <div class="nav-section">Gestão</div>
+    <nav>
+      <a href="clientes.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Clientes / Fornecedores</a>
+      <a href="relatorios.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><circle cx="10" cy="13" r="2" fill="currentColor" opacity="0.3"/></svg>Relatórios / Exportação</a>
+      <a href="configuracoes.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>Configurações</a>
+    </nav>
+    <div class="user-info"><div class="avatar">AM</div><div><div class="user-name">Ana Martins</div><div class="user-role">Administradora</div></div></div>
+  </aside>
+
+  <header class="app-header">
+    <div class="page-title">Contas a Pagar</div>
+    <div class="header-actions">
+      <button class="btn-icon" onclick="toggleTheme()" title="Alternar tema"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></button>
+      <button class="btn btn-primary btn-sm" onclick="openModal('novaContaModal')">+ Nova Conta</button>
+    </div>
+  </header>
+
+  <main class="app-content">
+    <div class="cp-summary" data-od-id="cp-summary">
+      <div class="metric-card"><div class="metric-label">Total a Pagar</div><div class="metric-value">R$ 87.540</div><div class="metric-sub">15 faturas abertas</div></div>
+      <div class="metric-card"><div class="metric-label">Vencidas</div><div class="metric-value" style="color:var(--danger)">R$ 8.450</div><div class="metric-sub">3 faturas</div></div>
+      <div class="metric-card"><div class="metric-label">Vencem Hoje</div><div class="metric-value" style="color:var(--warn)">R$ 12.800</div><div class="metric-sub">2 faturas</div></div>
+      <div class="metric-card"><div class="metric-label">A Vencer (7 dias)</div><div class="metric-value">R$ 38.200</div><div class="metric-sub">6 faturas</div></div>
+    </div>
+
+    <div class="cp-sec" data-od-id="cp-sec">
+      <div class="card"><div class="card-header"><h3>Próximos Vencimentos</h3></div>
+        <div class="card-body compact">
+          <div class="bill-card" style="background:var(--danger-soft);border-radius:var(--radius-sm);padding:var(--space-3);margin:-4px -4px 0;">
+            <div class="bc-left"><span class="bc-title">Aluguel — Sede</span><span class="bc-meta">Venceu há 2 dias</span></div>
+            <div class="bc-right"><span class="bc-value" style="color:var(--danger)">R$ 8.500</span><br><span class="status-badge atrasado">Atrasado</span></div>
+          </div>
+          <div class="bill-card" style="background:var(--danger-soft);border-radius:var(--radius-sm);padding:var(--space-3);">
+            <div class="bc-left"><span class="bc-title">Energia — Escritório</span><span class="bc-meta">Venceu ontem</span></div>
+            <div class="bc-right"><span class="bc-value" style="color:var(--danger)">R$ 1.200</span><br><span class="status-badge atrasado">Atrasado</span></div>
+          </div>
+          <div class="bill-card"><div class="bc-left"><span class="bc-title">Folha de Pagamento</span><span class="bc-meta">Vence 30 jun</span></div><div class="bc-right"><span class="bc-value">R$ 38.000</span><br><span class="status-badge pendente">A Vencer</span></div></div>
+          <div class="bill-card"><div class="bc-left"><span class="bc-title">Servidor GPU — Lambda</span><span class="bc-meta">Vence 01 jul</span></div><div class="bc-right"><span class="bc-value">R$ 4.800</span><br><span class="status-badge pendente">A Vencer</span></div></div>
+          <div class="bill-card"><div class="bc-left"><span class="bc-title">Seguro Empresarial</span><span class="bc-meta">Vence 03 jul</span></div><div class="bc-right"><span class="bc-value">R$ 2.400</span><br><span class="status-badge pendente">A Vencer</span></div></div>
+        </div>
+      </div>
+
+      <div class="card"><div class="card-header"><h3>Vencimento por Categoria</h3></div>
+        <div class="card-body compact">
+          <div class="bill-card"><div class="bc-left"><span class="bc-title">Infraestrutura</span></div><div class="bc-right"><span class="bc-value">R$ 18.200</span></div></div>
+          <div class="bill-card"><div class="bc-left"><span class="bc-title">Folha de Pagamento</span></div><div class="bc-right"><span class="bc-value">R$ 38.000</span></div></div>
+          <div class="bill-card"><div class="bc-left"><span class="bc-title">Ferramentas e Licenças</span></div><div class="bc-right"><span class="bc-value">R$ 4.680</span></div></div>
+          <div class="bill-card"><div class="bc-left"><span class="bc-title">Impostos e Taxas</span></div><div class="bc-right"><span class="bc-value">R$ 12.340</span></div></div>
+          <div class="bill-card"><div class="bc-left"><span class="bc-title">Fornecedores</span></div><div class="bc-right"><span class="bc-value">R$ 14.320</span></div></div>
+          <div class="progress-bar" style="margin-top:var(--space-3)"><div class="fill" style="width:68%"></div></div>
+          <div style="font-family:var(--font-ui);font-size:11px;color:var(--muted);margin-top:var(--space-2);">68% do orçamento mensal comprometido</div>
+        </div>
+      </div>
+
+      <div class="card" style="grid-column:1/-1"><div class="card-header"><h3>Todas as Contas a Pagar</h3><span style="font-family:var(--font-ui);font-size:12px;color:var(--muted);">15 registros</span></div>
+        <div style="padding:var(--space-3) var(--space-5) 0;border-bottom:1px solid var(--border);">
+          <input class="search-input" type="text" placeholder="Buscar contas..." oninput="filterTable(this.value)" style="width:100%;" />
+        </div>
+        <div class="card-body compact">
+          <table class="ds-table" id="cpTable">
+            <thead><tr><th>Descrição</th><th>Fornecedor</th><th>Vencimento</th><th>Categoria</th><th class="num-col">Valor</th><th>Status</th><th class="cell-actions"></th></tr></thead>
+            <tbody>
+              <tr class="status-overdue"><td>Aluguel — Sede</td><td>Imobiliária Alfa</td><td>22 jun</td><td>Infraestrutura</td><td class="num-col">R$ 8.500</td><td><span class="status-badge atrasado">Atrasado</span></td><td class="cell-actions"><button class="btn btn-ghost btn-sm">Pagar</button></td></tr>
+              <tr class="status-overdue"><td>Energia — Escritório</td><td>CEMIG</td><td>24 jun</td><td>Infraestrutura</td><td class="num-col">R$ 1.200</td><td><span class="status-badge atrasado">Atrasado</span></td><td class="cell-actions"><button class="btn btn-ghost btn-sm">Pagar</button></td></tr>
+              <tr class="status-pending"><td>Folha de Pagamento</td><td>—</td><td>30 jun</td><td>Folha</td><td class="num-col">R$ 38.000</td><td><span class="status-badge pendente">A Vencer</span></td><td class="cell-actions"><button class="btn btn-ghost btn-sm">Pagar</button></td></tr>
+              <tr class="status-pending"><td>Servidor GPU — Lambda</td><td>Lambda Labs</td><td>01 jul</td><td>Infraestrutura</td><td class="num-col">R$ 4.800</td><td><span class="status-badge pendente">A Vencer</span></td><td class="cell-actions"><button class="btn btn-ghost btn-sm">Pagar</button></td></tr>
+              <tr class="status-pending"><td>Seguro Empresarial</td><td>Porto Seguro</td><td>03 jul</td><td>Impostos</td><td class="num-col">R$ 2.400</td><td><span class="status-badge pendente">A Vencer</span></td><td class="cell-actions"><button class="btn btn-ghost btn-sm">Pagar</button></td></tr>
+              <tr><td>Assinatura OpenAI API</td><td>OpenAI</td><td>05 jul</td><td>Ferramentas</td><td class="num-col">R$ 2.800</td><td><span class="status-badge pendente">A Vencer</span></td><td class="cell-actions"><button class="btn btn-ghost btn-sm">Pagar</button></td></tr>
+              <tr><td>Internet — DataCenter</td><td>Equinix</td><td>08 jul</td><td>Infraestrutura</td><td class="num-col">R$ 5.400</td><td><span class="status-badge pendente">A Vencer</span></td><td class="cell-actions"><button class="btn btn-ghost btn-sm">Pagar</button></td></tr>
+              <tr><td>Licenças Microsoft 365</td><td>Microsoft</td><td>10 jul</td><td>Ferramentas</td><td class="num-col">R$ 1.880</td><td><span class="status-badge pendente">A Vencer</span></td><td class="cell-actions"><button class="btn btn-ghost btn-sm">Pagar</button></td></tr>
+              <tr><td>Contador — Mensal</td><td>Contabilizei</td><td>12 jul</td><td>Impostos</td><td class="num-col">R$ 3.200</td><td><span class="status-badge pendente">A Vencer</span></td><td class="cell-actions"><button class="btn btn-ghost btn-sm">Pagar</button></td></tr>
+              <tr><td>Material de Escritório</td><td>Kalunga</td><td>15 jul</td><td>Operacional</td><td class="num-col">R$ 580</td><td><span class="status-badge pendente">A Vencer</span></td><td class="cell-actions"><button class="btn btn-ghost btn-sm">Pagar</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="novaContaModal">
+  <div class="modal"><div class="modal-header"><h2>Nova Conta a Pagar</h2><button class="modal-close" onclick="closeModal('novaContaModal')">&times;</button></div>
+    <div class="modal-body"><div class="form-group">
+      <div class="field"><label>Descrição</label><input class="input" type="text" placeholder="Ex: Aluguel" /></div>
+      <div class="form-row"><div class="field"><label>Fornecedor</label><input class="input" type="text" placeholder="Nome do fornecedor" /></div><div class="field"><label>Categoria</label><select class="select"><option>Infraestrutura</option><option>Folha</option><option>Ferramentas</option><option>Impostos</option><option>Operacional</option></select></div></div>
+      <div class="form-row"><div class="field"><label>Valor</label><input class="input" type="text" placeholder="R$ 0,00" /></div><div class="field"><label>Vencimento</label><input class="input" type="date" /></div></div>
+    </div></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('novaContaModal')">Cancelar</button><button class="btn btn-primary" onclick="alert('Conta cadastrada!');closeModal('novaContaModal')">Criar</button></div>
+  </div>
+</div>
+</body>
+</html>
