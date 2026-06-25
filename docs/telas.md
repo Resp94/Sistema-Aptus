@@ -5,6 +5,7 @@
 **Rota:** `/`
 
 **Objetivo:** Autenticar usuário com email e senha.
+**Acesso:** Pública
 
 **Componentes:**
 
@@ -18,6 +19,7 @@
 **Rota:** `/dashboard`
 
 **Objetivo:** Exibir visão geral da empresa com indicadores financeiros e de projetos.
+**Acesso:** Administrador, Analista Financeiro, Gerente de Projetos
 
 **Componentes:**
 
@@ -32,6 +34,7 @@
 **Rota:** `/financeiro`
 
 **Objetivo:** Gerenciar entradas e saídas financeiras, fluxo de caixa e extratos.
+**Acesso:** Administrador, Analista Financeiro
 
 **Componentes:**
 
@@ -47,6 +50,7 @@
 **Rota:** `/clientes`
 
 **Objetivo:** Cadastrar e consultar clientes com histórico de atendimento.
+**Acesso:** Administrador, Consultor Comercial
 
 **Componentes:**
 
@@ -61,6 +65,7 @@
 **Rota:** `/propostas`
 
 **Objetivo:** Criar e gerenciar propostas comerciais.
+**Acesso:** Administrador, Consultor Comercial
 
 **Componentes:**
 
@@ -75,6 +80,7 @@
 **Rota:** `/contratos`
 
 **Objetivo:** Gerenciar contratos firmados com clientes.
+**Acesso:** Administrador, Consultor Comercial
 
 **Componentes:**
 
@@ -89,6 +95,7 @@
 **Rota:** `/cobrancas`
 
 **Objetivo:** Controlar e gerenciar cobranças e recebimentos.
+**Acesso:** Administrador, Analista Financeiro, Consultor Comercial
 
 **Componentes:**
 
@@ -103,6 +110,7 @@
 **Rota:** `/projetos`
 
 **Objetivo:** Gerenciar projetos, tarefas e prazos da equipe.
+**Acesso:** Administrador, Gerente de Projetos
 
 **Componentes:**
 

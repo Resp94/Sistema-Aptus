@@ -11,6 +11,8 @@ Perfil com acesso total ao sistema. Responsável pela gestão de usuários, perm
 - Como Administrador, eu quero Exportar relatórios financeiros em CSV para auditoria e análise externa
 - Como Administrador, eu quero Acessar e modificar todos os módulos (financeiro, clientes, propostas, contratos, cobranças, projetos) para garantir a integridade dos dados
 
+**Telas:** Dashboard, Financeiro, Clientes, Propostas, Contratos, Cobranças, Projetos
+
 ## Analista Financeiro
 
 Responsável pelo controle financeiro da empresa, incluindo lançamentos de receitas e despesas, emissão de boletos, registro de pagamentos e análise de fluxo de caixa.
@@ -21,6 +23,8 @@ Responsável pelo controle financeiro da empresa, incluindo lançamentos de rece
 - Como Analista Financeiro, eu quero Emitir boletos e registrar pagamentos para controle de cobranças
 - Como Analista Financeiro, eu quero Visualizar gráficos comparativos de períodos para analisar a evolução financeira
 - Como Analista Financeiro, eu quero Exportar dados financeiros para CSV para prestação de contas
+
+**Telas:** Dashboard, Financeiro, Cobranças
 
 ## Gerente de Projetos
 
@@ -33,6 +37,8 @@ Responsável por gerenciar projetos e tarefas da equipe, acompanhar prazos e pro
 - Como Gerente de Projetos, eu quero Acompanhar o gráfico de progresso dos projetos para garantir o cumprimento dos prazos
 - Como Gerente de Projetos, eu quero Adicionar tarefas e atribuir responsáveis para distribuir a carga de trabalho
 
+**Telas:** Dashboard, Projetos
+
 ## Consultor Comercial
 
 Responsável pelo relacionamento com clientes, criação de propostas e contratos, e gestão de cobranças amigáveis. Utiliza os módulos de clientes, propostas, contratos e cobranças.
@@ -43,3 +49,5 @@ Responsável pelo relacionamento com clientes, criação de propostas e contrato
 - Como Consultor Comercial, eu quero Criar e enviar propostas comerciais para clientes para fechar negócios
 - Como Consultor Comercial, eu quero Gerenciar contratos e anexar documentos para formalizar acordos
 - Como Consultor Comercial, eu quero Enviar lembretes de cobrança para clientes inadimplentes para regularizar pagamentos
+
+**Telas:** Clientes, Propostas, Contratos, Cobranças
