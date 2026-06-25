@@ -1,0 +1,16 @@
+{
+  "version": "1.0.0",
+  "files": {
+    ".agents/skills/wiki/SKILL.md": "7cec77a38a7fa086d25492125620bdaf6ce1b5d0a19d0d0e26f8f07130f42892",
+    "AGENTS.md": "fc5d01e5af49f943a4831659ca1238f969aa6f3b2868386dabc7a535877337b1"
+  },
+  "config": {
+    "aiTargets": [
+      "Antigravity",
+      "Opencode"
+    ],
+    "severity": "Observacional",
+    "projectContext": "Projeto sistema para administrar a minha empresa",
+    "projectStack": "vite + react"
+  }
+}
