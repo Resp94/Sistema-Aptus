@@ -43,15 +43,23 @@ Não faz parte desta página:
 
 ## 4. Change History
 
-### 2026-06-26 — Definição da stack tecnológica do Aptus ERP
-- **What was done**: Foi criada a especificação `specs/002-tech-stack-definition` definindo a stack base do projeto: Cloudflare para hospedagem do frontend, Supabase para backend/banco/autenticação, Vite + React para o frontend, e desenvolvimento local via Supabase CLI com Docker.
-- **Why it was done**: O projeto precisava de uma decisão arquitetural clara para suportar persistência, autenticação e deploy, além de um ambiente local reproduzível que proteja os dados de produção.
-- **Impact on the system**: Nenhum impacto funcional imediato. A decisão orienta a próxima fase de implementação do backend e da migração do frontend para Vite + React.
+### 2026-06-26 — Definição e planejamento da stack tecnológica do Aptus ERP
+- **What was done**: Foi criada a especificação `specs/002-tech-stack-definition` e o plano de implementação definindo a stack base do projeto: Cloudflare para hospedagem do frontend, Supabase para backend/banco/autenticação, Vite + React para o frontend, e desenvolvimento local via Supabase CLI com Docker. Foram gerados artefatos de pesquisa, modelo de dados, contratos e guia quickstart.
+- **Why it was done**: O projeto precisava de uma decisão arquitetural clara e de um plano executável para suportar persistência, autenticação e deploy, além de um ambiente local reproduzível que proteja os dados de produção.
+- **Impact on the system**: Nenhum impacto funcional imediato. A decisão e o plano orientam a próxima fase de implementação do backend e da migração do frontend para Vite + React.
 - **Files affected**:
   - Criado: `specs/002-tech-stack-definition/spec.md`
   - Criado: `specs/002-tech-stack-definition/.spec-context.json`
+  - Criado: `specs/002-tech-stack-definition/plan.md`
+  - Criado: `specs/002-tech-stack-definition/research.md`
+  - Criado: `specs/002-tech-stack-definition/data-model.md`
+  - Criado: `specs/002-tech-stack-definition/quickstart.md`
+  - Criado: `specs/002-tech-stack-definition/contracts/local-cloud-promotion.md`
+  - Criado: `specs/002-tech-stack-definition/contracts/supabase-integration.md`
   - Criado: `specs/002-tech-stack-definition/checklists/requirements.md`
+  - Criado: `specs/002-tech-stack-definition/checklists/stack-definition.md`
   - Alterado: `.sauron/wiki/knowledge/architecture.md`
+  - Alterado: `AGENTS.md`
 
 ### 2026-06-26 — Remoção das configurações do Supabase CLI
 - **What was done**: Foram removidos do sistema de arquivos a pasta `supabase/`, o `package.json`, o `package-lock.json` e a pasta `node_modules/`.
@@ -90,6 +98,8 @@ Não faz parte desta página:
 
 ## 6. Next Steps (Optional)
 
-- Definir momento de integração de backend.
-- Escolher entre Supabase, Firebase, backend próprio ou outra alternativa quando o projeto exigir persistência.
+- Implementar o ambiente local Supabase (`supabase start`, `config.toml`, migrations, seed).
+- Inicializar o projeto Vite + React na raiz do repositório.
+- Configurar o deploy contínuo na Cloudflare Pages.
+- Vincular o projeto local ao Supabase Cloud e documentar o processo de `db push`.
 - Atualizar esta página quando novas decisões arquiteturais forem tomadas.
