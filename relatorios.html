@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR" data-theme="light">
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -9,116 +9,243 @@
     .rel-controls { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; padding: var(--space-4) 0; }
     .rel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); margin-top: var(--space-4); }
     .rel-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-5); cursor: pointer; transition: var(--motion-fast) var(--ease-standard); }
-    .rel-card:hover { border-color: var(--border-medium); box-shadow: var(--elev-raised); }
-    .rel-card .rel-icon { width: 40px; height: 40px; border-radius: var(--radius-md); display: grid; place-items: center; margin-bottom: var(--space-3); font-size: 18px; }
-    .rel-card .rel-name { font-family: var(--font-ui); font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .rel-card:hover { border-color: var(--border-medium); box-shadow: var(--elev-raised); transform: translateY(-1px); }
+    .rel-card .rel-icon { width: 40px; height: 40px; border-radius: var(--radius-md); display: grid; place-items: center; margin-bottom: var(--space-3); }
+    .rel-card .rel-icon svg { width: 20px; height: 20px; stroke-width: 1.6; }
+    .rel-card .rel-action { display: inline-flex; align-items: center; gap: 6px; margin-top: var(--space-3); font-family: var(--font-ui); font-size: 13px; font-weight: 500; color: var(--accent); cursor: pointer; }
+    .rel-card .rel-action:hover { color: var(--danger); }
+    .rel-card .rel-name { font-family: var(--font-display); font-size: 15px; letter-spacing: -0.005em; margin-bottom: 4px; }
     .rel-card .rel-desc { font-family: var(--font-ui); font-size: 12px; color: var(--muted); }
     .rel-card .rel-meta { font-family: var(--font-mono); font-size: 11px; color: var(--meta); margin-top: var(--space-3); }
     .rel-table-wrap { margin-top: var(--space-5); }
     .rel-chart-section { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); margin-top: var(--space-5); }
     @media (max-width: 1024px) { .rel-grid { grid-template-columns: repeat(2, 1fr); } .rel-chart-section { grid-template-columns: 1fr; } }
     @media (max-width: 480px) { .rel-grid { grid-template-columns: 1fr; } }
+    @media (prefers-reduced-motion: reduce) { .rel-card { transition: none; } .rel-card:hover { transform: none; } .bar { transition: none; } }
+    .toast { position: fixed; bottom: 24px; right: 24px; background: var(--fg); color: var(--bg); padding: 10px 18px; border-radius: var(--radius-md); font-family: var(--font-ui); font-size: 13px; z-index: 200; box-shadow: var(--elev-raised); }
+    .recent-list { display: flex; flex-direction: column; gap: var(--space-3); }
+    .recent-item { display: flex; align-items: center; justify-content: space-between; padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); transition: var(--motion-fast) var(--ease-standard); }
+    .recent-item:hover { background: var(--border-soft); }
+    .recent-item .ri-left { display: flex; flex-direction: column; gap: 2px; }
+    .recent-item .ri-title { font-family: var(--font-ui); font-size: 13px; font-weight: 500; color: var(--fg); }
+    .recent-item .ri-meta { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+    .chart-bar .bar-group { display: flex; gap: 4px; align-items: flex-end; flex: 1; justify-content: center; }
+    .chart-bar .bar.receita { background: var(--accent); }
+    .chart-bar .bar.despesa { background: color-mix(in oklab, var(--fg), transparent 70%); }
+    .chart-bar .bar-value { font-family: var(--font-mono); font-size: 10px; font-variant-numeric: tabular-nums; }
+    .chart-bar .bar-value.above { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); }
+    .chart-bar .bar-value.inside { position: absolute; top: 4px; left: 50%; transform: translateX(-50%); color: var(--bg); }
+    .chart-bar .bar-label { font-family: var(--font-ui); font-size: 11px; color: var(--muted); text-align: center; margin-top: 6px; }
+    .chart-bar .bar { position: relative; transition: opacity var(--motion-fast) var(--ease-standard); }
+    .chart-bar .bar:hover { opacity: 0.8; }
   </style>
 </head>
 <body data-od-id="relatorios">
 <script>
-(function(){try{var t=localStorage.getItem('aptus-theme');if(t){document.documentElement.setAttribute('data-theme',t);}else{var m=window.matchMedia('(prefers-color-scheme:dark)');if(m.matches){document.documentElement.setAttribute('data-theme','dark');}}}catch(e){}})();
+(function(){try{var c=localStorage.getItem('aptus-sidebar');if(c==='collapsed')document.querySelector('.app-shell').classList.add('sidebar-collapsed');}catch(e){}})();
 function toggleTheme(){var h=document.documentElement;var c=h.getAttribute('data-theme');var n=c==='dark'?'light':'dark';h.setAttribute('data-theme',n);try{localStorage.setItem('aptus-theme',n);}catch(e){}}
+function toggleSidebar(){var s=document.querySelector('.app-shell');s.classList.toggle('sidebar-collapsed');try{localStorage.setItem('aptus-sidebar',s.classList.contains('sidebar-collapsed')?'collapsed':'expanded');}catch(e){}}
+function toggleUserPopover(e){e.stopPropagation();document.getElementById('userPopover').classList.toggle('open');}
+document.addEventListener('click',function(e){var p=document.getElementById('userPopover');var u=document.querySelector('.user-info');if(p&&u&&!p.contains(e.target)&&!u.contains(e.target))p.classList.remove('open');});
 function openModal(i){document.getElementById(i).classList.add('open');}
 function closeModal(i){document.getElementById(i).classList.remove('open');}
 document.querySelectorAll('.modal-overlay').forEach(function(e){e.addEventListener('click',function(ev){if(ev.target===e)e.classList.remove('open');});});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')document.querySelectorAll('.modal-overlay.open').forEach(function(m){m.classList.remove('open');});});
+function showToast(msg){var t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);var prefersReduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;if(!prefersReduced){t.style.transition='opacity 0.3s ease';}setTimeout(function(){t.style.opacity='0';setTimeout(function(){t.remove();},300);},3000);}
+function exportPDF(){showToast('Exportando relatório em PDF…');}
+function exportCSV(){showToast('Exportando relatório em CSV…');}
+function gerarRelatorio(nome){showToast('Gerando ' + nome + '…');}
+function downloadRelatorio(nome){showToast('Download de ' + nome + ' iniciado');}
+function agendarRelatorio(){showToast('Relatório agendado com sucesso');closeModal('agendarModal');}
 </script>
 <div class="app-shell">
   <aside class="app-sidebar">
-    <div class="logo"><span class="logo-dot"></span>Aptus Flow</div>
-    <div class="nav-section">Principal</div>
+    <div class="logo"><span class="logo-dot"></span><span>Aptus Flow</span></div>
+    <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Recolher sidebar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+    </button>
+    <div class="nav-scroll">
+    <div class="nav-section"><span>Principal</span></div>
     <nav>
-      <a href="dashboard.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
-      <a href="fluxo-caixa.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Fluxo de Caixa</a>
-      <a href="contas-pagar.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Contas a Pagar</a>
-      <a href="contas-receber.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2v20M6 7l6-5 6 5"/><path d="M6 17l6 5 6-5"/></svg>Contas a Receber</a>
+      <a href="dashboard.html" data-tooltip="Dashboard">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <span class="nav-label">Dashboard</span>
+      </a>
+      <a href="fluxo-caixa.html" data-tooltip="Fluxo de Caixa">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <span class="nav-label">Fluxo de Caixa</span>
+      </a>
+      <a href="contas-pagar.html" data-tooltip="Contas a Pagar">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <span class="nav-label">Contas a Pagar</span>
+      </a>
+      <a href="contas-receber.html" data-tooltip="Contas a Receber">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2v20M6 7l6-5 6 5"/><path d="M6 17l6 5 6-5"/></svg>
+        <span class="nav-label">Contas a Receber</span>
+      </a>
     </nav>
-    <div class="nav-section">Gestão</div>
+    <div class="nav-section"><span>Gestão</span></div>
     <nav>
-      <a href="clientes.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Clientes / Fornecedores</a>
-      <a href="relatorios.html" class="active"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><circle cx="10" cy="13" r="2" fill="currentColor" opacity="0.3"/></svg>Relatórios / Exportação</a>
-      <a href="configuracoes.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>Configurações</a>
+      <a href="clientes.html" data-tooltip="Clientes / Fornecedores">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span class="nav-label">Clientes / Fornecedores</span>
+      </a>
+      <a href="propostas.html" data-tooltip="Propostas">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        <span class="nav-label">Propostas</span>
+      </a>
+      <a href="contratos.html" data-tooltip="Contratos">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4h16v16H4z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="12" y2="13"/><line x1="8" y1="17" x2="10" y2="17"/></svg>
+        <span class="nav-label">Contratos</span>
+      </a>
+      <a href="cobrancas.html" data-tooltip="Cobranças">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span class="nav-label">Cobranças</span>
+      </a>
+      <a href="projetos.html" data-tooltip="Projetos">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        <span class="nav-label">Projetos</span>
+      </a>
+      <a href="equipe.html" data-tooltip="Equipe">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span class="nav-label">Equipe</span>
+      </a>
+      <a href="relatorios.html" class="active" data-tooltip="Relatórios / Exportação">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><circle cx="10" cy="13" r="2" fill="currentColor" opacity="0.3"/></svg>
+        <span class="nav-label">Relatórios / Exportação</span>
+      </a>
+      <a href="configuracoes.html" data-tooltip="Configurações">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <span class="nav-label">Configurações</span>
+      </a>
     </nav>
-    <div class="user-info"><div class="avatar">AM</div><div><div class="user-name">Ana Martins</div><div class="user-role">Administradora</div></div></div>
+    </div>
+    <div class="user-section">
+      <div class="user-info" onclick="toggleUserPopover(event)">
+        <div class="avatar">AM</div>
+        <div><div class="user-name">Ana Martins</div><div class="user-role">Administradora</div></div>
+        <svg class="user-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="user-popover" id="userPopover">
+        <button class="user-popover-item" onclick="toggleTheme()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+          Alternar tema
+        </button>
+        <button class="user-popover-item" onclick="window.location.href='login.html'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          Sair
+        </button>
+      </div>
+    </div>
   </aside>
 
   <header class="app-header">
-    <div class="page-title">Relatórios / Exportação</div>
+    <div class="page-title">Relatórios</div>
     <div class="header-actions">
-      <button class="btn-icon" onclick="toggleTheme()" title="Alternar tema"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></button>
     </div>
   </header>
 
   <main class="app-content">
     <div class="rel-controls" data-od-id="rel-controls">
       <select class="select" style="width:auto;min-width:160px;"><option>Junho 2026</option><option>Maio 2026</option><option>Abril 2026</option><option>Personalizado</option></select>
-      <select class="select" style="width:auto;min-width:160px;"><option>Todas as categorias</option><option>Financeiro</option><option>Operacional</option><option>Clientes</option><option>Projetos</option></select>
-      <button class="btn btn-secondary btn-sm" onclick="alert('Exportando relatório em PDF…')">Exportar PDF</button>
-      <button class="btn btn-secondary btn-sm" onclick="alert('Exportando relatório em CSV…')">Exportar CSV</button>
+      <select class="select" style="width:auto;min-width:160px;"><option>Todas</option><option>Financeiro</option><option>Operacional</option><option>Clientes</option><option>Projetos</option></select>
+      <button class="btn btn-secondary btn-sm" onclick="exportPDF()">Exportar PDF</button>
+      <button class="btn btn-secondary btn-sm" onclick="exportCSV()">Exportar CSV</button>
     </div>
 
     <div class="rel-grid" data-od-id="rel-grid">
-      <div class="rel-card" onclick="alert('Gerando relatório financeiro…')">
-        <div class="rel-icon" style="background:var(--accent-soft);color:var(--accent);">$</div>
-        <div class="rel-name">Relatório Financeiro</div>
+      <div class="rel-card" data-od-id="rel-financeiro">
+        <div class="rel-icon" style="background:color-mix(in oklab, var(--accent), transparent 90%);color:var(--accent);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <div class="rel-name">Relatório financeiro</div>
         <div class="rel-desc">Receitas, despesas, saldo e projeções do período.</div>
-        <div class="rel-meta">Atualizado há 2 min</div>
+        <div class="rel-meta">Gerado hoje, 09:15</div>
+        <span class="rel-action" onclick="gerarRelatorio('relatório financeiro')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Gerar
+        </span>
       </div>
-      <div class="rel-card" onclick="alert('Gerando DRE…')">
-        <div class="rel-icon" style="background:var(--success-soft);color:var(--success);">D</div>
-        <div class="rel-name">DRE (Demonstração de Resultados)</div>
+      <div class="rel-card" data-od-id="rel-dre">
+        <div class="rel-icon" style="background:color-mix(in oklab, var(--success), transparent 90%);color:var(--success);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        </div>
+        <div class="rel-name">DRE: demonstração de resultados</div>
         <div class="rel-desc">Despesas, receitas, margens e lucro líquido do exercício.</div>
-        <div class="rel-meta">Período: Jun 2026</div>
+        <div class="rel-meta">Período: Junho 2026</div>
+        <span class="rel-action" onclick="gerarRelatorio('DRE')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Gerar
+        </span>
       </div>
-      <div class="rel-card" onclick="alert('Gerando relatório de clientes…')">
-        <div class="rel-icon" style="background:var(--info-soft);color:var(--info);">C</div>
-        <div class="rel-name">Análise de Clientes</div>
+      <div class="rel-card" data-od-id="rel-clientes">
+        <div class="rel-icon" style="background:color-mix(in oklab, var(--muted), transparent 90%);color:var(--muted);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div class="rel-name">Análise de clientes</div>
         <div class="rel-desc">Ticket médio, retenção, novos clientes e concentração de receita.</div>
-        <div class="rel-meta">48 clientes ativos</div>
+        <div class="rel-meta">8 clientes ativos</div>
+        <span class="rel-action" onclick="gerarRelatorio('análise de clientes')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Gerar
+        </span>
       </div>
-      <div class="rel-card" onclick="alert('Gerando fluxo de caixa…')">
-        <div class="rel-icon" style="background:var(--warn-soft);color:var(--warn);">F</div>
-        <div class="rel-name">Fluxo de Caixa Detalhado</div>
-        <div class="rel-desc">Movimentações diárias, saldo inicial/final e projeção.</div>
-        <div class="rel-meta">142 movimentações</div>
+      <div class="rel-card" data-od-id="rel-fluxo">
+        <div class="rel-icon" style="background:color-mix(in oklab, var(--warn), transparent 90%);color:var(--warn);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div class="rel-name">Fluxo de caixa detalhado</div>
+        <div class="rel-desc">Movimentações diárias, saldo inicial e final, projeção.</div>
+        <div class="rel-meta">30 movimentações no período</div>
+        <span class="rel-action" onclick="gerarRelatorio('fluxo de caixa detalhado')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Gerar
+        </span>
       </div>
-      <div class="rel-card" onclick="alert('Gerando relatório de contas a pagar/receber…')">
-        <div class="rel-icon" style="background:var(--danger-soft);color:var(--danger);">P</div>
-        <div class="rel-name">Contas a Pagar x Receber</div>
-        <div class="rel-desc">Comparativo de obrigações vs. recebíveis com vencimentos.</div>
-        <div class="rel-meta">33 faturas abertas</div>
+      <div class="rel-card" data-od-id="rel-contas">
+        <div class="rel-icon" style="background:color-mix(in oklab, var(--danger), transparent 90%);color:var(--danger);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2v20M6 7l6-5 6 5"/><path d="M6 17l6 5 6-5"/></svg>
+        </div>
+        <div class="rel-name">Contas a pagar e receber</div>
+        <div class="rel-desc">Comparativo de obrigações e recebíveis com vencimentos.</div>
+        <div class="rel-meta">17 faturas abertas</div>
+        <span class="rel-action" onclick="gerarRelatorio('contas a pagar e receber')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Gerar
+        </span>
       </div>
-      <div class="rel-card" onclick="openModal('agendarModal')">
-        <div class="rel-icon" style="background:var(--accent-soft);color:var(--accent);">R</div>
-        <div class="rel-name">Relatório Personalizado</div>
+      <div class="rel-card" data-od-id="rel-custom">
+        <div class="rel-icon" style="background:color-mix(in oklab, var(--accent), transparent 90%);color:var(--accent);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M12 16v-4M10 14h4"/></svg>
+        </div>
+        <div class="rel-name">Relatório personalizado</div>
         <div class="rel-desc">Crie e agende relatórios customizados com filtros avançados.</div>
         <div class="rel-meta">2 relatórios agendados</div>
+        <span class="rel-action" onclick="openModal('agendarModal')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Criar
+        </span>
       </div>
     </div>
 
     <div class="rel-chart-section" data-od-id="rel-charts">
-      <div class="card"><div class="card-header"><h3>Receita vs Despesa — Últimos 6 meses</h3></div>
-        <div class="card-body"><div class="chart-bar" style="padding-top:var(--space-6);height:180px;">
-          <div class="bar" style="height:65%"><span class="bar-value">R$42k</span><span class="bar-label">Jan</span></div>
-          <div class="bar" style="height:80%"><span class="bar-value">R$53k</span><span class="bar-label">Fev</span></div>
-          <div class="bar" style="height:60%"><span class="bar-value">R$39k</span><span class="bar-label">Mar</span></div>
-          <div class="bar" style="height:90%"><span class="bar-value">R$61k</span><span class="bar-label">Abr</span></div>
-          <div class="bar" style="height:72%"><span class="bar-value">R$49k</span><span class="bar-label">Mai</span></div>
-          <div class="bar" style="height:100%;background:var(--accent)"><span class="bar-value">R$68k</span><span class="bar-label">Jun</span></div>
+      <div class="card"><div class="card-header"><h3>Receita vs despesa: últimos 6 meses</h3></div>
+        <div class="card-body"><div class="chart-bar" style="padding-top:var(--space-6);height:180px;overflow:visible;">
+          <div class="bar-group"><div class="bar receita" style="height:65%"><span class="bar-value above">R$42k</span></div><div class="bar despesa" style="height:45%"><span class="bar-value inside">R$28k</span></div><span class="bar-label">Jan</span></div>
+          <div class="bar-group"><div class="bar receita" style="height:80%"><span class="bar-value above">R$53k</span></div><div class="bar despesa" style="height:55%"><span class="bar-value inside">R$35k</span></div><span class="bar-label">Fev</span></div>
+          <div class="bar-group"><div class="bar receita" style="height:60%"><span class="bar-value above">R$39k</span></div><div class="bar despesa" style="height:50%"><span class="bar-value inside">R$32k</span></div><span class="bar-label">Mar</span></div>
+          <div class="bar-group"><div class="bar receita" style="height:90%"><span class="bar-value above">R$61k</span></div><div class="bar despesa" style="height:60%"><span class="bar-value inside">R$40k</span></div><span class="bar-label">Abr</span></div>
+          <div class="bar-group"><div class="bar receita" style="height:72%"><span class="bar-value above">R$49k</span></div><div class="bar despesa" style="height:52%"><span class="bar-value inside">R$34k</span></div><span class="bar-label">Mai</span></div>
+          <div class="bar-group"><div class="bar receita" style="height:100%"><span class="bar-value above">R$68k</span></div><div class="bar despesa" style="height:58%"><span class="bar-value inside">R$38k</span></div><span class="bar-label">Jun</span></div>
         </div></div>
       </div>
-      <div class="card"><div class="card-header"><h3>Exportações Recentes</h3></div>
+      <div class="card"><div class="card-header"><h3>Exportações recentes</h3></div>
         <div class="card-body compact">
           <div class="recent-list">
-            <div class="recent-item"><div class="ri-left"><span class="ri-title">Relatório Financeiro — Jun 2026</span><span class="ri-meta">Exportado hoje, 09:15 · PDF</span></div><button class="btn btn-ghost btn-sm" onclick="alert('Download iniciado')">Download</button></div>
-            <div class="recent-item"><div class="ri-left"><span class="ri-title">DRE — Jun 2026</span><span class="ri-meta">Exportado ontem, 14:30 · PDF</span></div><button class="btn btn-ghost btn-sm" onclick="alert('Download iniciado')">Download</button></div>
-            <div class="recent-item"><div class="ri-left"><span class="ri-title">Lista de Clientes</span><span class="ri-meta">Exportado 24 jun · CSV</span></div><button class="btn btn-ghost btn-sm" onclick="alert('Download iniciado')">Download</button></div>
-            <div class="recent-item"><div class="ri-left"><span class="ri-title">Contas a Pagar — Jun 2026</span><span class="ri-meta">Exportado 22 jun · CSV</span></div><button class="btn btn-ghost btn-sm" onclick="alert('Download iniciado')">Download</button></div>
+            <div class="recent-item"><div class="ri-left"><span class="ri-title">Relatório financeiro: jun 2026</span><span class="ri-meta">Exportado hoje, 09:15 · PDF</span></div><button class="btn btn-ghost btn-sm" onclick="downloadRelatorio('relatório financeiro')">Download</button></div>
+            <div class="recent-item"><div class="ri-left"><span class="ri-title">DRE: jun 2026</span><span class="ri-meta">Exportado ontem, 14:30 · PDF</span></div><button class="btn btn-ghost btn-sm" onclick="downloadRelatorio('DRE')">Download</button></div>
+            <div class="recent-item"><div class="ri-left"><span class="ri-title">Lista de clientes</span><span class="ri-meta">Exportado 24 jun · CSV</span></div><button class="btn btn-ghost btn-sm" onclick="downloadRelatorio('lista de clientes')">Download</button></div>
+            <div class="recent-item"><div class="ri-left"><span class="ri-title">Contas a pagar: jun 2026</span><span class="ri-meta">Exportado 22 jun · CSV</span></div><button class="btn btn-ghost btn-sm" onclick="downloadRelatorio('contas a pagar')">Download</button></div>
           </div>
         </div>
       </div>
@@ -127,14 +254,14 @@ document.querySelectorAll('.modal-overlay').forEach(function(e){e.addEventListen
 </div>
 
 <div class="modal-overlay" id="agendarModal">
-  <div class="modal"><div class="modal-header"><h2>Agendar Relatório</h2><button class="modal-close" onclick="closeModal('agendarModal')">&times;</button></div>
+  <div class="modal"><div class="modal-header"><h2>Agendar relatório</h2><button class="modal-close" onclick="closeModal('agendarModal')">&times;</button></div>
     <div class="modal-body"><div class="form-group">
-      <div class="field"><label>Nome do Relatório</label><input class="input" type="text" placeholder="Ex: Relatório Mensal Financeiro" /></div>
-      <div class="form-row"><div class="field"><label>Tipo</label><select class="select"><option>Financeiro</option><option>Clientes</option><option>Fluxo de Caixa</option><option>Personalizado</option></select></div><div class="field"><label>Formato</label><select class="select"><option>PDF</option><option>CSV</option><option>XLSX</option></select></div></div>
+      <div class="field"><label>Nome do relatório</label><input class="input" type="text" placeholder="Ex: relatório mensal financeiro" /></div>
+      <div class="form-row"><div class="field"><label>Tipo</label><select class="select"><option>Financeiro</option><option>Clientes</option><option>Fluxo de caixa</option><option>Personalizado</option></select></div><div class="field"><label>Formato</label><select class="select"><option>PDF</option><option>CSV</option><option>XLSX</option></select></div></div>
       <div class="form-row"><div class="field"><label>Frequência</label><select class="select"><option>Único</option><option>Semanal</option><option>Mensal</option><option>Trimestral</option></select></div><div class="field"><label>Próximo envio</label><input class="input" type="date" /></div></div>
       <div class="field"><label>E-mail para envio</label><input class="input" type="email" placeholder="email@empresa.com" /></div>
     </div></div>
-    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('agendarModal')">Cancelar</button><button class="btn btn-primary" onclick="alert('Relatório agendado!');closeModal('agendarModal')">Agendar</button></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('agendarModal')">Cancelar</button><button class="btn btn-primary" onclick="agendarRelatorio()">Agendar</button></div>
   </div>
 </div>
 </body>

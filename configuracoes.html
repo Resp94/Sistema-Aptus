@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR" data-theme="light">
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -8,9 +8,9 @@
   <style>
     .config-layout { display: grid; grid-template-columns: 220px 1fr; gap: var(--space-5); align-items: start; margin-top: var(--space-4); }
     .config-nav { display: flex; flex-direction: column; gap: 2px; position: sticky; top: calc(var(--header-height) + var(--space-4)); }
-    .config-nav a { display: block; padding: 8px var(--space-3); border-radius: var(--radius-md); font-family: var(--font-ui); font-size: 13px; color: var(--muted); transition: var(--motion-fast) var(--ease-standard); }
-    .config-nav a:hover { color: var(--fg); background: var(--border-soft); }
-    .config-nav a.active { color: var(--fg); background: var(--border); font-weight: 500; }
+    .config-nav a { display: block; padding: 8px var(--space-3); border-radius: var(--radius-md); font-family: var(--font-ui); font-size: 13px; color: var(--muted); border-left: 2px solid transparent; transition: var(--motion-fast) var(--ease-standard); }
+    .config-nav a:hover { color: var(--fg); border-left-color: var(--border-medium); }
+    .config-nav a.active { color: var(--accent); border-left-color: var(--accent); font-weight: 500; }
     .config-section { display: none; }
     .config-section.active { display: block; }
     .config-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
@@ -27,62 +27,171 @@
     .toggle-switch.on { background: var(--accent); }
     .toggle-switch.on::after { left: 20px; }
     @media (max-width: 768px) { .config-layout { grid-template-columns: 1fr; } .config-nav { position: static; flex-direction: row; flex-wrap: wrap; gap: var(--space-2); } .config-nav a { padding: 6px 14px; } }
+    @media (prefers-reduced-motion: reduce) { .config-nav a, .toggle-switch, .toggle-switch::after { transition: none; } }
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--fg); color: var(--bg); padding: 10px 20px; border-radius: var(--radius-md); font-family: var(--font-ui); font-size: 13px; opacity: 0; pointer-events: none; transition: 0.25s ease; z-index: 1000; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .form-group { display: flex; flex-direction: column; gap: var(--space-4); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-family: var(--font-ui); font-size: 13px; font-weight: 500; color: var(--muted); }
+    .help-text { font-family: var(--font-ui); font-size: 12px; color: var(--meta); margin: 4px 0 0; }
+    .input, .select { font-family: var(--font-ui); font-size: 14px; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--fg); transition: var(--motion-fast) var(--ease-standard); }
+    .input:focus, .select:focus { outline: none; border-color: var(--accent); box-shadow: var(--focus-ring); }
+    .select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6964' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; cursor: pointer; }
+    [data-theme="dark"] .select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23e6e5e0' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); }
+    .btn-sm { font-size: 13px; padding: 6px 14px; }
+    .btn-ghost { background: transparent; color: var(--muted); border: none; cursor: pointer; font-family: var(--font-ui); font-size: 13px; padding: 4px 10px; border-radius: var(--radius-sm); transition: var(--motion-fast) var(--ease-standard); }
+    .btn-ghost:hover { background: var(--border-soft); color: var(--fg); }
+    .ds-table { width: 100%; border-collapse: collapse; }
+    .ds-table th { font-family: var(--font-ui); font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; text-align: left; padding: 8px var(--space-3); border-bottom: 1px solid var(--border); }
+    .ds-table td { font-family: var(--font-ui); font-size: 14px; padding: 10px var(--space-3); border-bottom: 1px solid var(--border-soft); color: var(--fg); }
+    .ds-table tbody tr:hover { background: var(--border-soft); }
+    .cell-actions { text-align: right; }
+    .status-badge { display: inline-block; padding: 3px 10px; border-radius: var(--radius-pill); font-size: 12px; font-weight: 500; font-family: var(--font-ui); letter-spacing: 0.02em; }
+    .status-badge.ativo { background: color-mix(in oklab, var(--success), transparent 88%); color: var(--success); }
+    .status-badge.inactive { background: color-mix(in oklab, var(--muted), transparent 88%); color: var(--muted); }
+    .config-card-body.compact { padding: 0; }
+    .config-card-body.compact .ds-table { margin-top: 0; }
+    @media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 900; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
+    .modal-overlay.open { opacity: 1; pointer-events: auto; }
+    .modal-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); width: 100%; max-width: 480px; max-height: 85vh; overflow-y: auto; box-shadow: var(--elev-raised); transform: translateY(8px); transition: transform 0.2s ease; }
+    .modal-overlay.open .modal-panel { transform: translateY(0); }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-5) var(--space-6); border-bottom: 1px solid var(--border); }
+    .modal-header h3 { font-family: var(--font-display); font-size: 18px; letter-spacing: -0.01em; margin: 0; }
+    .modal-close { background: none; border: none; cursor: pointer; color: var(--muted); padding: 4px; border-radius: var(--radius-sm); transition: var(--motion-fast) var(--ease-standard); }
+    .modal-close:hover { color: var(--fg); background: var(--border-soft); }
+    .modal-body { padding: var(--space-6); }
+    .modal-footer { display: flex; justify-content: flex-end; gap: var(--space-3); padding: var(--space-4) var(--space-6); border-top: 1px solid var(--border-soft); }
+    @media (prefers-reduced-motion: reduce) { .modal-overlay, .modal-panel { transition: none; } }
   </style>
 </head>
 <body data-od-id="configuracoes">
 <script>
-(function(){try{var t=localStorage.getItem('aptus-theme');if(t){document.documentElement.setAttribute('data-theme',t);}else{var m=window.matchMedia('(prefers-color-scheme:dark)');if(m.matches){document.documentElement.setAttribute('data-theme','dark');}}}catch(e){}})();
+(function(){try{var t=localStorage.getItem('aptus-theme');if(t){document.documentElement.setAttribute('data-theme',t);}else{document.documentElement.setAttribute('data-theme','dark');}}catch(e){}try{var c=localStorage.getItem('aptus-sidebar');if(c==='collapsed')document.querySelector('.app-shell').classList.add('sidebar-collapsed');}catch(e){}})();
 function toggleTheme(){var h=document.documentElement;var c=h.getAttribute('data-theme');var n=c==='dark'?'light':'dark';h.setAttribute('data-theme',n);try{localStorage.setItem('aptus-theme',n);}catch(e){}}
+function toggleSidebar(){var s=document.querySelector('.app-shell');s.classList.toggle('sidebar-collapsed');try{localStorage.setItem('aptus-sidebar',s.classList.contains('sidebar-collapsed')?'collapsed':'expanded');}catch(e){}}
+function toggleUserPopover(e){e.stopPropagation();document.getElementById('userPopover').classList.toggle('open');}
+document.addEventListener('click',function(e){var p=document.getElementById('userPopover');var u=document.querySelector('.user-info');if(p&&u&&!p.contains(e.target)&&!u.contains(e.target))p.classList.remove('open');});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){document.getElementById('userPopover').classList.remove('open');closeAllModals();}});
 function switchConfig(sectionId,btn){document.querySelectorAll('.config-section').forEach(function(s){s.classList.remove('active');});document.querySelectorAll('.config-nav a').forEach(function(a){a.classList.remove('active');});document.getElementById(sectionId).classList.add('active');btn.classList.add('active');}
-function toggleSwitch(el){el.classList.toggle('on');}
+function showToast(msg){var t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);requestAnimationFrame(function(){t.classList.add('show');});var prefersReduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;setTimeout(function(){t.classList.remove('show');setTimeout(function(){t.remove();},prefersReduced?0:250);},prefersReduced?2000:3000);}
+function toggleSwitch(el){el.classList.toggle('on');var label=el.getAttribute('aria-label')||'Preferência';showToast(label+(el.classList.contains('on')?' ativada':' desativada'));}
+function openModal(id){var m=document.getElementById(id);if(m){m.classList.add('open');m.querySelector('.input,select,textarea').focus();}}
+function closeModal(id){var m=document.getElementById(id);if(m)m.classList.remove('open');}
+function closeAllModals(){document.querySelectorAll('.modal-overlay').forEach(function(m){m.classList.remove('open');});}
+function submitConvidar(){var nome=document.getElementById('conv-nome').value;var email=document.getElementById('conv-email').value;if(!nome||!email){showToast('Preencha nome e e-mail');return;}closeModal('modalConvidar');showToast('Convite enviado para '+email);}
+function submitEditar(){var nome=document.getElementById('edit-nome').value;var email=document.getElementById('edit-email').value;if(!nome||!email){showToast('Preencha nome e e-mail');return;}closeModal('modalEditar');showToast('Usuário '+nome+' atualizado');}
+function openEditar(nome,email,perfil,status){document.getElementById('edit-nome').value=nome;document.getElementById('edit-email').value=email;document.getElementById('edit-perfil').value=perfil;document.getElementById('edit-status').value=status;openModal('modalEditar');}
 </script>
 <div class="app-shell">
   <aside class="app-sidebar">
-    <div class="logo"><span class="logo-dot"></span>Aptus Flow</div>
-    <div class="nav-section">Principal</div>
+    <div class="logo"><span class="logo-dot"></span><span>Aptus Flow</span></div>
+    <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Recolher sidebar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+    </button>
+    <div class="nav-scroll">
+    <div class="nav-section"><span>Principal</span></div>
     <nav>
-      <a href="dashboard.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
-      <a href="fluxo-caixa.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Fluxo de Caixa</a>
-      <a href="contas-pagar.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Contas a Pagar</a>
-      <a href="contas-receber.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2v20M6 7l6-5 6 5"/><path d="M6 17l6 5 6-5"/></svg>Contas a Receber</a>
+      <a href="dashboard.html" data-tooltip="Dashboard">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <span class="nav-label">Dashboard</span>
+      </a>
+      <a href="fluxo-caixa.html" data-tooltip="Fluxo de Caixa">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <span class="nav-label">Fluxo de Caixa</span>
+      </a>
+      <a href="contas-pagar.html" data-tooltip="Contas a Pagar">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <span class="nav-label">Contas a Pagar</span>
+      </a>
+      <a href="contas-receber.html" data-tooltip="Contas a Receber">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2v20M6 7l6-5 6 5"/><path d="M6 17l6 5 6-5"/></svg>
+        <span class="nav-label">Contas a Receber</span>
+      </a>
     </nav>
-    <div class="nav-section">Gestão</div>
+    <div class="nav-section"><span>Gestão</span></div>
     <nav>
-      <a href="clientes.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Clientes / Fornecedores</a>
-      <a href="relatorios.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><circle cx="10" cy="13" r="2" fill="currentColor" opacity="0.3"/></svg>Relatórios / Exportação</a>
-      <a href="configuracoes.html" class="active"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>Configurações</a>
+      <a href="clientes.html" data-tooltip="Clientes / Fornecedores">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span class="nav-label">Clientes / Fornecedores</span>
+      </a>
+      <a href="propostas.html" data-tooltip="Propostas">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        <span class="nav-label">Propostas</span>
+      </a>
+      <a href="contratos.html" data-tooltip="Contratos">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4h16v16H4z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="12" y2="13"/><line x1="8" y1="17" x2="10" y2="17"/></svg>
+        <span class="nav-label">Contratos</span>
+      </a>
+      <a href="cobrancas.html" data-tooltip="Cobranças">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span class="nav-label">Cobranças</span>
+      </a>
+      <a href="projetos.html" data-tooltip="Projetos">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        <span class="nav-label">Projetos</span>
+      </a>
+      <a href="equipe.html" data-tooltip="Equipe">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span class="nav-label">Equipe</span>
+      </a>
+      <a href="relatorios.html" data-tooltip="Relatórios / Exportação">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><circle cx="10" cy="13" r="2" fill="currentColor" opacity="0.3"/></svg>
+        <span class="nav-label">Relatórios / Exportação</span>
+      </a>
+      <a href="configuracoes.html" class="active" data-tooltip="Configurações">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <span class="nav-label">Configurações</span>
+      </a>
     </nav>
-    <div class="user-info"><div class="avatar">AM</div><div><div class="user-name">Ana Martins</div><div class="user-role">Administradora</div></div></div>
+    </div>
+    <div class="user-section">
+      <div class="user-info" onclick="toggleUserPopover(event)">
+        <div class="avatar">AM</div>
+        <div><div class="user-name">Ana Martins</div><div class="user-role">Administradora</div></div>
+        <svg class="user-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="user-popover" id="userPopover">
+        <button class="user-popover-item" onclick="toggleTheme()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+          Alternar tema
+        </button>
+        <button class="user-popover-item" onclick="window.location.href='login.html'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          Sair
+        </button>
+      </div>
+    </div>
   </aside>
 
   <header class="app-header">
     <div class="page-title">Configurações</div>
     <div class="header-actions">
-      <button class="btn-icon" onclick="toggleTheme()" title="Alternar tema"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></button>
     </div>
   </header>
 
   <main class="app-content">
     <div class="config-layout" data-od-id="config-layout">
       <nav class="config-nav">
-        <a href="#" class="active" onclick="switchConfig('sec-geral',this);return false;">Geral</a>
-        <a href="#" onclick="switchConfig('sec-financeiro',this);return false;">Financeiro</a>
-        <a href="#" onclick="switchConfig('sec-notificacoes',this);return false;">Notificações</a>
-        <a href="#" onclick="switchConfig('sec-usuarios',this);return false;">Usuários</a>
-        <a href="#" onclick="switchConfig('sec-integracoes',this);return false;">Integrações</a>
-        <a href="#" onclick="switchConfig('sec-aparencia',this);return false;">Aparência</a>
+        <a href="javascript:void(0)" class="active" onclick="switchConfig('sec-geral',this);">Geral</a>
+        <a href="javascript:void(0)" onclick="switchConfig('sec-financeiro',this);">Financeiro</a>
+        <a href="javascript:void(0)" onclick="switchConfig('sec-notificacoes',this);">Notificações</a>
+        <a href="javascript:void(0)" onclick="switchConfig('sec-usuarios',this);">Usuários</a>
+        <a href="javascript:void(0)" onclick="switchConfig('sec-integracoes',this);">Integrações</a>
+        <a href="javascript:void(0)" onclick="switchConfig('sec-aparencia',this);">Aparência</a>
       </nav>
 
       <div>
         <div class="config-section active" id="sec-geral">
-          <div class="config-card"><div class="config-card-header"><h3>Informações da Empresa</h3></div>
+          <div class="config-card"><div class="config-card-header"><h3>Dados da empresa</h3></div>
             <div class="config-card-body"><div class="form-group">
               <div class="form-row"><div class="field"><label>Nome da Empresa</label><input class="input" type="text" value="Aptus Flow Tecnologia Ltda" /></div><div class="field"><label>CNPJ</label><input class="input" type="text" value="12.345.678/0001-90" /></div></div>
               <div class="field"><label>E-mail de Contato</label><input class="input" type="email" value="contato@aptusflow.com" /></div>
               <div class="field"><label>Telefone</label><input class="input" type="text" value="(11) 3333-4444" /></div>
             </div></div>
           </div>
-          <div class="config-card"><div class="config-card-header"><h3>Preferências do Sistema</h3></div>
+          <div class="config-card"><div class="config-card-header"><h3>Regional e formato</h3></div>
             <div class="config-card-body">
               <div class="config-row"><div><div class="cr-label">Idioma</div><div class="cr-desc">Idioma padrão da interface</div></div><select class="select" style="width:auto;"><option>Português (BR)</option><option>English</option><option>Español</option></select></div>
               <div class="config-row"><div><div class="cr-label">Formato de Data</div><div class="cr-desc">Como as datas são exibidas no sistema</div></div><select class="select" style="width:auto;"><option>DD/MM/AAAA</option><option>MM/DD/AAAA</option><option>AAAA-MM-DD</option></select></div>
@@ -92,7 +201,7 @@ function toggleSwitch(el){el.classList.toggle('on');}
         </div>
 
         <div class="config-section" id="sec-financeiro">
-          <div class="config-card"><div class="config-card-header"><h3>Configurações Financeiras</h3></div>
+          <div class="config-card"><div class="config-card-header"><h3>Regras financeiras</h3></div>
             <div class="config-card-body"><div class="form-group">
               <div class="form-row"><div class="field"><label>Dia de Fechamento</label><input class="input" type="text" value="15" /><p class="help-text">Dia do mês para fechamento financeiro</p></div><div class="field"><label>Ano Fiscal</label><select class="select"><option>Janeiro a Dezembro</option><option>Julho a Junho</option></select></div></div>
               <div class="form-row"><div class="field"><label>Dia de Vencimento Padrão</label><input class="input" type="text" value="30" /></div><div class="field"><label>Multa por Atraso (%)</label><input class="input" type="text" value="2,00" /></div></div>
@@ -104,23 +213,23 @@ function toggleSwitch(el){el.classList.toggle('on');}
         <div class="config-section" id="sec-notificacoes">
           <div class="config-card"><div class="config-card-header"><h3>Notificações</h3></div>
             <div class="config-card-body">
-              <div class="config-row"><div><div class="cr-label">Lembretes de Vencimento</div><div class="cr-desc">Notificar X dias antes do vencimento de contas</div></div><select class="select" style="width:auto;"><option>3 dias antes</option><option>5 dias antes</option><option selected>7 dias antes</option><option>14 dias antes</option></select></div>
-              <div class="config-row"><div><div class="cr-label">Notificações por E-mail</div><div class="cr-desc">Receber alertas financeiros por e-mail</div></div><button class="toggle-switch on" onclick="toggleSwitch(this)" aria-label="Notificações por e-mail"></button></div>
-              <div class="config-row"><div><div class="cr-label">Notificações no Sistema</div><div class="cr-desc">Exibir notificações no canto superior direito</div></div><button class="toggle-switch on" onclick="toggleSwitch(this)" aria-label="Notificações no sistema"></button></div>
-              <div class="config-row"><div><div class="cr-label">Relatório Semanal</div><div class="cr-desc">Receber resumo financeiro toda segunda-feira</div></div><button class="toggle-switch" onclick="toggleSwitch(this)" aria-label="Relatório semanal"></button></div>
+              <div class="config-row"><div><div class="cr-label">Lembretes de vencimento</div><div class="cr-desc">Notificar antes do vencimento de contas</div></div><select class="select" style="width:auto;"><option>3 dias antes</option><option>5 dias antes</option><option selected>7 dias antes</option><option>14 dias antes</option></select></div>
+              <div class="config-row"><div><div class="cr-label">Alertas por e-mail</div><div class="cr-desc">Receber alertas financeiros por e-mail</div></div><button class="toggle-switch on" onclick="toggleSwitch(this)" aria-label="Alertas por e-mail"></button></div>
+              <div class="config-row"><div><div class="cr-label">Notificações no sistema</div><div class="cr-desc">Exibir notificações no canto superior direito</div></div><button class="toggle-switch on" onclick="toggleSwitch(this)" aria-label="Notificações no sistema"></button></div>
+              <div class="config-row"><div><div class="cr-label">Relatório semanal</div><div class="cr-desc">Receber resumo financeiro toda segunda-feira</div></div><button class="toggle-switch" onclick="toggleSwitch(this)" aria-label="Relatório semanal"></button></div>
             </div>
           </div>
         </div>
 
         <div class="config-section" id="sec-usuarios">
-          <div class="config-card"><div class="config-card-header"><h3>Usuários do Sistema</h3><button class="btn btn-primary btn-sm" onclick="alert('Formulário de convite')">+ Convidar</button></div>
+          <div class="config-card"><div class="config-card-header"><h3>Usuários</h3><button class="btn btn-primary btn-sm" onclick="openModal('modalConvidar')">+ Convidar</button></div>
             <div class="config-card-body compact">
               <table class="ds-table"><thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th><th class="cell-actions"></th></tr></thead>
               <tbody>
-                <tr><td><strong>Ana Martins</strong></td><td>ana@aptusflow.com</td><td>Administradora</td><td><span class="status-badge ativo">Ativo</span></td><td class="cell-actions"><button class="btn btn-ghost btn-sm">Editar</button></td></tr>
-                <tr><td><strong>Carlos Silva</strong></td><td>carlos@aptusflow.com</td><td>Financeiro</td><td><span class="status-badge ativo">Ativo</span></td><td class="cell-actions"><button class="btn btn-ghost btn-sm">Editar</button></td></tr>
-                <tr><td><strong>Marina Costa</strong></td><td>marina@aptusflow.com</td><td>Operacional</td><td><span class="status-badge ativo">Ativo</span></td><td class="cell-actions"><button class="btn btn-ghost btn-sm">Editar</button></td></tr>
-                <tr><td><strong>Pedro Oliveira</strong></td><td>pedro@aptusflow.com</td><td>Visualizador</td><td><span class="status-badge inactive">Inativo</span></td><td class="cell-actions"><button class="btn btn-ghost btn-sm">Editar</button></td></tr>
+                <tr><td><strong>Ana Martins</strong></td><td>ana@aptusflow.com</td><td>Administradora</td><td><span class="status-badge ativo">Ativo</span></td><td class="cell-actions"><button class="btn btn-ghost btn-sm" onclick="openEditar('Ana Martins','ana@aptusflow.com','Administradora','Ativo')">Editar</button></td></tr>
+                <tr><td><strong>Carlos Silva</strong></td><td>carlos@aptusflow.com</td><td>Financeiro</td><td><span class="status-badge ativo">Ativo</span></td><td class="cell-actions"><button class="btn btn-ghost btn-sm" onclick="openEditar('Carlos Silva','carlos@aptusflow.com','Financeiro','Ativo')">Editar</button></td></tr>
+                <tr><td><strong>Marina Costa</strong></td><td>marina@aptusflow.com</td><td>Operacional</td><td><span class="status-badge ativo">Ativo</span></td><td class="cell-actions"><button class="btn btn-ghost btn-sm" onclick="openEditar('Marina Costa','marina@aptusflow.com','Operacional','Ativo')">Editar</button></td></tr>
+                <tr><td><strong>Pedro Oliveira</strong></td><td>pedro@aptusflow.com</td><td>Visualizador</td><td><span class="status-badge inactive">Inativo</span></td><td class="cell-actions"><button class="btn btn-ghost btn-sm" onclick="openEditar('Pedro Oliveira','pedro@aptusflow.com','Visualizador','Inativo')">Editar</button></td></tr>
               </tbody></table>
             </div>
           </div>
@@ -129,7 +238,7 @@ function toggleSwitch(el){el.classList.toggle('on');}
         <div class="config-section" id="sec-integracoes">
           <div class="config-card"><div class="config-card-header"><h3>Integrações</h3></div>
             <div class="config-card-body">
-              <div class="config-row"><div><div class="cr-label">API Pública</div><div class="cr-desc">Chave de API para integrações externas</div></div><button class="btn btn-secondary btn-sm" onclick="alert('Chave gerada: aptus_sk_••••••••')">Gerar Chave</button></div>
+              <div class="config-row"><div><div class="cr-label">API Pública</div><div class="cr-desc">Chave de API para integrações externas</div></div><button class="btn btn-secondary btn-sm" onclick="showToast('Chave de API gerada e copiada')">Gerar Chave</button></div>
               <div class="config-row"><div><div class="cr-label">Webhook</div><div class="cr-desc">URL para webhook de eventos financeiros</div></div><input class="input" type="text" value="https://hooks.aptusflow.com/events" style="width:300px;" /></div>
               <div class="config-row"><div><div class="cr-label">Exportação Automática</div><div class="cr-desc">Exportar dados automaticamente para Google Sheets</div></div><button class="toggle-switch" onclick="toggleSwitch(this)" aria-label="Exportação automática"></button></div>
             </div>
@@ -141,21 +250,47 @@ function toggleSwitch(el){el.classList.toggle('on');}
             <div class="config-card-body">
               <div class="config-row"><div><div class="cr-label">Tema do Sistema</div><div class="cr-desc">Alternar entre tema claro e escuro</div></div>
                 <div style="display:flex;gap:var(--space-2);">
-                  <button class="btn btn-secondary btn-sm" onclick="document.documentElement.setAttribute('data-theme','light');localStorage.setItem('aptus-theme','light');" style="background:var(--surface);border:2px solid var(--accent);">☀️ Claro</button>
-                  <button class="btn btn-secondary btn-sm" onclick="document.documentElement.setAttribute('data-theme','dark');localStorage.setItem('aptus-theme','dark');">🌙 Escuro</button>
+                  <button class="btn btn-secondary btn-sm" onclick="document.documentElement.setAttribute('data-theme','light');localStorage.setItem('aptus-theme','light');showToast('Tema claro ativado');">Claro</button>
+                  <button class="btn btn-secondary btn-sm" onclick="document.documentElement.setAttribute('data-theme','dark');localStorage.setItem('aptus-theme','dark');showToast('Tema escuro ativado');">Escuro</button>
                 </div>
               </div>
-            </div>
-          </div>
-          <div class="config-card"><div class="config-card-header"><h3>Sidebar</h3></div>
-            <div class="config-card-body">
-              <div class="config-row"><div><div class="cr-label">Sidebar Colapsada</div><div class="cr-desc">Reduzir a sidebar para ícones apenas</div></div><button class="toggle-switch" onclick="toggleSwitch(this)" aria-label="Sidebar colapsada"></button></div>
             </div>
           </div>
         </div>
       </div>
     </div>
   </main>
+
+  <div class="modal-overlay" id="modalConvidar" onclick="if(event.target===this)closeModal('modalConvidar')">
+    <div class="modal-panel">
+      <div class="modal-header"><h3>Convidar usuário</h3><button class="modal-close" onclick="closeModal('modalConvidar')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+      <div class="modal-body">
+        <div class="form-group">
+          <div class="field"><label>Nome Completo</label><input class="input" id="conv-nome" type="text" placeholder="Ex: João Souza" /></div>
+          <div class="field"><label>E-mail</label><input class="input" id="conv-email" type="email" placeholder="joao@aptusflow.com" /></div>
+          <div class="field"><label>Perfil de Acesso</label><select class="select" id="conv-perfil"><option>Administrador</option><option selected>Financeiro</option><option>Operacional</option><option>Visualizador</option></select></div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost btn-sm" onclick="closeModal('modalConvidar')">Cancelar</button><button class="btn btn-primary btn-sm" onclick="submitConvidar()">Enviar convite</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modalEditar" onclick="if(event.target===this)closeModal('modalEditar')">
+    <div class="modal-panel">
+      <div class="modal-header"><h3>Editar usuário</h3><button class="modal-close" onclick="closeModal('modalEditar')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+      <div class="modal-body">
+        <div class="form-group">
+          <div class="field"><label>Nome Completo</label><input class="input" id="edit-nome" type="text" /></div>
+          <div class="field"><label>E-mail</label><input class="input" id="edit-email" type="email" /></div>
+          <div class="form-row">
+            <div class="field"><label>Perfil de Acesso</label><select class="select" id="edit-perfil"><option>Administrador</option><option>Financeiro</option><option>Operacional</option><option>Visualizador</option></select></div>
+            <div class="field"><label>Status</label><select class="select" id="edit-status"><option>Ativo</option><option>Inativo</option></select></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost btn-sm" onclick="closeModal('modalEditar')">Cancelar</button><button class="btn btn-primary btn-sm" onclick="submitEditar()">Salvar alterações</button></div>
+    </div>
+  </div>
 </div>
 </body>
 </html>

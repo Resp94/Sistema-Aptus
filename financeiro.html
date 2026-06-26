@@ -21,6 +21,7 @@
 <div class="app-shell">
   <aside class="app-sidebar">
     <div class="logo"><span class="logo-dot"></span>Aptus</div>
+    <div class="nav-scroll">
     <div class="nav-section">Principal</div>
     <nav>
       <a href="dashboard.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
@@ -31,9 +32,17 @@
       <a href="cobrancas.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M18 20v-2a4 4 0 0 0-4-4h-4a4 4 0 0 0-4 4v2"/></svg>Cobranças</a>
       <a href="projetos.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"/><path d="M13 3h6a2 2 0 0 1 2 2v7"/><path d="M18 13v8"/><path d="M15 18l3 3 4-4"/></svg>Projetos</a>
     </nav>
-    <div class="user-info">
-      <div class="avatar">AM</div>
-      <div><div class="user-name">Ana Martins</div><div class="user-role">Administradora</div></div>
+    </div>
+    <div class="user-section">
+      <div class="user-info" onclick="toggleUserPopover(event)">
+        <div class="avatar">AM</div>
+        <div><div class="user-name">Ana Martins</div><div class="user-role">Administradora</div></div>
+        <svg class="user-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="user-popover" id="userPopover">
+        <button class="user-popover-item" onclick="toggleTheme()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg> Alternar tema</button>
+        <button class="user-popover-item" onclick="window.location.href='login.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg> Sair</button>
+      </div>
     </div>
   </aside>
 
@@ -340,6 +349,8 @@
 </div>
 
 <script>
+function toggleUserPopover(e){e.stopPropagation();document.getElementById('userPopover').classList.toggle('open');}
+document.addEventListener('click',function(e){var p=document.getElementById('userPopover');var u=document.querySelector('.user-info');if(p&&u&&!p.contains(e.target)&&!u.contains(e.target))p.classList.remove('open');});
 function openModal(id) {
   document.getElementById(id).classList.add('open');
 }

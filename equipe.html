@@ -1,0 +1,757 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aptus Flow · Equipe</title>
+  <link rel="stylesheet" href="aptus.css" />
+  <style>
+    .equipe-summary {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-4);
+      margin-bottom: var(--space-5);
+    }
+    .equipe-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-5);
+    }
+    .member-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .member-table thead th {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      padding: var(--space-2) var(--space-3);
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .member-table tbody tr {
+      border-bottom: 1px solid var(--border-soft);
+      transition: background var(--motion-fast) var(--ease-standard);
+    }
+    .member-table tbody tr[data-clickable] {
+      cursor: pointer;
+    }
+    .member-table tbody tr[data-clickable]:hover {
+      background: var(--border-soft);
+    }
+    .member-table tbody td {
+      padding: var(--space-3);
+      font-family: var(--font-ui);
+      font-size: 13px;
+      vertical-align: middle;
+    }
+    .member-avatar {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .member-avatar .avatar-sm {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-ui);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent-on);
+      flex-shrink: 0;
+    }
+    .avatar-lucas { background: var(--accent); }
+    .avatar-marina { background: var(--success); }
+    .avatar-carlos { background: var(--warn); }
+    .avatar-juliana { background: var(--danger); }
+    .avatar-rafael { background: var(--muted); }
+    .avatar-fernanda { background: color-mix(in oklab, var(--warn), var(--muted) 40%); }
+    .avatar-bruno { background: color-mix(in oklab, var(--accent), var(--muted) 50%); }
+    .avatar-camila { background: color-mix(in oklab, var(--success), var(--muted) 40%); }
+    .member-name {
+      font-weight: 500;
+      color: var(--fg);
+    }
+    .member-role {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .status-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+    }
+    .status-dot::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .status-dot.disponivel::before { background: var(--success); }
+    .status-dot.alocado::before { background: var(--accent); }
+    .status-dot.ausente::before { background: var(--muted); }
+    .status-dot.ferias::before { background: var(--warn); }
+    .member-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-ui);
+      font-size: 12px;
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      white-space: nowrap;
+    }
+    .member-status-badge.com-projeto {
+      background: color-mix(in oklab, var(--accent), transparent 90%);
+      color: var(--accent);
+    }
+    .member-status-badge.entre-projetos {
+      background: color-mix(in oklab, var(--success), transparent 90%);
+      color: var(--success);
+    }
+    .member-status-badge.ferias {
+      background: color-mix(in oklab, var(--warn), transparent 90%);
+      color: var(--warn);
+    }
+    .member-status-badge.ausente {
+      background: color-mix(in oklab, var(--muted), transparent 90%);
+      color: var(--muted);
+    }
+    .project-allocation-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+    .project-allocation-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-3);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-sm);
+    }
+    .pai-left {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    .pai-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .pai-name {
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .pai-members {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .pai-count {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--muted);
+      background: var(--border-soft);
+      padding: 2px 10px;
+      border-radius: var(--radius-pill);
+    }
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 200;
+      background: var(--fg);
+      color: var(--bg);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--elev-raised);
+      padding: 12px 20px;
+      font-family: var(--font-ui);
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      pointer-events: none;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    @media (max-width: 1024px) {
+      .equipe-summary { grid-template-columns: repeat(2, 1fr); }
+      .equipe-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+      .equipe-summary { grid-template-columns: 1fr; }
+    }
+    .card-action-btn {
+      font-family: var(--font-ui);
+      font-size: 12px;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-sm);
+      padding: 4px 10px;
+      cursor: pointer;
+      transition: color var(--motion-fast) var(--ease-standard), border-color var(--motion-fast) var(--ease-standard);
+    }
+    .card-action-btn:hover {
+      color: var(--fg);
+      border-color: var(--border);
+    }
+    .search-input {
+      width: 100%;
+      font-family: var(--font-ui);
+      font-size: 13px;
+      padding: 8px 12px;
+      background: var(--surface);
+      color: var(--fg);
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      outline: none;
+      transition: border-color var(--motion-fast) var(--ease-standard);
+    }
+    .search-input::placeholder { color: var(--meta); }
+    .search-input:hover { border-color: var(--border-soft); }
+    .search-input:focus { border-color: var(--accent); box-shadow: var(--focus-ring); }
+    .metric-card {
+      transition: transform var(--motion-base) var(--ease-standard), box-shadow var(--motion-base) var(--ease-standard);
+    }
+    .metric-card[data-clickable] { cursor: pointer; }
+    .metric-card[data-clickable]:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--elev-raised);
+    }
+    .form-group { display: flex; flex-direction: column; gap: var(--space-3); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    .field label {
+      font-family: var(--font-ui);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+    }
+    .input, .select, .textarea {
+      font-family: var(--font-ui);
+      font-size: 13px;
+      padding: 8px 12px;
+      background: var(--surface);
+      color: var(--fg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      outline: none;
+      transition: border-color var(--motion-fast) var(--ease-standard);
+    }
+    .input:focus, .select:focus, .textarea:focus { border-color: var(--accent); box-shadow: var(--focus-ring); }
+    .input::placeholder, .textarea::placeholder { color: var(--meta); }
+    .select {
+      appearance: none;
+      padding-right: 36px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23e6e5e0' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+    }
+    .textarea { resize: vertical; min-height: 80px; }
+    @media (prefers-reduced-motion: reduce) {
+      .toast, .metric-card { transition: none; }
+    }
+  </style>
+</head>
+<body data-od-id="equipe">
+<script>
+(function(){try{var t=localStorage.getItem('aptus-theme');if(t){document.documentElement.setAttribute('data-theme',t);}else{document.documentElement.setAttribute('data-theme','dark');}}catch(e){}try{var c=localStorage.getItem('aptus-sidebar');if(c==='collapsed')document.querySelector('.app-shell').classList.add('sidebar-collapsed');}catch(e){}})();
+function toggleTheme(){var h=document.documentElement;var c=h.getAttribute('data-theme');var n=c==='dark'?'light':'dark';h.setAttribute('data-theme',n);try{localStorage.setItem('aptus-theme',n);}catch(e){}}
+function toggleSidebar(){var s=document.querySelector('.app-shell');s.classList.toggle('sidebar-collapsed');try{localStorage.setItem('aptus-sidebar',s.classList.contains('sidebar-collapsed')?'collapsed':'expanded');}catch(e){}}
+function toggleUserPopover(e){e.stopPropagation();document.getElementById('userPopover').classList.toggle('open');}
+document.addEventListener('click',function(e){var p=document.getElementById('userPopover');var u=document.querySelector('.user-info');if(p&&u&&!p.contains(e.target)&&!u.contains(e.target))p.classList.remove('open');});
+function openModal(i){document.getElementById(i).classList.add('open');}
+function closeModal(i){document.getElementById(i).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(function(e){e.addEventListener('click',function(ev){if(ev.target===e)e.classList.remove('open');});});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')document.querySelectorAll('.modal-overlay.open').forEach(function(m){m.classList.remove('open');});});
+
+function showToast(msg){
+  var t=document.getElementById('toast');
+  if(!t) return;
+  t.querySelector('.toast-msg').textContent=msg;
+  t.classList.add('show');
+  clearTimeout(t._hide);
+  t._hide=setTimeout(function(){t.classList.remove('show');},2800);
+}
+function novoMembro(){
+  showToast('Membro adicionado à equipe');
+  closeModal('membroModal');
+}
+function editarMembro(id){
+  showToast('Dados de ' + id + ' atualizados');
+  closeModal('editModal');
+}
+function alocarProjeto(){
+  showToast('Alocação atualizada');
+  closeModal('alocacaoModal');
+}
+function openEditModal(name){
+  document.getElementById('editName').value = name;
+  openModal('editModal');
+}
+function filterMembers(query){
+  var rows = document.querySelectorAll('#memberTable tbody tr');
+  var q = query.toLowerCase();
+  var visible = 0;
+  rows.forEach(function(r){
+    var name = (r.getAttribute('data-name') || '').toLowerCase();
+    var role = (r.getAttribute('data-role') || '').toLowerCase();
+    var proj = (r.getAttribute('data-project') || '').toLowerCase();
+    var match = name.indexOf(q) !== -1 || role.indexOf(q) !== -1 || proj.indexOf(q) !== -1;
+    r.style.display = match ? '' : 'none';
+    if(match) visible++;
+  });
+  document.getElementById('memberTable').style.display = visible ? '' : 'none';
+  document.getElementById('emptyState').style.display = visible ? 'none' : 'block';
+}
+</script>
+
+<div class="app-shell">
+  <aside class="app-sidebar">
+    <div class="logo"><span class="logo-dot"></span><span>Aptus Flow</span></div>
+    <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Recolher sidebar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+    </button>
+    <div class="nav-scroll">
+    <div class="nav-section"><span>Principal</span></div>
+    <nav>
+      <a href="dashboard.html" data-tooltip="Dashboard">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <span class="nav-label">Dashboard</span>
+      </a>
+      <a href="fluxo-caixa.html" data-tooltip="Fluxo de Caixa">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <span class="nav-label">Fluxo de Caixa</span>
+      </a>
+      <a href="contas-pagar.html" data-tooltip="Contas a Pagar">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <span class="nav-label">Contas a Pagar</span>
+      </a>
+      <a href="contas-receber.html" data-tooltip="Contas a Receber">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2v20M6 7l6-5 6 5"/><path d="M6 17l6 5 6-5"/></svg>
+        <span class="nav-label">Contas a Receber</span>
+      </a>
+    </nav>
+    <div class="nav-section"><span>Gestão</span></div>
+    <nav>
+      <a href="clientes.html" data-tooltip="Clientes e Fornecedores">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span class="nav-label">Clientes e Fornecedores</span>
+      </a>
+      <a href="propostas.html" data-tooltip="Propostas">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        <span class="nav-label">Propostas</span>
+      </a>
+      <a href="contratos.html" data-tooltip="Contratos">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4h16v16H4z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="12" y2="13"/><line x1="8" y1="17" x2="10" y2="17"/></svg>
+        <span class="nav-label">Contratos</span>
+      </a>
+      <a href="cobrancas.html" data-tooltip="Cobranças">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span class="nav-label">Cobranças</span>
+      </a>
+      <a href="projetos.html" data-tooltip="Projetos">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        <span class="nav-label">Projetos</span>
+      </a>
+      <a href="equipe.html" class="active" data-tooltip="Equipe">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span class="nav-label">Equipe</span>
+      </a>
+      <a href="relatorios.html" data-tooltip="Relatórios">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><circle cx="10" cy="13" r="2" fill="currentColor" opacity="0.3"/></svg>
+        <span class="nav-label">Relatórios</span>
+      </a>
+      <a href="configuracoes.html" data-tooltip="Configurações">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <span class="nav-label">Configurações</span>
+      </a>
+    </nav>
+    </div>
+    <div class="user-section">
+      <div class="user-info" onclick="toggleUserPopover(event)">
+        <div class="avatar">AM</div>
+        <div><div class="user-name">Ana Martins</div><div class="user-role">Administradora</div></div>
+        <svg class="user-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="user-popover" id="userPopover">
+        <button class="user-popover-item" onclick="toggleTheme()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+          Alternar tema
+        </button>
+        <button class="user-popover-item" onclick="window.location.href='login.html'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          Sair
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <header class="app-header">
+    <div>
+      <div class="page-title">Equipe</div>
+      <div class="page-subtitle">Aloque a equipe certa em cada projeto e acompanhe capacidade e disponibilidade</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary btn-sm" onclick="openModal('membroModal')">+ Novo membro</button>
+    </div>
+  </header>
+
+  <main class="app-content">
+    <div class="equipe-summary" data-od-id="equipe-summary">
+      <div class="metric-card" data-clickable>
+        <div class="metric-label">Total de membros</div>
+        <div class="metric-value">8</div>
+        <div class="metric-sub">6 com projeto · 1 entre projetos · 1 férias</div>
+      </div>
+      <div class="metric-card" data-clickable>
+        <div class="metric-label">Projetos ativos</div>
+        <div class="metric-value">7</div>
+        <div class="metric-sub">4 em andamento · 3 em planejamento</div>
+      </div>
+      <div class="metric-card" data-clickable>
+        <div class="metric-label">Em projeto ativo</div>
+        <div class="metric-value">6</div>
+        <div class="metric-sub">de 8 membros com projeto atual</div>
+      </div>
+      <div class="metric-card" data-clickable>
+        <div class="metric-label">Ausentes</div>
+        <div class="metric-value">1</div>
+        <div class="metric-sub">Fernanda: férias até 08 jul</div>
+      </div>
+    </div>
+
+    <div class="equipe-grid" data-od-id="equipe-grid">
+      <div class="card" data-od-id="membros-table">
+        <div class="card-header">
+          <h3>Equipe</h3>
+          <div class="search-wrapper">
+            <input class="search-input" type="text" placeholder="Buscar por nome, função ou projeto…" oninput="filterMembers(this.value)" />
+          </div>
+        </div>
+        <div class="card-body" style="padding:0">
+          <table class="member-table" id="memberTable">
+            <thead>
+              <tr>
+                <th>Membro</th>
+                <th>Status</th>
+                <th>Situação</th>
+                <th>Projeto atual</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr data-clickable data-name="Lucas Mendes" data-role="Desenvolvedor Full Stack" data-project="Plataforma Omnichannel">
+                <td>
+                  <div class="member-avatar">
+                    <span class="avatar-sm avatar-lucas">LM</span>
+                    <div>
+                      <div class="member-name">Lucas Mendes</div>
+                      <div class="member-role">Desenvolvedor Full Stack</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="status-dot alocado">Alocado</span></td>
+                <td><span class="member-status-badge com-projeto">Com projeto ativo</span></td>
+                <td>Plataforma Omnichannel</td>
+                <td><button class="card-action-btn" onclick="openEditModal('Lucas Mendes')">Editar</button></td>
+              </tr>
+              <tr data-clickable data-name="Marina Costa" data-role="Designer UX/UI" data-project="Dashboard IA">
+                <td>
+                  <div class="member-avatar">
+                    <span class="avatar-sm avatar-marina">MC</span>
+                    <div>
+                      <div class="member-name">Marina Costa</div>
+                      <div class="member-role">Designer UX/UI</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="status-dot alocado">Alocado</span></td>
+                <td><span class="member-status-badge com-projeto">Com projeto ativo</span></td>
+                <td>Dashboard IA: cliente A</td>
+                <td><button class="card-action-btn" onclick="openEditModal('Marina Costa')">Editar</button></td>
+              </tr>
+              <tr data-clickable data-name="Carlos Silva" data-role="Engenheiro de Dados" data-project="Migração DataLake">
+                <td>
+                  <div class="member-avatar">
+                    <span class="avatar-sm avatar-carlos">CS</span>
+                    <div>
+                      <div class="member-name">Carlos Silva</div>
+                      <div class="member-role">Engenheiro de Dados</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="status-dot alocado">Alocado</span></td>
+                <td><span class="member-status-badge com-projeto">Com projeto ativo</span></td>
+                <td>Migração DataLake</td>
+                <td><button class="card-action-btn" onclick="openEditModal('Carlos Silva')">Editar</button></td>
+              </tr>
+              <tr data-clickable data-name="Juliana Rocha" data-role="Desenvolvedora Backend" data-project="Chatbot Suporte">
+                <td>
+                  <div class="member-avatar">
+                    <span class="avatar-sm avatar-juliana">JR</span>
+                    <div>
+                      <div class="member-name">Juliana Rocha</div>
+                      <div class="member-role">Desenvolvedora Backend</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="status-dot alocado">Alocado</span></td>
+                <td><span class="member-status-badge com-projeto">Com projeto ativo</span></td>
+                <td>Chatbot suporte: fase 2</td>
+                <td><button class="card-action-btn" onclick="openEditModal('Juliana Rocha')">Editar</button></td>
+              </tr>
+              <tr data-clickable data-name="Rafael Lima" data-role="DevOps" data-project="Infraestrutura">
+                <td>
+                  <div class="member-avatar">
+                    <span class="avatar-sm avatar-rafael">RL</span>
+                    <div>
+                      <div class="member-name">Rafael Lima</div>
+                      <div class="member-role">DevOps</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="status-dot alocado">Alocado</span></td>
+                <td><span class="member-status-badge com-projeto">Cross-projetos</span></td>
+                <td>Infraestrutura (cross-projetos)</td>
+                <td><button class="card-action-btn" onclick="openEditModal('Rafael Lima')">Editar</button></td>
+              </tr>
+              <tr data-clickable data-name="Fernanda Souza" data-role="Product Manager" data-project="—">
+                <td>
+                  <div class="member-avatar">
+                    <span class="avatar-sm avatar-fernanda">FS</span>
+                    <div>
+                      <div class="member-name">Fernanda Souza</div>
+                      <div class="member-role">Product Manager</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="status-dot ferias">Férias</span></td>
+                <td><span class="member-status-badge ferias">Férias</span></td>
+                <td>—</td>
+                <td><button class="card-action-btn" onclick="openEditModal('Fernanda Souza')">Editar</button></td>
+              </tr>
+              <tr data-clickable data-name="Bruno Alves" data-role="Desenvolvedor Frontend" data-project="App Mobile">
+                <td>
+                  <div class="member-avatar">
+                    <span class="avatar-sm avatar-bruno">BA</span>
+                    <div>
+                      <div class="member-name">Bruno Alves</div>
+                      <div class="member-role">Desenvolvedor Frontend</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="status-dot alocado">Alocado</span></td>
+                <td><span class="member-status-badge com-projeto">Com projeto ativo</span></td>
+                <td>App mobile: vistoria</td>
+                <td><button class="card-action-btn" onclick="openEditModal('Bruno Alves')">Editar</button></td>
+              </tr>
+              <tr data-clickable data-name="Camila Dias" data-role="QA / Testes" data-project="Disponível">
+                <td>
+                  <div class="member-avatar">
+                    <span class="avatar-sm avatar-camila">CD</span>
+                    <div>
+                      <div class="member-name">Camila Dias</div>
+                      <div class="member-role">QA / Testes</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="status-dot disponivel">Disponível</span></td>
+                <td><span class="member-status-badge entre-projetos">Entre projetos</span></td>
+                <td>Suporte transversal</td>
+                <td><button class="card-action-btn" onclick="openEditModal('Camila Dias')">Editar</button></td>
+              </tr>
+            </tbody>
+          </table>
+          <div id="emptyState" style="display:none;padding:var(--space-8);text-align:center;">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="color:var(--muted);margin-bottom:var(--space-2)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <div style="font-family:var(--font-ui);font-size:13px;color:var(--muted)">Nenhum membro encontrado</div>
+            <div style="font-family:var(--font-ui);font-size:12px;color:var(--meta);margin-top:4px">Tente ajustar a busca ou adicione um novo membro</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:var(--space-5)">
+        <div class="card" data-od-id="project-allocation">
+          <div class="card-header">
+            <h3>Alocação por projeto</h3>
+            <button class="btn btn-secondary btn-sm" onclick="openModal('alocacaoModal')">Alocar</button>
+          </div>
+          <div class="card-body">
+            <div class="project-allocation-list">
+              <div class="project-allocation-item">
+                <div class="pai-left">
+                  <span class="pai-dot" style="background:var(--accent)"></span>
+                  <div>
+                    <div class="pai-name">Plataforma Omnichannel</div>
+                    <div class="pai-members">Lucas, Rafael</div>
+                  </div>
+                </div>
+                <span class="pai-count">2</span>
+              </div>
+              <div class="project-allocation-item">
+                <div class="pai-left">
+                  <span class="pai-dot" style="background:var(--warn)"></span>
+                  <div>
+                    <div class="pai-name">Dashboard IA: cliente A</div>
+                    <div class="pai-members">Marina</div>
+                  </div>
+                </div>
+                <span class="pai-count">1</span>
+              </div>
+              <div class="project-allocation-item">
+                <div class="pai-left">
+                  <span class="pai-dot" style="background:var(--success)"></span>
+                  <div>
+                    <div class="pai-name">Migração DataLake</div>
+                    <div class="pai-members">Carlos</div>
+                  </div>
+                </div>
+                <span class="pai-count">1</span>
+              </div>
+              <div class="project-allocation-item">
+                <div class="pai-left">
+                  <span class="pai-dot" style="background:var(--danger)"></span>
+                  <div>
+                    <div class="pai-name">Chatbot suporte: fase 2</div>
+                    <div class="pai-members">Juliana</div>
+                  </div>
+                </div>
+                <span class="pai-count">1</span>
+              </div>
+              <div class="project-allocation-item">
+                <div class="pai-left">
+                  <span class="pai-dot" style="background:color-mix(in oklab, var(--accent), var(--muted) 50%)"></span>
+                  <div>
+                    <div class="pai-name">App mobile: vistoria</div>
+                    <div class="pai-members">Bruno</div>
+                  </div>
+                </div>
+                <span class="pai-count">1</span>
+              </div>
+              <div class="project-allocation-item">
+                <div class="pai-left">
+                  <span class="pai-dot" style="background:var(--muted)"></span>
+                  <div>
+                    <div class="pai-name">Infraestrutura</div>
+                    <div class="pai-members">Rafael (cross-projetos)</div>
+                  </div>
+                </div>
+                <span class="pai-count">1</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" data-od-id="capacity-overview">
+          <div class="card-header"><h3>Capacidade</h3></div>
+          <div class="card-body">
+            <div style="display:flex;flex-direction:column;gap:var(--space-3)">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <span style="font-family:var(--font-ui);font-size:12px;color:var(--muted)">Com projeto ativo</span>
+                <span style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">6 membros</span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <span style="font-family:var(--font-ui);font-size:12px;color:var(--muted)">Entre projetos</span>
+                <span style="font-family:var(--font-mono);font-size:12px;color:var(--success)">1 membro</span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <span style="font-family:var(--font-ui);font-size:12px;color:var(--muted)">Férias</span>
+                <span style="font-family:var(--font-mono);font-size:12px;color:var(--warn)">1 membro</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="membroModal" data-od-id="membro-modal">
+  <div class="modal">
+    <div class="modal-header"><h2>Novo membro</h2><button class="modal-close" onclick="closeModal('membroModal')">&times;</button></div>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="form-row">
+          <div class="field"><label>Nome completo</label><input class="input" type="text" placeholder="Ex: Lucas Mendes" /></div>
+          <div class="field"><label>E-mail</label><input class="input" type="email" placeholder="lucas@aptusflow.com" /></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Função</label><select class="select"><option>Selecione</option><option>Desenvolvedor Full Stack</option><option>Desenvolvedor Frontend</option><option>Desenvolvedor Backend</option><option>Designer UX/UI</option><option>Engenheiro de Dados</option><option>DevOps</option><option>Product Manager</option><option>QA / Testes</option></select></div>
+          <div class="field"><label>Nível</label><select class="select"><option>Selecione</option><option>Júnior</option><option>Pleno</option><option>Sênior</option><option>Especialista</option></select></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Projeto inicial</label><select class="select"><option>Sem alocação</option><option>Plataforma Omnichannel</option><option>Dashboard IA: cliente A</option><option>Migração DataLake</option><option>Chatbot suporte: fase 2</option><option>App mobile: vistoria</option><option>Infraestrutura</option></select></div>
+          <div class="field"><label>Início</label><input class="input" type="date" /></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('membroModal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="novoMembro()">Adicionar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="editModal" data-od-id="edit-modal">
+  <div class="modal">
+    <div class="modal-header"><h2>Editar membro</h2><button class="modal-close" onclick="closeModal('editModal')">&times;</button></div>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="field"><label>Nome</label><input class="input" type="text" id="editName" /></div>
+        <div class="form-row">
+          <div class="field"><label>Status</label><select class="select" id="editStatus"><option>Disponível</option><option>Com projeto ativo</option><option>Entre projetos</option><option>Férias</option></select></div>
+          <div class="field"><label>Projeto</label><select class="select" id="editProject"><option>Sem alocação</option><option>Plataforma Omnichannel</option><option>Dashboard IA: cliente A</option><option>Migração DataLake</option><option>Chatbot suporte: fase 2</option><option>App mobile: vistoria</option><option>Infraestrutura</option></select></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('editModal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="editarMembro(document.getElementById('editName').value)">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="alocacaoModal" data-od-id="alocacao-modal">
+  <div class="modal">
+    <div class="modal-header"><h2>Alocar membro</h2><button class="modal-close" onclick="closeModal('alocacaoModal')">&times;</button></div>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="field"><label>Membro</label><select class="select"><option>Selecione</option><option>Lucas Mendes</option><option>Marina Costa</option><option>Carlos Silva</option><option>Juliana Rocha</option><option>Rafael Lima</option><option>Bruno Alves</option><option>Camila Dias</option></select></div>
+        <div class="field"><label>Projeto</label><select class="select"><option>Selecione</option><option>Plataforma Omnichannel</option><option>Dashboard IA: cliente A</option><option>Migração DataLake</option><option>Chatbot suporte: fase 2</option><option>App mobile: vistoria</option><option>Infraestrutura</option></select></div>
+        <div class="form-row">
+          <div class="field"><label>Início</label><input class="input" type="date" /></div>
+          <div class="field"><label>Previsão de término</label><input class="input" type="date" /></div>
+        </div>
+        <div class="field"><label>Observações</label><textarea class="textarea" placeholder="Motivo da alocação, expectativas…"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('alocacaoModal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="alocarProjeto()">Alocar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span class="toast-msg">Operação concluída</span></div>
+</body>
+</html>

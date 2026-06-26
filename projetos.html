@@ -1,72 +1,678 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Aptus · Projetos</title>
+  <title>Aptus Flow · Projetos</title>
   <link rel="stylesheet" href="aptus.css" />
   <style>
-    .projeto-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4); margin-bottom: var(--space-5); }
-    .projeto-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); margin-bottom: var(--space-5); }
+    .projeto-summary {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-4);
+      margin-bottom: var(--space-5);
+    }
+    .projeto-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-5);
+      margin-bottom: var(--space-5);
+    }
+
+    .project-progress-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+    .project-progress-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .pp-name {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-ui);
+      font-size: 13px;
+      color: var(--fg);
+    }
+    .pp-percent {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+    }
+    .progress-bar {
+      height: 6px;
+      background: var(--border-soft);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+    }
+    .progress-bar .fill {
+      height: 100%;
+      border-radius: var(--radius-pill);
+      background: var(--accent);
+      transition: width 0.6s ease;
+    }
+
+    .chart-pie {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+    .pie-visual {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      margin: 0 auto;
+    }
+    .pie-legend {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-family: var(--font-ui);
+      font-size: 13px;
+      color: var(--fg);
+    }
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .kanban {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: var(--space-4);
+    }
+    .kanban-column {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      transition: background var(--motion-fast) var(--ease-standard), border-color var(--motion-fast) var(--ease-standard);
+    }
+    .kanban-column.col-todo {
+      background: rgba(223, 168, 143, 0.06);
+      border-color: rgba(223, 168, 143, 0.12);
+    }
+    .kanban-column.col-progress {
+      background: rgba(159, 201, 162, 0.06);
+      border-color: rgba(159, 201, 162, 0.12);
+    }
+    .kanban-column.col-done {
+      background: rgba(31, 138, 101, 0.06);
+      border-color: rgba(31, 138, 101, 0.12);
+    }
+    .column-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-ui);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      padding-bottom: var(--space-2);
+      border-bottom: 1px solid var(--border);
+    }
+    .column-header-left {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .column-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .col-todo .column-dot { background: #dfa88f; }
+    .col-progress .column-dot { background: #9fc9a2; }
+    .col-done .column-dot { background: var(--success); }
+    .col-todo .column-header { color: #dfa88f; }
+    .col-progress .column-header { color: #9fc9a2; }
+    .col-done .column-header { color: var(--success); }
+    .column-count {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted);
+      background: var(--border-soft);
+      padding: 1px 8px;
+      border-radius: var(--radius-pill);
+    }
+    .kanban-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: var(--space-3);
+      cursor: grab;
+      transition: box-shadow var(--motion-fast) var(--ease-standard), opacity var(--motion-fast) var(--ease-standard), transform var(--motion-fast) var(--ease-standard);
+    }
+    .col-todo .kanban-card { border-left: 3px solid #dfa88f; }
+    .col-progress .kanban-card { border-left: 3px solid #9fc9a2; }
+    .col-done .kanban-card { border-left: 3px solid var(--success); }
+    .kanban-card:active {
+      cursor: grabbing;
+    }
+    .kanban-card:hover {
+      box-shadow: var(--focus-ring);
+    }
+    .kanban-card.dragging {
+      opacity: 0.15;
+      transform: scale(0.97);
+    }
+    .kanban-card.drag-placeholder {
+      opacity: 0.15;
+      transform: scale(0.97);
+    }
+    .kanban-column.drag-over {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+    .drop-indicator {
+      height: 3px;
+      background: var(--accent);
+      border-radius: var(--radius-pill);
+      margin: 4px 0;
+      opacity: 0.8;
+      pointer-events: none;
+    }
+    .kanban-card .card-title {
+      font-family: var(--font-display);
+      font-size: 14px;
+      letter-spacing: -0.01em;
+      color: var(--fg);
+      margin-bottom: var(--space-2);
+    }
+    .kanban-card .card-meta {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      margin-bottom: var(--space-2);
+    }
+    .kanban-card .card-tags {
+      display: flex;
+      gap: var(--space-1);
+      flex-wrap: wrap;
+    }
+    .kanban-card .tag {
+      font-family: var(--font-ui);
+      font-size: 10px;
+      padding: 1px 8px;
+      border-radius: var(--radius-pill);
+      background: var(--border-soft);
+      color: var(--muted);
+    }
+    .kanban-card .card-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--space-1);
+      margin-top: var(--space-2);
+      padding-top: var(--space-2);
+      border-top: 1px solid var(--border-soft);
+    }
+    .card-action-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: none;
+      border: none;
+      font-family: var(--font-ui);
+      font-size: 11px;
+      color: var(--muted);
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: color var(--motion-fast) var(--ease-standard), background var(--motion-fast) var(--ease-standard);
+    }
+    .card-action-btn:hover {
+      color: var(--fg);
+      background: var(--border-soft);
+    }
+    .card-action-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+    .card-instructions {
+      margin-top: var(--space-2);
+      padding: var(--space-2);
+      background: var(--border-soft);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--fg-2);
+      white-space: pre-wrap;
+    }
+    .card-instructions:empty {
+      display: none;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 200;
+      background: var(--surface);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--elev-raised);
+      padding: 12px 20px;
+      font-family: var(--font-ui);
+      font-size: 13px;
+      color: var(--fg);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      pointer-events: none;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .instruction-modal .modal {
+      max-width: 480px;
+    }
+    .instruction-modal .textarea {
+      min-height: 160px;
+      font-family: var(--font-body);
+      font-size: 13px;
+      line-height: 1.6;
+      resize: vertical;
+    }
+    .instruction-modal .current-instructions {
+      margin-bottom: var(--space-3);
+      padding: var(--space-2);
+      background: var(--border-soft);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--muted);
+      white-space: pre-wrap;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+    .instruction-modal .current-instructions:empty {
+      display: none;
+    }
+    .instruction-modal .current-label {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      margin-bottom: var(--space-1);
+    }
+
     @media (max-width: 1024px) {
       .projeto-summary { grid-template-columns: repeat(2, 1fr); }
       .projeto-grid { grid-template-columns: 1fr; }
+      .kanban { grid-template-columns: 1fr; }
     }
     @media (max-width: 480px) {
       .projeto-summary { grid-template-columns: 1fr; }
     }
+    @media (prefers-reduced-motion: reduce) {
+      .kanban-card, .toast, .progress-bar .fill { transition: none; }
+      .kanban-card.drag-placeholder { transform: none; }
+    }
   </style>
 </head>
 <body data-od-id="projetos">
+<script>
+(function(){try{var t=localStorage.getItem('aptus-theme');if(t){document.documentElement.setAttribute('data-theme',t);}else{document.documentElement.setAttribute('data-theme','dark');}}catch(e){}try{var c=localStorage.getItem('aptus-sidebar');if(c==='collapsed')document.querySelector('.app-shell').classList.add('sidebar-collapsed');}catch(e){}})();
+function toggleTheme(){var h=document.documentElement;var c=h.getAttribute('data-theme');var n=c==='dark'?'light':'dark';h.setAttribute('data-theme',n);try{localStorage.setItem('aptus-theme',n);}catch(e){}}
+function toggleSidebar(){var s=document.querySelector('.app-shell');s.classList.toggle('sidebar-collapsed');try{localStorage.setItem('aptus-sidebar',s.classList.contains('sidebar-collapsed')?'collapsed':'expanded');}catch(e){}}
+function toggleUserPopover(e){e.stopPropagation();document.getElementById('userPopover').classList.toggle('open');}
+document.addEventListener('click',function(e){var p=document.getElementById('userPopover');var u=document.querySelector('.user-info');if(p&&u&&!p.contains(e.target)&&!u.contains(e.target))p.classList.remove('open');});
+function openModal(i){document.getElementById(i).classList.add('open');}
+function closeModal(i){document.getElementById(i).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(function(e){e.addEventListener('click',function(ev){if(ev.target===e)e.classList.remove('open');});});
+
+function showToast(msg){
+  var t=document.getElementById('toast');
+  if(!t) return;
+  t.querySelector('.toast-msg').textContent=msg;
+  t.classList.add('show');
+  clearTimeout(t._hide);
+  t._hide=setTimeout(function(){t.classList.remove('show');},2800);
+}
+function criarProjeto(){
+  showToast('Projeto criado com sucesso');
+  closeModal('projetoModal');
+}
+function adicionarTarefa(){
+  showToast('Tarefa adicionada ao Kanban');
+  closeModal('tarefaModal');
+}
+
+var _currentCardId = null;
+function loadInstructions(cardId){
+  try{ return localStorage.getItem('aptus-instruction-' + cardId) || ''; }catch(e){ return ''; }
+}
+function saveInstructions(cardId, text){
+  try{ localStorage.setItem('aptus-instruction-' + cardId, text); }catch(e){}
+}
+function openInstructionModal(cardId){
+  _currentCardId = cardId;
+  var card = document.querySelector('[data-card-id="' + cardId + '"]');
+  var title = card ? card.querySelector('.card-title').textContent : '';
+  var current = loadInstructions(cardId);
+  var modal = document.getElementById('instructionModal');
+  modal.querySelector('.instruction-card-title').textContent = title;
+  modal.querySelector('.current-instructions').textContent = current;
+  modal.querySelector('#instructionText').value = current;
+  openModal('instructionModal');
+  setTimeout(function(){ modal.querySelector('#instructionText').focus(); }, 100);
+}
+function saveInstruction(){
+  if(!_currentCardId) return;
+  var text = document.getElementById('instructionText').value.trim();
+  saveInstructions(_currentCardId, text);
+  var card = document.querySelector('[data-card-id="' + _currentCardId + '"]');
+  if(card){
+    var inst = card.querySelector('.card-instructions');
+    if(inst) inst.textContent = text;
+  }
+  showToast('Instruções salvas');
+  closeModal('instructionModal');
+  _currentCardId = null;
+}
+document.addEventListener('DOMContentLoaded', function(){
+  document.querySelectorAll('.kanban-card').forEach(function(card){
+    var id = card.getAttribute('data-card-id');
+    if(!id) return;
+    var text = loadInstructions(id);
+    var inst = card.querySelector('.card-instructions');
+    if(inst && text) inst.textContent = text;
+  });
+
+  /* ── Drag and Drop ── */
+  var draggedCard = null;
+  var dragClone = null;
+  var dropIndicator = null;
+
+  function getColumnId(column){
+    var label = column.querySelector('.column-header-left span:last-child');
+    return label ? label.textContent.trim().toLowerCase().replace(/\s+/g, '-') : '';
+  }
+
+  function saveCardPosition(cardId, columnId){
+    try{ localStorage.setItem('aptus-kanban-' + cardId, columnId); }catch(e){}
+  }
+
+  function loadCardPosition(cardId){
+    try{ return localStorage.getItem('aptus-kanban-' + cardId); }catch(e){ return null; }
+  }
+
+  function updateColumnCounts(){
+    document.querySelectorAll('.kanban-column').forEach(function(col){
+      var count = col.querySelectorAll('.kanban-card:not(.drag-placeholder)').length;
+      var badge = col.querySelector('.column-count');
+      if(badge) badge.textContent = count;
+    });
+  }
+
+  function restorePositions(){
+    document.querySelectorAll('.kanban-card').forEach(function(card){
+      var id = card.getAttribute('data-card-id');
+      var saved = loadCardPosition(id);
+      if(!saved) return;
+      document.querySelectorAll('.kanban-column').forEach(function(col){
+        if(getColumnId(col) === saved){
+          col.appendChild(card);
+        }
+      });
+    });
+    updateColumnCounts();
+  }
+
+  function createDropIndicator(){
+    var el = document.createElement('div');
+    el.className = 'drop-indicator';
+    return el;
+  }
+
+  function removeDropIndicator(){
+    if(dropIndicator && dropIndicator.parentNode){
+      dropIndicator.parentNode.removeChild(dropIndicator);
+    }
+    dropIndicator = null;
+  }
+
+  document.querySelectorAll('.kanban-card').forEach(function(card){
+    card.addEventListener('dragstart', function(e){
+      draggedCard = card;
+
+      // Create a visual clone for the drag image
+      dragClone = card.cloneNode(true);
+      dragClone.style.position = 'absolute';
+      dragClone.style.top = '-9999px';
+      dragClone.style.width = card.offsetWidth + 'px';
+      dragClone.style.boxShadow = 'var(--elev-raised)';
+      dragClone.style.transform = 'rotate(1deg)';
+      dragClone.style.opacity = '0.95';
+      document.body.appendChild(dragClone);
+
+      // Set custom drag image
+      e.dataTransfer.setDragImage(dragClone, e.offsetX || card.offsetWidth / 2, e.offsetY || 20);
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', card.getAttribute('data-card-id'));
+
+      // Original card becomes subtle placeholder
+      setTimeout(function(){
+        card.classList.add('drag-placeholder');
+      }, 0);
+    });
+
+    card.addEventListener('dragend', function(){
+      if(draggedCard) draggedCard.classList.remove('drag-placeholder');
+      draggedCard = null;
+      if(dragClone && dragClone.parentNode) dragClone.parentNode.removeChild(dragClone);
+      dragClone = null;
+      removeDropIndicator();
+      document.querySelectorAll('.kanban-column').forEach(function(col){
+        col.classList.remove('drag-over');
+      });
+      updateColumnCounts();
+    });
+  });
+
+  document.querySelectorAll('.kanban-column').forEach(function(column){
+    column.addEventListener('dragover', function(e){
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      column.classList.add('drag-over');
+
+      if(!draggedCard) return;
+
+      // Remove existing indicator
+      removeDropIndicator();
+
+      var afterElement = getDragAfterElement(column, e.clientY);
+      dropIndicator = createDropIndicator();
+
+      if(afterElement){
+        column.insertBefore(dropIndicator, afterElement);
+      } else {
+        column.appendChild(dropIndicator);
+      }
+    });
+
+    column.addEventListener('dragleave', function(e){
+      if(!column.contains(e.relatedTarget)){
+        column.classList.remove('drag-over');
+        removeDropIndicator();
+      }
+    });
+
+    column.addEventListener('drop', function(e){
+      e.preventDefault();
+      column.classList.remove('drag-over');
+      removeDropIndicator();
+
+      if(draggedCard){
+        // Insert at the drop indicator position or append
+        if(dropIndicator && dropIndicator.parentNode){
+          dropIndicator.parentNode.insertBefore(draggedCard, dropIndicator);
+          removeDropIndicator();
+        } else {
+          column.appendChild(draggedCard);
+        }
+
+        var columnId = getColumnId(column);
+        var cardId = draggedCard.getAttribute('data-card-id');
+        saveCardPosition(cardId, columnId);
+        showToast('Card movido para "' + columnId.replace(/-/g, ' ') + '"');
+      }
+    });
+  });
+
+  function getDragAfterElement(column, y){
+    var cards = Array.from(column.querySelectorAll('.kanban-card:not(.drag-placeholder)'));
+    var result = null;
+    var lowestOffset = Number.POSITIVE_INFINITY;
+
+    cards.forEach(function(card){
+      var box = card.getBoundingClientRect();
+      var offset = y - box.top - box.height / 2;
+      if(offset < 0 && offset > -lowestOffset){
+        lowestOffset = Math.abs(offset);
+        result = card;
+      }
+    });
+    return result;
+  }
+
+  restorePositions();
+});
+</script>
+
 <div class="app-shell">
   <aside class="app-sidebar">
-    <div class="logo"><span class="logo-dot"></span>Aptus</div>
-    <div class="nav-section">Principal</div>
+    <div class="logo"><span class="logo-dot"></span><span>Aptus Flow</span></div>
+    <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Recolher sidebar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+    </button>
+    <div class="nav-scroll">
+    <div class="nav-section"><span>Principal</span></div>
     <nav>
-      <a href="dashboard.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
-      <a href="financeiro.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 6v2M12 16v2M9.5 9.5c0-1.5 1-2.5 2.5-2.5s2.5 1 2.5 2.5-1 2.5-2.5 2.5-2.5 1-2.5 2.5 1 2.5 2.5 2.5 2.5-1 2.5-2.5"/></svg>Financeiro</a>
-      <a href="clientes.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Clientes</a>
-      <a href="propostas.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Propostas</a>
-      <a href="contratos.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg>Contratos</a>
-      <a href="cobrancas.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M18 20v-2a4 4 0 0 0-4-4h-4a4 4 0 0 0-4 4v2"/></svg>Cobranças</a>
-      <a href="projetos.html" class="active"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"/><path d="M13 3h6a2 2 0 0 1 2 2v7"/><path d="M18 13v8"/><path d="M15 18l3 3 4-4"/></svg>Projetos</a>
+      <a href="dashboard.html" data-tooltip="Dashboard">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <span class="nav-label">Dashboard</span>
+      </a>
+      <a href="fluxo-caixa.html" data-tooltip="Fluxo de Caixa">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <span class="nav-label">Fluxo de Caixa</span>
+      </a>
+      <a href="contas-pagar.html" data-tooltip="Contas a Pagar">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <span class="nav-label">Contas a Pagar</span>
+      </a>
+      <a href="contas-receber.html" data-tooltip="Contas a Receber">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2v20M6 7l6-5 6 5"/><path d="M6 17l6 5 6-5"/></svg>
+        <span class="nav-label">Contas a Receber</span>
+      </a>
     </nav>
-    <div class="user-info">
-      <div class="avatar">AM</div>
-      <div><div class="user-name">Ana Martins</div><div class="user-role">Administradora</div></div>
+    <div class="nav-section"><span>Gestão</span></div>
+    <nav>
+      <a href="clientes.html" data-tooltip="Clientes / Fornecedores">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span class="nav-label">Clientes / Fornecedores</span>
+      </a>
+      <a href="propostas.html" data-tooltip="Propostas">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        <span class="nav-label">Propostas</span>
+      </a>
+      <a href="contratos.html" data-tooltip="Contratos">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4h16v16H4z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="12" y2="13"/><line x1="8" y1="17" x2="10" y2="17"/></svg>
+        <span class="nav-label">Contratos</span>
+      </a>
+      <a href="cobrancas.html" data-tooltip="Cobranças">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span class="nav-label">Cobranças</span>
+      </a>
+      <a href="projetos.html" class="active" data-tooltip="Projetos">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        <span class="nav-label">Projetos</span>
+      </a>
+      <a href="equipe.html" data-tooltip="Equipe">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span class="nav-label">Equipe</span>
+      </a>
+      <a href="relatorios.html" data-tooltip="Relatórios / Exportação">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><circle cx="10" cy="13" r="2" fill="currentColor" opacity="0.3"/></svg>
+        <span class="nav-label">Relatórios / Exportação</span>
+      </a>
+      <a href="configuracoes.html" data-tooltip="Configurações">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <span class="nav-label">Configurações</span>
+      </a>
+    </nav>
+    </div>
+    <div class="user-section">
+      <div class="user-info" onclick="toggleUserPopover(event)">
+        <div class="avatar">AM</div>
+        <div><div class="user-name">Ana Martins</div><div class="user-role">Administradora</div></div>
+        <svg class="user-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="user-popover" id="userPopover">
+        <button class="user-popover-item" onclick="toggleTheme()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+          Alternar tema
+        </button>
+        <button class="user-popover-item" onclick="window.location.href='login.html'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          Sair
+        </button>
+      </div>
     </div>
   </aside>
 
   <header class="app-header">
     <div class="page-title">Projetos</div>
     <div class="header-actions">
-      <button class="btn btn-primary btn-sm" onclick="openModal('projetoModal')">+ Novo Projeto</button>
+      <button class="btn btn-primary btn-sm" onclick="openModal('projetoModal')">+ Novo projeto</button>
     </div>
   </header>
 
   <main class="app-content">
     <div class="projeto-summary" data-od-id="projeto-summary">
       <div class="metric-card">
-        <div class="metric-icon green">P</div>
-        <div class="metric-label">Projetos Ativos</div>
+        <div class="metric-label">Projetos ativos</div>
         <div class="metric-value">7</div>
         <div class="metric-sub">4 em andamento · 3 em planejamento</div>
       </div>
       <div class="metric-card">
-        <div class="metric-icon blue">T</div>
-        <div class="metric-label">Tarefas Abertas</div>
+        <div class="metric-label">Tarefas abertas</div>
         <div class="metric-value">24</div>
         <div class="metric-sub">12 em andamento · 12 pendentes</div>
       </div>
       <div class="metric-card">
-        <div class="metric-icon orange">$</div>
-        <div class="metric-label">Orçamento Total</div>
+        <div class="metric-label">Orçamento total</div>
         <div class="metric-value">R$ 420.000</div>
         <div class="metric-sub">67% utilizado</div>
       </div>
       <div class="metric-card">
-        <div class="metric-icon red">!</div>
-        <div class="metric-label">Em Risco</div>
+        <div class="metric-label">Em risco</div>
         <div class="metric-value">3</div>
         <div class="metric-change down">Atraso acima de 15 dias</div>
       </div>
@@ -74,17 +680,15 @@
 
     <div class="projeto-grid" data-od-id="projeto-grid">
       <div class="card">
-        <div class="card-header">
-          <h3>Progresso dos Projetos</h3>
-        </div>
+        <div class="card-header"><h3>Progresso dos projetos</h3></div>
         <div class="card-body">
-          <div class="project-progress-list" style="display:flex;flex-direction:column;gap:var(--space-4)">
+          <div class="project-progress-list">
             <div class="project-progress-item">
               <div class="pp-name"><span>Plataforma Omnichannel</span><span class="pp-percent" style="color:var(--accent)">72%</span></div>
               <div class="progress-bar"><div class="fill" style="width:72%"></div></div>
             </div>
             <div class="project-progress-item">
-              <div class="pp-name"><span>Dashboard IA — Cliente A</span><span class="pp-percent" style="color:var(--warn)">45%</span></div>
+              <div class="pp-name"><span>Dashboard IA: cliente A</span><span class="pp-percent" style="color:var(--warn)">45%</span></div>
               <div class="progress-bar"><div class="fill" style="width:45%;background:var(--warn)"></div></div>
             </div>
             <div class="project-progress-item">
@@ -92,11 +696,11 @@
               <div class="progress-bar"><div class="fill" style="width:88%;background:var(--success)"></div></div>
             </div>
             <div class="project-progress-item">
-              <div class="pp-name"><span>Chatbot Suporte — Fase 2</span><span class="pp-percent" style="color:var(--danger)">30%</span></div>
+              <div class="pp-name"><span>Chatbot suporte: fase 2</span><span class="pp-percent" style="color:var(--danger)">30%</span></div>
               <div class="progress-bar"><div class="fill" style="width:30%;background:var(--danger)"></div></div>
             </div>
             <div class="project-progress-item">
-              <div class="pp-name"><span>App Mobile — Vistoria</span><span class="pp-percent">60%</span></div>
+              <div class="pp-name"><span>App mobile: vistoria</span><span class="pp-percent">60%</span></div>
               <div class="progress-bar"><div class="fill" style="width:60%"></div></div>
             </div>
             <div class="project-progress-item">
@@ -108,18 +712,16 @@
       </div>
 
       <div class="card">
-        <div class="card-header">
-          <h3>Distribuição por Cliente</h3>
-        </div>
+        <div class="card-header"><h3>Distribuição por cliente</h3></div>
         <div class="card-body">
           <div class="chart-pie">
-            <div class="pie-visual" style="background:conic-gradient(var(--accent) 0% 30%, var(--success) 30% 52%, var(--info) 52% 68%, var(--warn) 68% 82%, var(--danger-soft) 82% 100%)"></div>
+            <div class="pie-visual" style="background:conic-gradient(var(--accent) 0% 30%, var(--success) 30% 52%, #9fbbe0 52% 68%, var(--warn) 68% 82%, rgba(207,45,86,0.35) 82% 100%)"></div>
             <div class="pie-legend">
               <div class="legend-item"><span class="legend-dot" style="background:var(--accent)"></span> Inovatec (30%)</div>
               <div class="legend-item"><span class="legend-dot" style="background:var(--success)"></span> DataFlow (22%)</div>
-              <div class="legend-item"><span class="legend-dot" style="background:var(--info)"></span> Nexum AI (16%)</div>
+              <div class="legend-item"><span class="legend-dot" style="background:#9fbbe0"></span> Nexum AI (16%)</div>
               <div class="legend-item"><span class="legend-dot" style="background:var(--warn)"></span> OmniTech (14%)</div>
-              <div class="legend-item"><span class="legend-dot" style="background:var(--danger-soft)"></span> ZapFlow (18%)</div>
+              <div class="legend-item"><span class="legend-dot" style="background:rgba(207,45,86,0.35)"></span> ZapFlow (18%)</div>
             </div>
           </div>
         </div>
@@ -128,122 +730,127 @@
 
     <div class="card" data-od-id="kanban-section">
       <div class="card-header">
-        <h3>Kanban — Tarefas</h3>
-        <button class="btn btn-ghost btn-sm" onclick="openModal('tarefaModal')">+ Adicionar Tarefa</button>
+        <h3>Kanban: tarefas</h3>
+        <button class="btn btn-secondary btn-sm" onclick="openModal('tarefaModal')">+ Adicionar Tarefa</button>
       </div>
       <div class="card-body">
         <div class="kanban" data-od-id="kanban">
-          <div class="kanban-column">
-            <div class="column-header">
-              <span>A Fazer</span>
-              <span class="column-count">5</span>
-            </div>
-            <div class="kanban-card">
+          <div class="kanban-column col-todo">
+            <div class="column-header"><span class="column-header-left"><span class="column-dot"></span><span>A Fazer</span></span><span class="column-count">5</span></div>
+            <div class="kanban-card" data-card-id="card-1" draggable="true">
               <div class="card-title">Definir arquitetura do módulo de IA</div>
-              <div class="card-meta">
-                <span>Alta prioridade</span>
-                <span>·</span>
-                <span>Prazo: 30 jun</span>
-              </div>
-              <div class="card-tags">
-                <span class="tag">Plataforma Omnichannel</span>
+              <div class="card-meta"><span>Alta prioridade</span><span>&middot;</span><span>Prazo: 30 jun</span></div>
+              <div class="card-tags"><span class="tag">Plataforma Omnichannel</span></div>
+              <div class="card-instructions"></div>
+              <div class="card-actions">
+                <button class="card-action-btn" onclick="openInstructionModal('card-1')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  Instruções
+                </button>
               </div>
             </div>
-            <div class="kanban-card">
+            <div class="kanban-card" data-card-id="card-2" draggable="true">
               <div class="card-title">Revisar protótipo do dashboard</div>
-              <div class="card-meta">
-                <span>Média prioridade</span>
-                <span>·</span>
-                <span>Prazo: 02 jul</span>
-              </div>
-              <div class="card-tags">
-                <span class="tag">Dashboard IA</span>
+              <div class="card-meta"><span>Média prioridade</span><span>&middot;</span><span>Prazo: 02 jul</span></div>
+              <div class="card-tags"><span class="tag">Dashboard IA</span></div>
+              <div class="card-instructions"></div>
+              <div class="card-actions">
+                <button class="card-action-btn" onclick="openInstructionModal('card-2')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  Instruções
+                </button>
               </div>
             </div>
-            <div class="kanban-card">
+            <div class="kanban-card" data-card-id="card-3" draggable="true">
               <div class="card-title">Criar script de migração</div>
-              <div class="card-meta">
-                <span>Média prioridade</span>
-                <span>·</span>
-                <span>Prazo: 28 jun</span>
-              </div>
-              <div class="card-tags">
-                <span class="tag">Migração DataLake</span>
+              <div class="card-meta"><span>Média prioridade</span><span>&middot;</span><span>Prazo: 28 jun</span></div>
+              <div class="card-tags"><span class="tag">Migração DataLake</span></div>
+              <div class="card-instructions"></div>
+              <div class="card-actions">
+                <button class="card-action-btn" onclick="openInstructionModal('card-3')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  Instruções
+                </button>
               </div>
             </div>
           </div>
 
-          <div class="kanban-column">
-            <div class="column-header">
-              <span>Em Andamento</span>
-              <span class="column-count">4</span>
-            </div>
-            <div class="kanban-card" style="border-left: 3px solid var(--accent);">
+          <div class="kanban-column col-progress">
+            <div class="column-header"><span class="column-header-left"><span class="column-dot"></span><span>Em Andamento</span></span><span class="column-count">4</span></div>
+            <div class="kanban-card" data-card-id="card-4" draggable="true">
               <div class="card-title">Implementar API de integração</div>
-              <div class="card-meta">
-                <span>Alta prioridade</span>
-                <span>·</span>
-                <span>Responsável: Lucas</span>
-              </div>
-              <div class="card-tags">
-                <span class="tag">Plataforma Omnichannel</span>
-                <span class="tag">API</span>
+              <div class="card-meta"><span>Alta prioridade</span><span>&middot;</span><span>Responsável: Lucas</span></div>
+              <div class="card-tags"><span class="tag">Plataforma Omnichannel</span><span class="tag">API</span></div>
+              <div class="card-instructions"></div>
+              <div class="card-actions">
+                <button class="card-action-btn" onclick="openInstructionModal('card-4')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  Instruções
+                </button>
               </div>
             </div>
-            <div class="kanban-card">
+            <div class="kanban-card" data-card-id="card-5" draggable="true">
               <div class="card-title">Desenvolver tela de login</div>
-              <div class="card-meta">
-                <span>Média prioridade</span>
-                <span>·</span>
-                <span>Responsável: Marina</span>
-              </div>
-              <div class="card-tags">
-                <span class="tag">Dashboard IA</span>
+              <div class="card-meta"><span>Média prioridade</span><span>&middot;</span><span>Responsável: Marina</span></div>
+              <div class="card-tags"><span class="tag">Dashboard IA</span></div>
+              <div class="card-instructions"></div>
+              <div class="card-actions">
+                <button class="card-action-btn" onclick="openInstructionModal('card-5')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  Instruções
+                </button>
               </div>
             </div>
-            <div class="kanban-card">
+            <div class="kanban-card" data-card-id="card-6" draggable="true">
               <div class="card-title">Testes de carga no pipeline</div>
-              <div class="card-meta">
-                <span>Alta prioridade</span>
-                <span>·</span>
-                <span>Responsável: Carlos</span>
-              </div>
-              <div class="card-tags">
-                <span class="tag">Chatbot Fase 2</span>
+              <div class="card-meta"><span>Alta prioridade</span><span>&middot;</span><span>Responsável: Carlos</span></div>
+              <div class="card-tags"><span class="tag">Chatbot Fase 2</span></div>
+              <div class="card-instructions"></div>
+              <div class="card-actions">
+                <button class="card-action-btn" onclick="openInstructionModal('card-6')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  Instruções
+                </button>
               </div>
             </div>
           </div>
 
-          <div class="kanban-column">
-            <div class="column-header">
-              <span>Concluído</span>
-              <span class="column-count">8</span>
-            </div>
-            <div class="kanban-card">
+          <div class="kanban-column col-done">
+            <div class="column-header"><span class="column-header-left"><span class="column-dot"></span><span>Concluído</span></span><span class="column-count">8</span></div>
+            <div class="kanban-card" data-card-id="card-7" draggable="true">
               <div class="card-title">Setup do ambiente de staging</div>
-              <div class="card-meta">
-                <span>Concluído em 20 jun</span>
-              </div>
-              <div class="card-tags">
-                <span class="tag">Infraestrutura</span>
+              <div class="card-meta"><span>Concluído em 20 jun</span></div>
+              <div class="card-tags"><span class="tag">Infraestrutura</span></div>
+              <div class="card-instructions"></div>
+              <div class="card-actions">
+                <button class="card-action-btn" onclick="openInstructionModal('card-7')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  Instruções
+                </button>
               </div>
             </div>
-            <div class="kanban-card">
+            <div class="kanban-card" data-card-id="card-8" draggable="true">
               <div class="card-title">Documentação da API v1</div>
-              <div class="card-meta">
-                <span>Concluído em 18 jun</span>
-              </div>
-              <div class="card-tags">
-                <span class="tag">Plataforma Omnichannel</span>
+              <div class="card-meta"><span>Concluído em 18 jun</span></div>
+              <div class="card-tags"><span class="tag">Plataforma Omnichannel</span></div>
+              <div class="card-instructions"></div>
+              <div class="card-actions">
+                <button class="card-action-btn" onclick="openInstructionModal('card-8')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  Instruções
+                </button>
               </div>
             </div>
-            <div class="kanban-card">
+            <div class="kanban-card" data-card-id="card-9" draggable="true">
               <div class="card-title">Wireframes aprovados</div>
-              <div class="card-meta">
-                <span>Concluído em 15 jun</span>
-              </div>
-              <div class="card-tags">
-                <span class="tag">Dashboard IA</span>
+              <div class="card-meta"><span>Concluído em 15 jun</span></div>
+              <div class="card-tags"><span class="tag">Dashboard IA</span></div>
+              <div class="card-instructions"></div>
+              <div class="card-actions">
+                <button class="card-action-btn" onclick="openInstructionModal('card-9')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  Instruções
+                </button>
               </div>
             </div>
           </div>
@@ -253,119 +860,72 @@
   </main>
 </div>
 
-<div class="modal-overlay" id="projetoModal">
+<div class="modal-overlay" id="projetoModal" data-od-id="projeto-modal">
   <div class="modal">
-    <div class="modal-header">
-      <h2>Novo Projeto</h2>
-      <button class="modal-close" onclick="closeModal('projetoModal')">&times;</button>
-    </div>
+    <div class="modal-header"><h2>Novo projeto</h2><button class="modal-close" onclick="closeModal('projetoModal')">&times;</button></div>
     <div class="modal-body">
       <div class="form-group">
-        <div class="field">
-          <label>Nome do Projeto</label>
-          <input class="input" type="text" placeholder="Ex: Plataforma Omnichannel" />
+        <div class="field"><label>Nome do projeto</label><input class="input" type="text" placeholder="Ex: Plataforma Omnichannel" /></div>
+        <div class="form-row">
+          <div class="field"><label>Cliente</label><select class="select"><option>Selecione</option><option>Inovatec</option><option>DataFlow Solutions</option><option>Nexum AI</option><option>OmniTech</option><option>ZapFlow</option></select></div>
+          <div class="field"><label>Orçamento</label><input class="input" type="text" placeholder="R$ 0,00" /></div>
         </div>
         <div class="form-row">
-          <div class="field">
-            <label>Cliente</label>
-            <select class="select">
-              <option>Selecione</option>
-              <option>Inovatec</option>
-              <option>DataFlow Solutions</option>
-              <option>Nexum AI</option>
-              <option>OmniTech</option>
-              <option>ZapFlow</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Orçamento</label>
-            <input class="input" type="text" placeholder="R$ 0,00" />
-          </div>
+          <div class="field"><label>Início</label><input class="input" type="date" /></div>
+          <div class="field"><label>Entrega</label><input class="input" type="date" /></div>
         </div>
-        <div class="form-row">
-          <div class="field">
-            <label>Data de Início</label>
-            <input class="input" type="date" />
-          </div>
-          <div class="field">
-            <label>Data de Entrega</label>
-            <input class="input" type="date" />
-          </div>
-        </div>
-        <div class="field">
-          <label>Descrição</label>
-          <textarea class="textarea" placeholder="Escopo e objetivos do projeto…"></textarea>
-        </div>
+        <div class="field"><label>Descrição</label><textarea class="textarea" placeholder="Escopo e objetivos do projeto…"></textarea></div>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('projetoModal')">Cancelar</button>
-      <button class="btn btn-primary" onclick="alert('Projeto criado!');closeModal('projetoModal')">Criar Projeto</button>
+      <button class="btn btn-primary" onclick="criarProjeto()">Criar Projeto</button>
     </div>
   </div>
 </div>
 
-<div class="modal-overlay" id="tarefaModal">
+<div class="modal-overlay" id="tarefaModal" data-od-id="tarefa-modal">
   <div class="modal">
-    <div class="modal-header">
-      <h2>Nova Tarefa</h2>
-      <button class="modal-close" onclick="closeModal('tarefaModal')">&times;</button>
-    </div>
+    <div class="modal-header"><h2>Nova tarefa</h2><button class="modal-close" onclick="closeModal('tarefaModal')">&times;</button></div>
     <div class="modal-body">
       <div class="form-group">
-        <div class="field">
-          <label>Título da Tarefa</label>
-          <input class="input" type="text" placeholder="Ex: Implementar API de integração" />
+        <div class="field"><label>Título da tarefa</label><input class="input" type="text" placeholder="Ex: Implementar API de integração" /></div>
+        <div class="form-row">
+          <div class="field"><label>Projeto</label><select class="select"><option>Plataforma Omnichannel</option><option>Dashboard IA: cliente A</option><option>Migração DataLake</option><option>Chatbot suporte: fase 2</option></select></div>
+          <div class="field"><label>Responsável</label><select class="select"><option>Lucas</option><option>Marina</option><option>Carlos</option><option>Juliana</option></select></div>
         </div>
         <div class="form-row">
-          <div class="field">
-            <label>Projeto</label>
-            <select class="select">
-              <option>Plataforma Omnichannel</option>
-              <option>Dashboard IA — Cliente A</option>
-              <option>Migração DataLake</option>
-              <option>Chatbot Suporte — Fase 2</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Responsável</label>
-            <select class="select">
-              <option>Lucas</option>
-              <option>Marina</option>
-              <option>Carlos</option>
-              <option>Juliana</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="field">
-            <label>Prioridade</label>
-            <select class="select">
-              <option>Alta</option>
-              <option>Média</option>
-              <option>Baixa</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Prazo</label>
-            <input class="input" type="date" />
-          </div>
+          <div class="field"><label>Prioridade</label><select class="select"><option>Alta</option><option>Média</option><option>Baixa</option></select></div>
+          <div class="field"><label>Prazo</label><input class="input" type="date" /></div>
         </div>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('tarefaModal')">Cancelar</button>
-      <button class="btn btn-primary" onclick="alert('Tarefa adicionada ao Kanban!');closeModal('tarefaModal')">Adicionar</button>
+      <button class="btn btn-primary" onclick="adicionarTarefa()">Adicionar</button>
     </div>
   </div>
 </div>
 
-<script>
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-overlay').forEach(el => {
-  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
-});
-</script>
+<div class="modal-overlay instruction-modal" id="instructionModal" data-od-id="instruction-modal">
+  <div class="modal">
+    <div class="modal-header"><h2>Instruções</h2><button class="modal-close" onclick="closeModal('instructionModal')">&times;</button></div>
+    <div class="modal-body">
+      <div class="instruction-card-title" style="font-family:var(--font-display);font-size:15px;letter-spacing:-0.01em;color:var(--fg);margin-bottom:var(--space-3)"></div>
+      <div class="current-label">Instruções atuais</div>
+      <div class="current-instructions"></div>
+      <div class="field">
+        <label>Escreva as instruções</label>
+        <textarea class="textarea" id="instructionText" placeholder="Descreva os passos, observações ou detalhes que a equipe precisa seguir…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('instructionModal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveInstruction()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="toast-icon">&#10003;</span><span class="toast-msg">Operação concluída</span></div>
 </body>
 </html>

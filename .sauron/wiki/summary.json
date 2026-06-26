@@ -14,6 +14,16 @@
     "id": "domain-knowledge"
   },
   {
+    "type": "file",
+    "name": "Arquitetura do Sistema Aptus",
+    "slug": "architecture",
+    "path": "knowledge/architecture.md",
+    "id": "file-architecture",
+    "domainId": "domain-knowledge",
+    "contentLength": 3537,
+    "contentHash": "042e6bf152f00be057508d2547b0fb33fdb06aad583b7a5b415ed257c8fd25b9"
+  },
+  {
     "type": "folder",
     "name": "Manuals",
     "slug": "manuals",
