@@ -29,7 +29,29 @@ Não faz parte desta página:
   - *Prós*: Repositório mais limpo, menos dependências, decisão adiada até que o backend seja realmente necessário.
   - *Contras*: Quando o backend for necessário, será preciso reconfigurar o Supabase (ou outra solução) do zero.
 
+### DA-002 — Adoção de Supabase + Cloudflare como stack base
+- **Problema**: O projeto precisa de uma stack tecnológica definida para suportar persistência, autenticação, hospedagem e desenvolvimento local reproduzível.
+- **Options Considered**:
+  - Supabase (BaaS) + Cloudflare (hosting) + Vite/React (frontend).
+  - Firebase + Vercel + Vite/React.
+  - Backend próprio (Node/Express/PostgreSQL) + hospedagem própria.
+- **Choice**: Supabase para backend, banco de dados e autenticação; Cloudflare para hospedagem do frontend; Vite + React para o frontend; desenvolvimento local via Supabase CLI com Docker.
+- **Justification**: Supabase oferece PostgreSQL gerenciado, autenticação integrada e APIs automáticas; Cloudflare oferece hospedagem edge confiável; Vite + React é a diretriz global do projeto; desenvolvimento local via Docker evita custos e protege os dados de produção durante a construção de funcionalidades.
+- **Trade-offs**:
+  - *Prós*: Menor tempo de setup, backend gerenciado, ambiente local fiel à produção, custo previsível.
+  - *Contras*: Vendor lock-in parcial, necessidade de sincronizar schema/migrações entre local e nuvem.
+
 ## 4. Change History
+
+### 2026-06-26 — Definição da stack tecnológica do Aptus ERP
+- **What was done**: Foi criada a especificação `specs/002-tech-stack-definition` definindo a stack base do projeto: Cloudflare para hospedagem do frontend, Supabase para backend/banco/autenticação, Vite + React para o frontend, e desenvolvimento local via Supabase CLI com Docker.
+- **Why it was done**: O projeto precisava de uma decisão arquitetural clara para suportar persistência, autenticação e deploy, além de um ambiente local reproduzível que proteja os dados de produção.
+- **Impact on the system**: Nenhum impacto funcional imediato. A decisão orienta a próxima fase de implementação do backend e da migração do frontend para Vite + React.
+- **Files affected**:
+  - Criado: `specs/002-tech-stack-definition/spec.md`
+  - Criado: `specs/002-tech-stack-definition/.spec-context.json`
+  - Criado: `specs/002-tech-stack-definition/checklists/requirements.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
 
 ### 2026-06-26 — Remoção das configurações do Supabase CLI
 - **What was done**: Foram removidos do sistema de arquivos a pasta `supabase/`, o `package.json`, o `package-lock.json` e a pasta `node_modules/`.
@@ -55,11 +77,16 @@ Não faz parte desta página:
 
 ## 5. Current State
 
-- **Frontend**: Páginas estáticas em HTML/CSS/JS com 13 telas ativas (`login.html`, `dashboard.html`, `fluxo-caixa.html`, `contas-pagar.html`, `contas-receber.html`, `clientes.html`, `propostas.html`, `contratos.html`, `cobrancas.html`, `projetos.html`, `equipe.html`, `relatorios.html`, `configuracoes.html`).
+- **Frontend atual**: Páginas estáticas em HTML/CSS/JS com 13 telas ativas (`login.html`, `dashboard.html`, `fluxo-caixa.html`, `contas-pagar.html`, `contas-receber.html`, `clientes.html`, `propostas.html`, `contratos.html`, `cobrancas.html`, `projetos.html`, `equipe.html`, `relatorios.html`, `configuracoes.html`).
 - **Telas legadas**: `index.html` e `financeiro.html` não fazem parte da documentação ativa.
-- **Backend/Banco de dados**: Nenhum ativo. As definições de schema permanecem documentadas em `docs/banco-de-dados.md` apenas como especificação, com tabelas nomeadas em pt-BR.
+- **Stack definida (em definição/adoção)**:
+  - **Hospedagem frontend**: Cloudflare.
+  - **Backend/Banco/Auth**: Supabase (PostgreSQL + Auth + APIs).
+  - **Frontend (direção futura)**: Vite + React.
+  - **Desenvolvimento local**: Supabase CLI com Docker.
+- **Backend/Banco de dados ativo**: Nenhum. As definições de schema permanecem documentadas em `docs/banco-de-dados.md` apenas como especificação, com tabelas nomeadas em pt-BR.
 - **Dependências**: Nenhuma dependência Node.js ativa no projeto.
-- **Direção futura**: Avaliar se o backend será implementado com Supabase, outro BaaS ou solução própria quando as telas exigirem persistência real.
+- **Direção futura**: Implementar o ambiente local Supabase, criar o projeto Vite + React e iniciar a migração/integração das telas com persistência real.
 
 ## 6. Next Steps (Optional)
 

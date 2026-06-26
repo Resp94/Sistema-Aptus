@@ -1,0 +1,24 @@
+{
+  "workflow": "speckit",
+  "specName": "Tech Stack Definition",
+  "branch": "main",
+  "selectedAt": "2026-06-26T19:42:48.412Z",
+  "currentStep": "specify",
+  "status": "specified",
+  "history": [
+    {
+      "step": "specify",
+      "substep": null,
+      "kind": "start",
+      "by": "extension",
+      "at": "2026-06-26T19:42:48.412Z"
+    },
+    {
+      "step": "specify",
+      "substep": null,
+      "kind": "complete",
+      "by": "ai",
+      "at": "2026-06-26T20:12:13Z"
+    }
+  ]
+}
