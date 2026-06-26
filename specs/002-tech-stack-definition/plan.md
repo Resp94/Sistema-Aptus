@@ -14,7 +14,7 @@ Esta feature estabelece a fundação tecnológica do Aptus ERP. O objetivo é mi
 
 **Primary Dependencies**: React 18+, Vite 5+, Supabase JS client, Supabase CLI
 
-**Storage**: PostgreSQL 15+ via Supabase (local e nuvem)
+**Storage**: PostgreSQL 17 via Supabase (local e nuvem), matching the existing `supabase/config.toml`
 
 **Testing**: Vitest para frontend; testes de integração contra o Supabase local
 

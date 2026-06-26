@@ -58,8 +58,19 @@ Não faz parte desta página:
   - Criado: `specs/002-tech-stack-definition/contracts/supabase-integration.md`
   - Criado: `specs/002-tech-stack-definition/checklists/requirements.md`
   - Criado: `specs/002-tech-stack-definition/checklists/stack-definition.md`
+  - Criado: `specs/002-tech-stack-definition/tasks.md`
   - Alterado: `.sauron/wiki/knowledge/architecture.md`
   - Alterado: `AGENTS.md`
+
+### 2026-06-26 — Remediação pós-análise dos artefatos da stack
+- **What was done**: Após análise dos artefatos `spec.md`, `plan.md` e `tasks.md`, foram aplicadas correções: versão do PostgreSQL no plano ajustada para 17 (igual ao `supabase/config.toml`), adicionadas tarefas de teste de integração com Vitest e validação real do `supabase db push`, e ajustadas tarefas de escopo no `tasks.md`.
+- **Why it was done**: Eliminar inconsistências e gaps de cobertura identificados na análise antes da implementação.
+- **Impact on the system**: Nenhum impacto funcional. Apenas ajustes documentacionais e de planejamento.
+- **Files affected**:
+  - Alterado: `specs/002-tech-stack-definition/plan.md`
+  - Alterado: `specs/002-tech-stack-definition/tasks.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+  - Alterado: `.sauron/wiki/summary.json`
 
 ### 2026-06-26 — Remoção das configurações do Supabase CLI
 - **What was done**: Foram removidos do sistema de arquivos a pasta `supabase/`, o `package.json`, o `package-lock.json` e a pasta `node_modules/`.
@@ -92,13 +103,13 @@ Não faz parte desta página:
   - **Backend/Banco/Auth**: Supabase (PostgreSQL + Auth + APIs).
   - **Frontend (direção futura)**: Vite + React.
   - **Desenvolvimento local**: Supabase CLI com Docker.
-- **Backend/Banco de dados ativo**: Nenhum. As definições de schema permanecem documentadas em `docs/banco-de-dados.md` apenas como especificação, com tabelas nomeadas em pt-BR.
+- **Backend/Banco de dados ativo**: Ambiente local Supabase já inicializado via Docker (`supabase/config.toml` presente, serviços rodando localmente). Schema ainda não versionado em `supabase/migrations/`.
 - **Dependências**: Nenhuma dependência Node.js ativa no projeto.
-- **Direção futura**: Implementar o ambiente local Supabase, criar o projeto Vite + React e iniciar a migração/integração das telas com persistência real.
+- **Direção futura**: Criar o projeto Vite + React, integrar com o Supabase local já rodando e iniciar a migração/integração das telas com persistência real.
 
 ## 6. Next Steps (Optional)
 
-- Implementar o ambiente local Supabase (`supabase start`, `config.toml`, migrations, seed).
+- Criar baseline migration a partir do banco local já existente.
 - Inicializar o projeto Vite + React na raiz do repositório.
 - Configurar o deploy contínuo na Cloudflare Pages.
 - Vincular o projeto local ao Supabase Cloud e documentar o processo de `db push`.
