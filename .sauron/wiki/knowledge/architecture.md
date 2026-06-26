@@ -43,10 +43,21 @@ Não faz parte desta página:
   - Removido: `package-lock.json`
   - Removido: `node_modules/`
 
+### 2026-06-26 — Sincronização da documentação com as telas HTML
+- **What was done**: As documentações de telas, personas e banco de dados foram refatoradas para refletir as 13 telas HTML ativas na raiz do projeto. Telas legadas (`index.html`, `financeiro.html`) foram removidas da documentação ativa. Foi adicionada a persona Profissional Técnico para representar desenvolvedores alocados em projetos. O schema de banco de dados foi expandido com tabelas em pt-BR para fornecedores, contas a pagar/receber, fluxo de caixa, equipe, alocações, relatórios e configurações, e a tabela `usuarios` foi definida como espelho do auth provider.
+- **Why it was done**: A documentação estava desatualizada em relação ao estado real das telas HTML, o que gerava inconsistência entre telas, personas e modelo de dados.
+- **Impact on the system**: Nenhum impacto funcional imediato, pois as mudanças são documentacionais. O modelo de dados planejado agora suporta todos os módulos visíveis nas telas.
+- **Files affected**:
+  - Alterado: `docs/telas.md`
+  - Alterado: `docs/personas.md`
+  - Alterado: `docs/banco-de-dados.md`
+  - Alterado: `docs/aptus-prd.md`
+
 ## 5. Current State
 
-- **Frontend**: Páginas estáticas em HTML/CSS/JS (`clientes.html`, `dashboard.html`, `login.html`, etc.).
-- **Backend/Banco de dados**: Nenhum ativo. As definições de schema permanecem documentadas em `docs/banco-de-dados.md` apenas como especificação.
+- **Frontend**: Páginas estáticas em HTML/CSS/JS com 13 telas ativas (`login.html`, `dashboard.html`, `fluxo-caixa.html`, `contas-pagar.html`, `contas-receber.html`, `clientes.html`, `propostas.html`, `contratos.html`, `cobrancas.html`, `projetos.html`, `equipe.html`, `relatorios.html`, `configuracoes.html`).
+- **Telas legadas**: `index.html` e `financeiro.html` não fazem parte da documentação ativa.
+- **Backend/Banco de dados**: Nenhum ativo. As definições de schema permanecem documentadas em `docs/banco-de-dados.md` apenas como especificação, com tabelas nomeadas em pt-BR.
 - **Dependências**: Nenhuma dependência Node.js ativa no projeto.
 - **Direção futura**: Avaliar se o backend será implementado com Supabase, outro BaaS ou solução própria quando as telas exigirem persistência real.
 

@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Sistema interno para gestão administrativa e financeira da empresa de automação e desenvolvimento com IA, integrando controle de fluxo de caixa, clientes, propostas, contratos, cobranças, projetos e tarefas.
+Sistema interno para gestão administrativa, financeira e operacional da empresa de automação e desenvolvimento com IA, integrando controle de fluxo de caixa, contas a pagar/receber, clientes, fornecedores, propostas, contratos, cobranças, projetos, tarefas, equipe, relatórios e configurações.
 
 ## Documentos
 
