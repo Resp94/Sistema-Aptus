@@ -20,8 +20,14 @@ describe('saudacaoPorHora', () => {
   it('Boa tarde entre 12 e 17', () => {
     expect(saudacaoPorHora(15)).toBe('Boa tarde')
   })
+  it('Boa tarde exatamente ao meio-dia (limite)', () => {
+    expect(saudacaoPorHora(12)).toBe('Boa tarde')
+  })
   it('Boa noite a partir das 18', () => {
     expect(saudacaoPorHora(20)).toBe('Boa noite')
+  })
+  it('Boa noite exatamente às 18 (limite)', () => {
+    expect(saudacaoPorHora(18)).toBe('Boa noite')
   })
 })
 
@@ -32,7 +38,16 @@ describe('rotaInicialPorPerfil', () => {
   it('Projetos vai para /projetos', () => {
     expect(rotaInicialPorPerfil('Projetos')).toBe('/projetos')
   })
+  it('Financeiro vai para /dashboard', () => {
+    expect(rotaInicialPorPerfil('Financeiro')).toBe('/dashboard')
+  })
+  it('Técnico vai para /projetos', () => {
+    expect(rotaInicialPorPerfil('Técnico')).toBe('/projetos')
+  })
   it('Comercial vai para /clientes', () => {
     expect(rotaInicialPorPerfil('Comercial')).toBe('/clientes')
+  })
+  it('Visualizador (default) vai para /dashboard', () => {
+    expect(rotaInicialPorPerfil('Visualizador')).toBe('/dashboard')
   })
 })
