@@ -81,13 +81,15 @@ Especialista responsável pela execução técnica dos projetos, como desenvolve
 
 ## Perfis técnicos de acesso (RBAC)
 
-A tela **Configurações > Usuários** define os seguintes perfis técnicos de acesso ao sistema. Eles representam o controle de permissões subjacente e podem ser mapeados às personas de negócio conforme necessário.
+A tela **Configurações > Usuários** define os seguintes perfis técnicos de acesso ao sistema. Cada perfil técnico espelha diretamente uma persona de negócio, garantindo que as permissões reflitam o papel real do usuário.
 
-| Perfil técnico | Permissões gerais |
-|----------------|-------------------|
-| **Administrador** | Acesso total a todos os módulos, usuários e configurações. Equivalente à persona Administrador. |
-| **Financeiro** | Acesso ao módulo financeiro (Fluxo de Caixa, Contas a Pagar, Contas a Receber, Cobranças) e relatórios financeiros. Equivalente à persona Analista Financeiro. |
-| **Operacional** | Acesso a Projetos, Equipe e tarefas. Pode ser atribuído às personas Gerente de Projetos e Profissional Técnico, com escopo diferenciado. |
-| **Visualizador** | Acesso somente leitura a dashboards e relatórios, sem permissão para criar ou editar registros. |
+| Perfil técnico | Persona | Permissões gerais |
+|----------------|---------|-------------------|
+| **Administrador** | Administrador | Acesso total a todos os módulos, usuários e configurações do sistema. |
+| **Financeiro** | Analista Financeiro | Acesso ao módulo financeiro (Fluxo de Caixa, Contas a Pagar, Contas a Receber, Cobranças), Dashboard e relatórios financeiros. |
+| **Projetos** | Gerente de Projetos | Acesso a Projetos (Kanban, tarefas, progresso), Equipe (alocações, capacidade), Dashboard e relatórios operacionais. |
+| **Comercial** | Consultor Comercial | Acesso a Clientes, Propostas, Contratos, Cobranças (lembretes e status) e histórico de atendimento. |
+| **Técnico** | Profissional Técnico | Acesso somente aos projetos em que está alocado, suas tarefas no Kanban, equipe (visualização limitada) e própria ficha em Configurações. Sem acesso a Dashboard, financeiro ou dados comerciais de terceiros. |
+| **Visualizador** | — | Acesso somente leitura a dashboards e relatórios, sem permissão para criar ou editar registros. Pode ser atribuído como restrição adicional a qualquer persona. |
 
-> **Nota:** Os perfis técnicos são o modelo de permissões planejado no sistema. As personas de negócio representam os papéis do dia a dia e podem utilizar um ou mais perfis técnicos.
+> **Nota:** Os 5 primeiros perfis técnicos espelham diretamente as 5 personas de negócio. O perfil **Visualizador** é um modo restrito auxiliar.

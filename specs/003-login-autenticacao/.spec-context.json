@@ -3,8 +3,8 @@
   "specName": "Login e Autenticação",
   "branch": "main",
   "selectedAt": "2026-06-27T00:52:38.280Z",
-  "currentStep": "specify",
-  "status": "specified",
+  "currentStep": "analyze",
+  "status": "tasking",
   "history": [
     {
       "step": "specify",
@@ -19,6 +19,80 @@
       "kind": "complete",
       "by": "ai",
       "at": "2026-06-27T01:01:58Z"
+    },
+    {
+      "step": "plan",
+      "substep": null,
+      "kind": "start",
+      "by": "extension",
+      "at": "2026-06-27T15:01:53.468Z"
+    },
+    {
+      "step": "plan",
+      "substep": null,
+      "kind": "complete",
+      "by": "ai",
+      "at": "2026-06-27T15:04:44Z"
+    },
+    {
+      "step": "tasks",
+      "substep": null,
+      "kind": "start",
+      "by": "extension",
+      "at": "2026-06-27T16:20:06.447Z"
+    },
+    {
+      "step": "tasks",
+      "substep": null,
+      "kind": "complete",
+      "by": "ai",
+      "at": "2026-06-27T16:20:06.447Z"
+    },
+    {
+      "step": "analyze",
+      "substep": null,
+      "kind": "start",
+      "by": "extension",
+      "at": "2026-06-27T16:29:55.431Z"
+    }
+  ],
+  "telemetryInstanceId": "82d4a454-0977-4d0a-a266-afbe41ebf7b3",
+  "reviewComments": [
+    {
+      "id": "ref-1782573273458-sojmt",
+      "doc": "data-model",
+      "anchor": {
+        "heading": null,
+        "blockText": "- `perfis.perfil_acesso` deve ser um dos valores: `Administrador`, `Financeiro`, `Operacional`, `Visualizador`.\r",
+        "line": 47
+      },
+      "comment": "revalide os perfis não são esses, revalide",
+      "status": "applied",
+      "createdAt": "2026-06-27T15:14:33.461Z"
+    },
+    {
+      "id": "ref-1782573986285-6a5dn",
+      "doc": "contracts/login-flow",
+      "anchor": {
+        "heading": null,
+        "blockText": "All RPCs use `SECURITY INVOKER` and rely on the authenticated session (`auth.uid()`). Tables remain inaccessible to direct frontend queries — the frontend only calls `supabase.rpc()`.\r",
+        "line": 51
+      },
+      "comment": "o correto não seria ser security definer?",
+      "status": "applied",
+      "createdAt": "2026-06-27T15:26:26.288Z"
+    },
+    {
+      "id": "ref-1782577550506-ltasq",
+      "doc": "tasks",
+      "anchor": {
+        "heading": null,
+        "blockText": "- **[P]**: Can run in parallel (different files, no dependencies)\r",
+        "line": 13
+      },
+      "comment": "eu não utilizo o npx na frente apenas supabase start e supabase status, mas já temos um container no docker local basta usar supabase status",
+      "status": "applied",
+      "createdAt": "2026-06-27T16:25:50.509Z"
     }
   ]
 }
