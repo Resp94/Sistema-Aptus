@@ -1,9 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/auth.service';
 import { Toast } from '../components/ui/Toast';
+import { rotaInicialPorPerfil } from '../lib/usuario';
 import './Login.css';
 
 export const Login: React.FC = () => {
+  const navigate = useNavigate();
+
   // Login Form State
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -125,21 +129,7 @@ export const Login: React.FC = () => {
 
       // Redireciona com base no perfil de acesso após breve delay
       setTimeout(() => {
-        switch (perfil.perfil_acesso) {
-          case 'Administrador':
-          case 'Financeiro':
-            window.location.href = '/dashboard.html';
-            break;
-          case 'Projetos':
-          case 'Técnico':
-            window.location.href = '/projetos.html';
-            break;
-          case 'Comercial':
-            window.location.href = '/clientes.html';
-            break;
-          default:
-            window.location.href = '/dashboard.html';
-        }
+        navigate(rotaInicialPorPerfil(perfil.perfil_acesso), { replace: true });
       }, 1000);
 
     } catch (err: any) {
