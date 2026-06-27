@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { authService } from '../services/auth.service';
 import { Toast } from '../components/ui/Toast';
+import './Login.css';
 
 export const Login: React.FC = () => {
   // Login Form State
@@ -176,13 +177,7 @@ export const Login: React.FC = () => {
     <div className="login-page">
       {/* Coluna da esquerda - Identidade visual */}
       <div className="login-brand">
-        <div className="brand-logo">
-          <img src="mqu1bpo3-Logo-Fundo-removido.png" alt="Aptus Flow" onError={(e) => {
-            // Fallback se a imagem não carregar na raiz
-            (e.target as HTMLImageElement).src = '/mqu1bpo3-Logo-Fundo-removido.png';
-          }} />
-        </div>
-        <div className="brand-name">Aptus Flow</div>
+        <div className="brand-name"><span className="logo-dot"></span>Aptus Flow</div>
         <p className="brand-sub">Gestão financeira inteligente para empresas de IA e automação.</p>
         
         <div className="brand-features">
@@ -235,7 +230,6 @@ export const Login: React.FC = () => {
       {/* Coluna da direita - Formulário */}
       <div className="login-form-area">
         <div className="mobile-brand-bar">
-          <img src="mqu1bpo3-Logo-Fundo-removido.png" alt="Aptus Flow" />
           <span><span style={{ color: 'var(--accent)' }}>●</span> Aptus Flow</span>
         </div>
 
