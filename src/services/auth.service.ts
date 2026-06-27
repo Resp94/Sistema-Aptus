@@ -110,7 +110,7 @@ export const authService = {
 
   async resetPassword(email: string): Promise<void> {
     const normalizedEmail = email.trim().toLowerCase();
-    const redirectUrl = `${window.location.origin}/login`;
+    const redirectUrl = `${window.location.origin}/reset-password`;
     
     const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
       redirectTo: redirectUrl

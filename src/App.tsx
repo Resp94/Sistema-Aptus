@@ -1,50 +1,31 @@
-import { useState, useEffect } from 'react';
-import Login from './pages/Login';
-import ResetPassword from './pages/ResetPassword';
-import './App.css';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider } from './contexts/AuthContext'
+import { ProtectedRoute } from './components/ProtectedRoute'
+import Login from './pages/Login'
+import ResetPassword from './pages/ResetPassword'
+import ModuloNaoMigrado from './pages/ModuloNaoMigrado'
+import DashboardPage from './pages/DashboardPage'
+import { ITENS_NAV } from './lib/navegacao'
 
 function App() {
-  const [currentPath, setCurrentPath] = useState(window.location.pathname);
-  const [hash, setHash] = useState(window.location.hash);
-
-  useEffect(() => {
-    const handleLocationChange = () => {
-      setCurrentPath(window.location.pathname);
-      setHash(window.location.hash);
-    };
-
-    window.addEventListener('popstate', handleLocationChange);
-    // Também escuta alterações de hash
-    window.addEventListener('hashchange', handleLocationChange);
-
-    return () => {
-      window.removeEventListener('popstate', handleLocationChange);
-      window.removeEventListener('hashchange', handleLocationChange);
-    };
-  }, []);
-
-  const isRecovery = hash.includes('type=recovery') || hash.includes('access_token=');
-
-  if (isRecovery) {
-    return <ResetPassword />;
-  }
-
-  // Roteamento SPA simples
-  if (currentPath === '/login' || currentPath === '/' || currentPath === '/index.html') {
-    return <Login />;
-  }
-
   return (
-    <div style={{ padding: '40px', textAlign: 'center', fontFamily: 'var(--font-body)', background: 'var(--bg)', color: 'var(--fg)', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-      <h1 style={{ fontSize: '32px', marginBottom: '16px' }}>Módulo Não Migrado</h1>
-      <p style={{ color: 'var(--muted)', marginBottom: '24px', maxWidth: '400px' }}>
-        Este módulo ainda está no formato estático legado. Use o login para acessar os painéis correspondentes ao seu perfil de acesso.
-      </p>
-      <a href="/login" style={{ display: 'inline-block', padding: '10px 20px', background: 'var(--accent)', color: 'var(--accent-on)', borderRadius: 'var(--radius-md)', textDecoration: 'none', fontWeight: 'bold' }}>
-        Ir para o Login
-      </a>
-    </div>
-  );
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            {ITENS_NAV.filter((i) => i.modulo !== 'dashboard').map((i) => (
+              <Route key={i.rota} path={i.rota} element={<ModuloNaoMigrado />} />
+            ))}
+          </Route>
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  )
 }
 
-export default App;
+export default App
