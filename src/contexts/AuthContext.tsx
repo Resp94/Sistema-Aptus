@@ -21,16 +21,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let ativo = true
 
-    async function carregar() {
-      const { data } = await supabase.auth.getSession()
-      if (!data.session) {
-        if (ativo) {
-          setPerfil(null)
-          setPermissoes([])
-          setCarregando(false)
-        }
-        return
-      }
+    // Carrega perfil + permissões a partir da sessão ativa.
+    // getPerfilUsuario lança (e faz signOut) quando o perfil está ausente/inativo.
+    async function carregarPerfil() {
       try {
         const [p, perms] = await Promise.all([
           authService.getPerfilUsuario(),
@@ -41,20 +34,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setPermissoes(perms)
         }
       } catch {
-        // perfil ausente/inativo: getPerfilUsuario já fez signOut
         if (ativo) {
           setPerfil(null)
           setPermissoes([])
         }
-      } finally {
-        if (ativo) setCarregando(false)
       }
     }
 
-    carregar()
+    async function inicializar() {
+      const { data } = await supabase.auth.getSession()
+      if (data.session) {
+        await carregarPerfil()
+      } else if (ativo) {
+        setPerfil(null)
+        setPermissoes([])
+      }
+      if (ativo) setCarregando(false)
+    }
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_evento, session) => {
-      if (!session && ativo) {
+    inicializar()
+
+    // Reage a login (SIGNED_IN) recarregando o perfil e a logout (SIGNED_OUT)
+    // limpando-o. INITIAL_SESSION é ignorado pois já é coberto por inicializar().
+    const { data: sub } = supabase.auth.onAuthStateChange((evento, session) => {
+      if (!ativo || evento === 'INITIAL_SESSION') return
+      if (session) {
+        carregarPerfil()
+      } else {
         setPerfil(null)
         setPermissoes([])
       }
