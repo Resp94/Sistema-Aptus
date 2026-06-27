@@ -24,6 +24,16 @@
     "contentHash": "8f0a1775ce66348ada1a0c219e5f2e95da4d022a1116797f87e59c3a373f0d1d"
   },
   {
+    "type": "file",
+    "name": "Compatibilidade PowerShell no Windows",
+    "slug": "powershell-compatibility",
+    "path": "knowledge/powershell-compatibility.md",
+    "id": "file-powershell-compatibility",
+    "domainId": "domain-knowledge",
+    "contentLength": 2941,
+    "contentHash": "aa708312f08398e29022750fcf0b277bb0b7ddd7d0b98518bebceee3677fd7da"
+  },
+  {
     "type": "folder",
     "name": "Manuals",
     "slug": "manuals",

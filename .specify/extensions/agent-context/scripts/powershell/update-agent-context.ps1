@@ -87,8 +87,9 @@ if ($null -eq $Options) {
     }
 
     if ($pythonCmd) {
+        $tempScript = [System.IO.Path]::GetTempFileName() + ".py"
         try {
-            $jsonOut = & $pythonCmd -c @'
+            $pyCode = @'
 import json
 import sys
 try:
@@ -114,12 +115,18 @@ if not isinstance(data, dict):
     data = {}
 
 print(json.dumps(data))
-'@ $ExtConfig
+'@
+            [System.IO.File]::WriteAllText($tempScript, $pyCode, [System.Text.Encoding]::UTF8)
+            $jsonOut = & $pythonCmd $tempScript $ExtConfig
             if ($LASTEXITCODE -eq 0 -and $jsonOut) {
                 $Options = $jsonOut | ConvertFrom-Json -ErrorAction Stop
             }
         } catch {
             $Options = $null
+        } finally {
+            if (Test-Path -LiteralPath $tempScript) {
+                Remove-Item -LiteralPath $tempScript -Force -ErrorAction SilentlyContinue
+            }
         }
     }
 
@@ -172,12 +179,20 @@ if (-not $PlanPath) {
     try {
         $specsDir = Join-Path $ProjectRoot 'specs'
         $candidate = Get-ChildItem -Path $specsDir -Directory -ErrorAction SilentlyContinue |
-            ForEach-Object { Get-Item -LiteralPath (Join-Path $_.FullName 'plan.md') -ErrorAction SilentlyContinue } |
-            Where-Object { $_ } |
+            ForEach-Object {
+                $p = Join-Path $_.FullName 'plan.md'
+                if (Test-Path -LiteralPath $p) {
+                    Get-Item -LiteralPath $p
+                }
+            } |
             Sort-Object LastWriteTime -Descending |
             Select-Object -First 1
         if ($candidate) {
-            $PlanPath = [System.IO.Path]::GetRelativePath($ProjectRoot, $candidate.FullName).Replace('\','/')
+            $rel = $candidate.FullName.Substring($ProjectRoot.Length)
+            if ($rel.StartsWith('\') -or $rel.StartsWith('/')) {
+                $rel = $rel.Substring(1)
+            }
+            $PlanPath = $rel.Replace('\','/')
         }
     } catch {
         # Non-fatal: continue without a plan path.

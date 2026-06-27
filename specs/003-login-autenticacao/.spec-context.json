@@ -1,0 +1,24 @@
+{
+  "workflow": "speckit",
+  "specName": "Login e Autenticação",
+  "branch": "main",
+  "selectedAt": "2026-06-27T00:52:38.280Z",
+  "currentStep": "specify",
+  "status": "specified",
+  "history": [
+    {
+      "step": "specify",
+      "substep": null,
+      "kind": "start",
+      "by": "extension",
+      "at": "2026-06-27T00:52:38.280Z"
+    },
+    {
+      "step": "specify",
+      "substep": null,
+      "kind": "complete",
+      "by": "ai",
+      "at": "2026-06-27T01:01:58Z"
+    }
+  ]
+}
