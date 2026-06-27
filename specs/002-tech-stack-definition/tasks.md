@@ -20,14 +20,14 @@
 
 **Purpose**: Initialize the project structure and install base dependencies for the new stack.
 
-- [ ] T001 Create Vite + React + TypeScript project scaffold with `index.html`, `package.json`, `vite.config.ts`, and `tsconfig.json` in repository root
-- [ ] T002 [P] Configure ESLint and Prettier for TypeScript/React in repository root
-- [ ] T003 [P] Install runtime dependencies: `react`, `react-dom`, `@supabase/supabase-js` in `package.json`
-- [ ] T004 [P] Install dev dependencies: `typescript`, `vite`, `@types/react`, `@types/react-dom`, `vitest` in `package.json`
-- [ ] T005 Create source directory structure: `src/main.tsx`, `src/App.tsx`, `src/components/`, `src/pages/`, `src/services/`, `src/types/`
-- [ ] T006 Verify existing `supabase/` structure and create missing `supabase/migrations/` directory and `supabase/seed.sql` placeholder
-- [ ] T007 Create `docs/stack.md` as the single source of truth for stack decisions
-- [ ] T008 Create `public/` directory for static assets and move existing static assets if applicable
+- [x] T001 Create Vite + React + TypeScript project scaffold with `index.html`, `package.json`, `vite.config.ts`, and `tsconfig.json` in repository root
+- [x] T002 [P] Configure ESLint and Prettier for TypeScript/React in repository root
+- [x] T003 [P] Install runtime dependencies: `react`, `react-dom`, `@supabase/supabase-js` in `package.json`
+- [x] T004 [P] Install dev dependencies: `typescript`, `vite`, `@types/react`, `@types/react-dom`, `vitest` in `package.json`
+- [x] T005 Create source directory structure: `src/main.tsx`, `src/App.tsx`, `src/components/`, `src/pages/`, `src/services/`, `src/types/`
+- [x] T006 Verify existing `supabase/` structure and create missing `supabase/migrations/` directory and `supabase/seed.sql` placeholder
+- [x] T007 Create `docs/stack.md` as the single source of truth for stack decisions
+- [x] T008 Create `public/` directory for static assets and move existing static assets if applicable
 
 ---
 
@@ -37,13 +37,13 @@
 
 **⚠️ CRITICAL**: No user story work can be considered complete until this phase is done.
 
-- [ ] T009 Create `src/services/supabase.ts` with `createClient` using environment variables `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`
-- [ ] T010 Create `.env.example` documenting required environment variables for local and production
-- [ ] T011 Create `.env.local` with default values pointing to local Supabase (`http://localhost:54321`)
-- [ ] T012 Review existing `supabase/config.toml` for local development settings and adjust `project_id`, ports, or seed path if needed
-- [ ] T013 Add npm scripts to `package.json`: `dev`, `build`, `preview`, `test`
-- [ ] T014 If `supabase/migrations/` is empty, create a baseline migration that captures the current local schema using `npx supabase db diff -f initial_schema`
-- [ ] T015 Create `supabase/seed.sql` with minimal seed data for local validation
+- [x] T009 Create `src/services/supabase.ts` with `createClient` using environment variables `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`
+- [x] T010 Create `.env.example` documenting required environment variables for local and production
+- [x] T011 Create `.env.local` with default values pointing to local Supabase (`http://localhost:54321`)
+- [x] T012 Review existing `supabase/config.toml` for local development settings and adjust `project_id`, ports, or seed path if needed
+- [x] T013 Add npm scripts to `package.json`: `dev`, `build`, `preview`, `test`
+- [x] T014 If `supabase/migrations/` is empty, create a baseline migration that captures the current local schema using `npx supabase db diff -f initial_schema`
+- [x] T015 Create `supabase/seed.sql` with minimal seed data for local validation
 
 **Checkpoint**: Foundation ready — `npm install`, `npm run dev`, and `npx supabase start` can be executed.
 
@@ -57,14 +57,14 @@
 
 ### Implementation for User Story 1
 
-- [ ] T016 [US1] Verify the already-running local Supabase services are healthy using `npx supabase status`
-- [ ] T017 [US1] Implement a health-check page or console script in `src/services/health-check.ts` that calls the local Supabase REST endpoint
-- [ ] T018 [US1] Add `supabase:status`, `supabase:start`, `supabase:stop`, and `supabase:reset` npm scripts in `package.json`
-- [ ] T019 [US1] Update `quickstart.md` with verified commands and expected outcomes for local setup
-- [ ] T020 [US1] Document troubleshooting steps for Docker unavailability or resource constraints in `docs/stack.md`
-- [ ] T021 [US1] Run `npx supabase db reset` and confirm existing schema + seed data apply cleanly
-- [ ] T022 [US1] Configure Vitest in `vite.config.ts` and create a smoke integration test `src/services/supabase.test.ts` that calls the local Supabase REST endpoint
-- [ ] T023 [US1] Validate local → cloud promotion by linking to a non-production Supabase Cloud project and running `npx supabase db push`
+- [x] T016 [US1] Verify the already-running local Supabase services are healthy using `npx supabase status`
+- [x] T017 [US1] Implement a health-check page or console script in `src/services/health-check.ts` that calls the local Supabase REST endpoint
+- [x] T018 [US1] Add `supabase:status`, `supabase:start`, `supabase:stop`, and `supabase:reset` npm scripts in `package.json`
+- [x] T019 [US1] Update `quickstart.md` with verified commands and expected outcomes for local setup
+- [x] T020 [US1] Document troubleshooting steps for Docker unavailability or resource constraints in `docs/stack.md`
+- [x] T021 [US1] Run `npx supabase db reset` and confirm existing schema + seed data apply cleanly
+- [x] T022 [US1] Configure Vitest in `vite.config.ts` and create a smoke integration test `src/services/supabase.test.ts` that calls the local Supabase REST endpoint
+- [x] T023 [US1] Validate local → cloud promotion by linking to a non-production Supabase Cloud project and running `npx supabase db push`
 
 **Checkpoint**: User Story 1 is fully functional and independently testable.
 
@@ -78,12 +78,12 @@
 
 ### Implementation for User Story 2
 
-- [ ] T024 [US2] Configure `vite.config.ts` output directory to `dist/` and verify build produces static assets
-- [ ] T025 [US2] Document Cloudflare Pages project creation and Git integration steps in `docs/stack.md`
-- [ ] T026 [US2] Add Cloudflare Pages-specific build settings (build command `npm run build`, output directory `dist`) to `docs/stack.md`
-- [ ] T027 [US2] Configure custom domain or preview branch strategy in Cloudflare dashboard and document in `docs/stack.md`
-- [ ] T028 [US2] Create a deployment checklist in `docs/stack.md` for publishing new frontend versions
-- [ ] T029 [US2] Verify the production build runs successfully with `npm run build && npm run preview`
+- [x] T024 [US2] Configure `vite.config.ts` output directory to `dist/` and verify build produces static assets
+- [x] T025 [US2] Document Cloudflare Pages project creation and Git integration steps in `docs/stack.md`
+- [x] T026 [US2] Add Cloudflare Pages-specific build settings (build command `npm run build`, output directory `dist`) to `docs/stack.md`
+- [x] T027 [US2] Configure custom domain or preview branch strategy in Cloudflare dashboard and document in `docs/stack.md`
+- [x] T028 [US2] Create a deployment checklist in `docs/stack.md` for publishing new frontend versions
+- [x] T029 [US2] Verify the production build runs successfully with `npm run build && npm run preview`
 
 **Checkpoint**: User Story 2 is complete — deploy path to Cloudflare Pages is documented and validated.
 
@@ -97,12 +97,12 @@
 
 ### Implementation for User Story 3
 
-- [ ] T030 [US3] Populate `docs/stack.md` with the complete stack overview: Cloudflare, Supabase, Vite + React + TypeScript, Supabase CLI + Docker
-- [ ] T031 [US3] Document each decision with problem, options considered, chosen solution, and justification in `docs/stack.md`
-- [ ] T032 [US3] Document the local → cloud promotion workflow in `docs/stack.md` referencing `contracts/local-cloud-promotion.md`
-- [ ] T033 [US3] Document the Supabase integration contract in `docs/stack.md` referencing `contracts/supabase-integration.md`
-- [ ] T034 [US3] Update `.sauron/wiki/knowledge/architecture.md` to reference `docs/stack.md` and the `specs/002-tech-stack-definition/` artifacts
-- [ ] T035 [US3] Update `.sauron/wiki/summary.json` metadata if architecture.md content changed
+- [x] T030 [US3] Populate `docs/stack.md` with the complete stack overview: Cloudflare, Supabase, Vite + React + TypeScript, Supabase CLI + Docker
+- [x] T031 [US3] Document each decision with problem, options considered, chosen solution, and justification in `docs/stack.md`
+- [x] T032 [US3] Document the local → cloud promotion workflow in `docs/stack.md` referencing `contracts/local-cloud-promotion.md`
+- [x] T033 [US3] Document the Supabase integration contract in `docs/stack.md` referencing `contracts/supabase-integration.md`
+- [x] T034 [US3] Update `.sauron/wiki/knowledge/architecture.md` to reference `docs/stack.md` and the `specs/002-tech-stack-definition/` artifacts
+- [x] T035 [US3] Update `.sauron/wiki/summary.json` metadata if architecture.md content changed
 
 **Checkpoint**: User Story 3 is complete — all architectural decisions are traceable and documented.
 
@@ -112,11 +112,11 @@
 
 **Purpose**: Final validation, documentation consistency, and preparation for implementation of future business features.
 
-- [ ] T036 [P] Run through all steps in `quickstart.md` and mark the feature validated
-- [ ] T037 [P] Review `docs/stack.md`, `plan.md`, and `research.md` for consistency
-- [ ] T038 [P] Document the migration strategy for legacy `*.html` files at repository root (preserve, redirect, or migrate per page) in `docs/stack.md`
-- [ ] T039 [P] Add a `README.md` section describing the new stack and how to run the project
-- [ ] T040 [P] Archive completed design artifacts (`spec.md`, `plan.md`, `tasks.md`, checklists) reference in `.sauron/wiki/knowledge/architecture.md` if not already present
+- [x] T036 [P] Run through all steps in `quickstart.md` and mark the feature validated
+- [x] T037 [P] Review `docs/stack.md`, `plan.md`, and `research.md` for consistency
+- [x] T038 [P] Document the migration strategy for legacy `*.html` files at repository root (preserve, redirect, or migrate per page) in `docs/stack.md`
+- [x] T039 [P] Add a `README.md` section describing the new stack and how to run the project
+- [x] T040 [P] Archive completed design artifacts (`spec.md`, `plan.md`, `tasks.md`, checklists) reference in `.sauron/wiki/knowledge/architecture.md` if not already present
 
 ---
 

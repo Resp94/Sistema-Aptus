@@ -1,0 +1,12 @@
+{
+  "enabled": true,
+  "chatExtractionEnabled": true,
+  "profileEnabled": true,
+  "rewriteEnabled": true,
+  "verifyEnabled": true,
+  "extraction": {
+    "provider": "openai",
+    "model": "gpt-4o-mini",
+    "apiKey": "sk-test"
+  }
+}

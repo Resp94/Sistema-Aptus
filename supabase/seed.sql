@@ -1,0 +1,2 @@
+-- SQL de semente para banco de dados local do Supabase
+-- Adicione dados de teste aqui para rodar localmente

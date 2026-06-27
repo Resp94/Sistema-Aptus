@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aptus Flow App</title>
+  <link rel="stylesheet" href="aptus.css" />
+  <style>
+    .launcher { min-height: 100vh; background: var(--bg); display: flex; flex-direction: column; }
+    .launcher-header { padding: var(--space-6); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .launcher-header .brand { font-family: var(--font-display); font-size: 22px; letter-spacing: var(--tracking-display); display: flex; align-items: center; gap: var(--space-2); }
+    .launcher-header .brand .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); display: inline-block; }
+    .launcher-main { flex: 1; max-width: 1100px; margin: 0 auto; padding: var(--space-8) var(--space-6); width: 100%; }
+    .launcher-main h1 { font-family: var(--font-display); font-size: var(--text-3xl); letter-spacing: -0.015em; margin: 0 0 var(--space-2); }
+    .launcher-main .sub { font-family: var(--font-body); font-size: var(--text-lg); color: var(--muted); margin: 0 0 var(--space-8); line-height: 1.6; }
+    .screen-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-4); }
+    .screen-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-5); cursor: pointer; transition: var(--motion-fast) var(--ease-standard); text-decoration: none; color: var(--fg); display: flex; flex-direction: column; }
+    .screen-card:hover { border-color: var(--border-medium); box-shadow: var(--elev-raised); }
+    .screen-card .sc-icon { width: 40px; height: 40px; border-radius: var(--radius-md); display: grid; place-items: center; margin-bottom: var(--space-3); }
+    .screen-card .sc-icon svg { width: 20px; height: 20px; stroke-width: 1.6; }
+    .screen-card .sc-name { font-family: var(--font-ui); font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .screen-card .sc-desc { font-family: var(--font-ui); font-size: 12px; color: var(--muted); line-height: 1.5; flex: 1; }
+    .footer-links { margin-top: var(--space-8); padding-top: var(--space-5); border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-family: var(--font-ui); font-size: 12px; color: var(--muted); }
+    .footer-links a { color: var(--accent); }
+    .theme-btn { width: 36px; height: 36px; border: 1px solid var(--border); background: transparent; border-radius: var(--radius-md); display: grid; place-items: center; color: var(--muted); cursor: pointer; transition: var(--motion-fast) var(--ease-standard); }
+    .theme-btn:hover { color: var(--fg); border-color: var(--border-medium); }
+  </style>
+</head>
+<body>
+<script>
+(function(){try{var t=localStorage.getItem('aptus-theme');if(t){document.documentElement.setAttribute('data-theme',t);}else{document.documentElement.setAttribute('data-theme','dark');}}catch(e){}})();
+function toggleTheme(){var h=document.documentElement;var c=h.getAttribute('data-theme');var n=c==='dark'?'light':'dark';h.setAttribute('data-theme',n);try{localStorage.setItem('aptus-theme',n);}catch(e){}}
+</script>
+<div class="launcher">
+  <div class="launcher-header">
+    <span class="brand"><span class="dot"></span>Aptus Flow App</span>
+    <button class="theme-btn" onclick="toggleTheme()" title="Alternar tema">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+    </button>
+  </div>
+  <main class="launcher-main">
+    <h1>Bem-vindo ao Aptus Flow</h1>
+    <p class="sub">Sistema de gestão administrativa e financeira. Selecione uma tela para começar.</p>
+    <div class="screen-grid">
+      <a class="screen-card" href="login.html">
+        <div class="sc-icon" style="background:color-mix(in oklab, var(--accent), transparent 90%);color:var(--accent);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+        </div>
+        <div class="sc-name">Login / Autenticação</div>
+        <div class="sc-desc">Acesso ao sistema com autenticação e recuperação de senha.</div>
+      </a>
+      <a class="screen-card" href="dashboard.html">
+        <div class="sc-icon" style="background:color-mix(in oklab, var(--accent), transparent 90%);color:var(--accent);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        </div>
+        <div class="sc-name">Dashboard Financeiro</div>
+        <div class="sc-desc">Visão geral com métricas, gráficos e resumo financeiro.</div>
+      </a>
+      <a class="screen-card" href="fluxo-caixa.html">
+        <div class="sc-icon" style="background:color-mix(in oklab, var(--success), transparent 90%);color:var(--success);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div class="sc-name">Fluxo de Caixa</div>
+        <div class="sc-desc">Movimentações financeiras, entradas, saídas e projeções.</div>
+      </a>
+      <a class="screen-card" href="contas-pagar.html">
+        <div class="sc-icon" style="background:color-mix(in oklab, var(--danger), transparent 90%);color:var(--danger);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <div class="sc-name">Contas a Pagar</div>
+        <div class="sc-desc">Gerenciamento de obrigações, vencimentos e fornecedores.</div>
+      </a>
+      <a class="screen-card" href="contas-receber.html">
+        <div class="sc-icon" style="background:color-mix(in oklab, var(--accent), transparent 90%);color:var(--accent);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2v20M6 7l6-5 6 5"/><path d="M6 17l6 5 6-5"/></svg>
+        </div>
+        <div class="sc-name">Contas a Receber</div>
+        <div class="sc-desc">Faturas emitidas, recebimentos e cobranças.</div>
+      </a>
+      <a class="screen-card" href="clientes.html">
+        <div class="sc-icon" style="background:color-mix(in oklab, var(--muted), transparent 90%);color:var(--muted);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div class="sc-name">Clientes e Fornecedores</div>
+        <div class="sc-desc">Cadastro de clientes e fornecedores com histórico.</div>
+      </a>
+      <a class="screen-card" href="relatorios.html">
+        <div class="sc-icon" style="background:color-mix(in oklab, var(--warn), transparent 90%);color:var(--warn);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div class="sc-name">Relatórios</div>
+        <div class="sc-desc">Relatórios financeiros, DRE, exportação PDF/CSV.</div>
+      </a>
+      <a class="screen-card" href="configuracoes.html">
+        <div class="sc-icon" style="background:color-mix(in oklab, var(--fg), transparent 92%);color:var(--muted);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        </div>
+        <div class="sc-name">Configurações</div>
+        <div class="sc-desc">Preferências do sistema, usuários e integrações.</div>
+      </a>
+    </div>
+    <div class="footer-links">
+      <span>Aptus Flow App © 2026</span>
+      <a href="javascript:void(0)" onclick="showToast('Aptus Flow — Sistema de Gestão v1.0')">Sobre</a>
+    </div>
+  </main>
+</div>
+<script>
+function showToast(msg){var t=document.createElement('div');t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 20px;border-radius:var(--radius-md);font-family:var(--font-ui);font-size:13px;z-index:9999;opacity:0;transition:opacity 0.3s ease;';document.body.appendChild(t);requestAnimationFrame(function(){t.style.opacity='1';});setTimeout(function(){t.style.opacity='0';setTimeout(function(){t.remove();},300);},3000);}
+</script>
+</body>
+</html>

@@ -43,46 +43,25 @@ Não faz parte desta página:
 
 ## 4. Change History
 
-### 2026-06-26 — Definição e planejamento da stack tecnológica do Aptus ERP
-- **What was done**: Foi criada a especificação `specs/002-tech-stack-definition` e o plano de implementação definindo a stack base do projeto: Cloudflare para hospedagem do frontend, Supabase para backend/banco/autenticação, Vite + React para o frontend, e desenvolvimento local via Supabase CLI com Docker. Foram gerados artefatos de pesquisa, modelo de dados, contratos e guia quickstart.
-- **Why it was done**: O projeto precisava de uma decisão arquitetural clara e de um plano executável para suportar persistência, autenticação e deploy, além de um ambiente local reproduzível que proteja os dados de produção.
-- **Impact on the system**: Nenhum impacto funcional imediato. A decisão e o plano orientam a próxima fase de implementação do backend e da migração do frontend para Vite + React.
+### 2026-06-26 — Implementação e ativação da nova stack tecnológica
+- **What was done**: Implementamos a fundação tecnológica da aplicação. Criamos o scaffold Vite + React + TypeScript na raiz, instalamos dependências de runtime (React 19, Supabase JS) e desenvolvimento (ESLint, Prettier, Vitest), configuramos atalhos npm para o Supabase local, e estabelecemos a conexão e testes unitários/smoke. Também documentamos os processos de deploy na Cloudflare Pages e a resolução de problemas comuns. O arquivo original `index.html` foi movido para `index.legacy.html` como referência.
+- **Why it was done**: Ativar a nova stack de forma prática, conectando o frontend ao banco de dados e preparando o ambiente local de testes e o fluxo de CI/CD.
+- **Impact on the system**: O projeto passou de páginas HTML estáticas soltas para uma aplicação moderna empacotada com Vite e React, integrada ao Supabase CLI rodando localmente no Docker.
 - **Files affected**:
-  - Criado: `specs/002-tech-stack-definition/spec.md`
-  - Criado: `specs/002-tech-stack-definition/.spec-context.json`
-  - Criado: `specs/002-tech-stack-definition/plan.md`
-  - Criado: `specs/002-tech-stack-definition/research.md`
-  - Criado: `specs/002-tech-stack-definition/data-model.md`
-  - Criado: `specs/002-tech-stack-definition/quickstart.md`
-  - Criado: `specs/002-tech-stack-definition/contracts/local-cloud-promotion.md`
-  - Criado: `specs/002-tech-stack-definition/contracts/supabase-integration.md`
-  - Criado: `specs/002-tech-stack-definition/checklists/requirements.md`
-  - Criado: `specs/002-tech-stack-definition/checklists/stack-definition.md`
-  - Criado: `specs/002-tech-stack-definition/tasks.md`
-  - Alterado: `.sauron/wiki/knowledge/architecture.md`
-  - Alterado: `AGENTS.md`
-
-### 2026-06-26 — Remediação pós-análise dos artefatos da stack
-- **What was done**: Após análise dos artefatos `spec.md`, `plan.md` e `tasks.md`, foram aplicadas correções: versão do PostgreSQL no plano ajustada para 17 (igual ao `supabase/config.toml`), adicionadas tarefas de teste de integração com Vitest e validação real do `supabase db push`, e ajustadas tarefas de escopo no `tasks.md`.
-- **Why it was done**: Eliminar inconsistências e gaps de cobertura identificados na análise antes da implementação.
-- **Impact on the system**: Nenhum impacto funcional. Apenas ajustes documentacionais e de planejamento.
-- **Files affected**:
-  - Alterado: `specs/002-tech-stack-definition/plan.md`
+  - Criado/Configurado: `.gitignore`, `.dockerignore`, `.prettierignore`, `.eslintignore`, `.prettierrc`, `.eslintrc.cjs`
+  - Criado/Configurado: `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `package.json`
+  - Criado: `src/services/supabase.ts`, `src/services/health-check.ts`, `src/services/supabase.test.ts`
+  - Criado: `docs/stack.md`
   - Alterado: `specs/002-tech-stack-definition/tasks.md`
-  - Alterado: `.sauron/wiki/knowledge/architecture.md`
-  - Alterado: `.sauron/wiki/summary.json`
+  - Renomeado: `index.html` para `index.legacy.html`
 
-### 2026-06-26 — Remoção das configurações do Supabase CLI
-- **What was done**: Foram removidos do sistema de arquivos a pasta `supabase/`, o `package.json`, o `package-lock.json` e a pasta `node_modules/`.
-- **Why it was done**: As configurações do Supabase CLI não estavam sendo utilizadas e o projeto ainda não possui integração ativa com Supabase. O comando `supabase link` falhava por falta do CLI no PATH.
-- **Impact on the system**: Nenhum impacto funcional. O projeto continua como conjunto de páginas estáticas sem backend ativo.
+### 2026-06-26 — Verificação do checklist da stack tecnológica
+- **What was done**: Foi realizada a revisão do checklist `specs/002-tech-stack-definition/checklists/stack-definition.md`. Dos 34 itens, 29 foram marcados como atendidos e 5 (CHK021, CHK022, CHK025, CHK028, CHK031) foram deixados não-marcados por representarem gaps aceitáveis para a feature de definição de stack (disaster recovery de hospedagem, setup sem Docker, criação/ownership de contas externas, requisitos de segurança detalhados e restrições de custo).
+- **Why it was done**: A etapa de implementação estava bloqueada pela necessidade de concluir a verificação de qualidade do checklist, conforme workflow Speckit.
+- **Impact on the system**: Nenhum impacto funcional. Ajustes documentacionais e registro das exceções de qualidade.
 - **Files affected**:
-  - Removido: `supabase/config.toml`
-  - Removido: `supabase/.gitignore`
-  - Removido: `supabase/.temp/`
-  - Removido: `package.json`
-  - Removido: `package-lock.json`
-  - Removido: `node_modules/`
+  - Alterado: `specs/002-tech-stack-definition/checklists/stack-definition.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
 
 ### 2026-06-26 — Sincronização da documentação com as telas HTML
 - **What was done**: As documentações de telas, personas e banco de dados foram refatoradas para refletir as 13 telas HTML ativas na raiz do projeto. Telas legadas (`index.html`, `financeiro.html`) foram removidas da documentação ativa. Foi adicionada a persona Profissional Técnico para representar desenvolvedores alocados em projetos. O schema de banco de dados foi expandido com tabelas em pt-BR para fornecedores, contas a pagar/receber, fluxo de caixa, equipe, alocações, relatórios e configurações, e a tabela `usuarios` foi definida como espelho do auth provider.
@@ -96,21 +75,17 @@ Não faz parte desta página:
 
 ## 5. Current State
 
-- **Frontend atual**: Páginas estáticas em HTML/CSS/JS com 13 telas ativas (`login.html`, `dashboard.html`, `fluxo-caixa.html`, `contas-pagar.html`, `contas-receber.html`, `clientes.html`, `propostas.html`, `contratos.html`, `cobrancas.html`, `projetos.html`, `equipe.html`, `relatorios.html`, `configuracoes.html`).
-- **Telas legadas**: `index.html` e `financeiro.html` não fazem parte da documentação ativa.
-- **Stack definida (em definição/adoção)**:
-  - **Hospedagem frontend**: Cloudflare.
-  - **Backend/Banco/Auth**: Supabase (PostgreSQL + Auth + APIs).
-  - **Frontend (direção futura)**: Vite + React.
-  - **Desenvolvimento local**: Supabase CLI com Docker.
-- **Backend/Banco de dados ativo**: Ambiente local Supabase já inicializado via Docker (`supabase/config.toml` presente, serviços rodando localmente). Schema ainda não versionado em `supabase/migrations/`.
-- **Dependências**: Nenhuma dependência Node.js ativa no projeto.
-- **Direção futura**: Criar o projeto Vite + React, integrar com o Supabase local já rodando e iniciar a migração/integração das telas com persistência real.
+- **Frontend atual**: Aplicação SPA baseada em Vite + React + TypeScript instalada na raiz do repositório. As dependências (React 19, Supabase JS, ESLint, Prettier e Vitest) estão instaladas.
+- **Telas legadas**: Arquivos HTML legados (ex.: `clientes.html`, `dashboard.html`) foram preservados e o `index.html` original foi renomeado para `index.legacy.html` para servir de referência durante a migração para componentes React.
+- **Ambiente local de Banco/Backend**: Supabase CLI + Docker ativo e orquestrando o Postgres local, Auth, Storage e Studio.
+- **Integração Frontend-Backend**: Conectados por meio do arquivo `src/services/supabase.ts`, inicializado a partir do arquivo de configuração `.env.local` que contém a chave anônima local.
+- **Testes**: Vitest configurado para a pasta `src` com smoke test de integração REST passando.
+- **CI/CD / Hospedagem**: Cloudflare Pages definida e documentada em `docs/stack.md` como o destino do deploy do frontend compilado (`dist/`).
 
 ## 6. Next Steps (Optional)
 
-- Criar baseline migration a partir do banco local já existente.
-- Inicializar o projeto Vite + React na raiz do repositório.
-- Configurar o deploy contínuo na Cloudflare Pages.
+- Iniciar a migração das telas HTML legadas para componentes React e rotas internas.
+- Criar a primeira migração de schema com as tabelas de negócio do ERP (`clientes`, `contas`, `projetos`, etc.) com base no `docs/banco-de-dados.md`.
+- Conectar o repositório GitHub ao projeto do Cloudflare Pages para deploy automático.
 - Vincular o projeto local ao Supabase Cloud e documentar o processo de `db push`.
 - Atualizar esta página quando novas decisões arquiteturais forem tomadas.

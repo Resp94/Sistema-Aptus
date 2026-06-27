@@ -68,8 +68,26 @@ npm run build
 
 **Expected outcome**: Pasta `dist/` gerada com `index.html` e assets estáticos.
 
+## 8. Executar os testes automatizados
+
+```bash
+npm run test
+```
+
+**Expected outcome**: O Vitest executa o teste de fumaça da conexão REST com o Supabase e reporta sucesso (testes passando).
+
+## Atalhos de Scripts npm
+
+Para simplificar a orquestração do ambiente local, foram criados atalhos de comando em `package.json`:
+
+- **Iniciar Supabase**: `npm run supabase:start` (executa `npx supabase start`)
+- **Parar Supabase**: `npm run supabase:stop` (executa `npx supabase stop`)
+- **Status do Ambiente**: `npm run supabase:status` (executa `npx supabase status`)
+- **Reset do Banco**: `npm run supabase:reset` (executa `npx supabase db reset`)
+
 ## Next Steps
 
 - Vincular o projeto local ao Supabase Cloud: `npx supabase link`.
-- Documentar o processo de deploy em Cloudflare Pages.
-- Promover migrações validadas: `npx supabase db push`.
+- Configurar deploys na Cloudflare Pages a partir de pushes na branch `main`.
+- Promover migrações validadas: `npm run supabase:reset` (para testar local) -> `npx supabase db push` (para aplicar em cloud).
+
