@@ -20,11 +20,11 @@
 
 **Purpose**: Ensure development environment is ready and Supabase local instance is running
 
-- [ ] T001 Verify Docker Desktop is running and Supabase CLI is installed (`supabase --version`)
-- [ ] T002 [P] Create `.env.example` in repo root with placeholder entries: `VITE_SUPABASE_URL=`, `VITE_SUPABASE_ANON_KEY=`, `SEED_USER_PASSWORD=`
-- [ ] T003 [P] Create `.env.local` from `.env.example` with real values for local dev (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SEED_USER_PASSWORD`)
-- [ ] T004 [P] Verify `src/services/supabase.ts` client initializes correctly (already exists, smoke test)
-- [ ] T005 Run `supabase status` to confirm local Supabase container is healthy (container já está rodando no Docker local)
+- [x] T001 Verify Docker Desktop is running and Supabase CLI is installed (`supabase --version`)
+- [x] T002 [P] Create `.env.example` in repo root with placeholder entries: `VITE_SUPABASE_URL=`, `VITE_SUPABASE_ANON_KEY=`, `SEED_USER_PASSWORD=`
+- [x] T003 [P] Create `.env.local` from `.env.example` with real values for local dev (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SEED_USER_PASSWORD`)
+- [x] T004 [P] Verify `src/services/supabase.ts` client initializes correctly (already exists, smoke test)
+- [x] T005 Run `supabase status` to confirm local Supabase container is healthy (container já está rodando no Docker local)
 
 ---
 
@@ -34,41 +34,41 @@
 
 **⚠️ CRITICAL**: No user story implementation can begin until this phase is complete
 
-- [ ] T006 Create migration `supabase/migrations/00000000000000_usuarios_perfis.sql` with:
+- [x] T006 Create migration `supabase/migrations/00000000000000_usuarios_perfis.sql` with:
   - Table `usuarios` (mirror of `auth.users`) with all columns per data-model.md
   - Table `perfis` (1:1 with usuarios) with perfil_acesso, status, departamento
   - Table `audit_log` (append-only security events) per data-model.md §audit_log
   - Trigger function to sync `auth.users` → `public.usuarios` on INSERT/UPDATE
   - Enable RLS on all three tables
 
-- [ ] T007 [P] Add RLS policies to `supabase/migrations/00000000000000_usuarios_perfis.sql` per data-model.md §RLS:
+- [x] T007 [P] Add RLS policies to `supabase/migrations/00000000000000_usuarios_perfis.sql` per data-model.md §RLS:
   - `usuarios`: SELECT (self), INSERT/UPDATE (service role trigger), DELETE (blocked)
   - `perfis`: SELECT (self + admin), INSERT (admin), UPDATE (self fields + admin), DELETE (blocked)
   - `audit_log`: INSERT only (via SECURITY DEFINER functions), SELECT (admin via RPC), no UPDATE/DELETE
 
-- [ ] T008 [P] Create helper function `existe_perfil_admin(uid uuid)` in migration file per data-model.md §Função auxiliar de RLS
+- [x] T008 [P] Create helper function `existe_perfil_admin(uid uuid)` in migration file per data-model.md §Função auxiliar de RLS
 
-- [ ] T009 Create RPC functions in `supabase/migrations/00000000000000_usuarios_perfis.sql`:
+- [x] T009 Create RPC functions in `supabase/migrations/00000000000000_usuarios_perfis.sql`:
   - `obter_perfil_usuario()` — SECURITY DEFINER, returns profile for `auth.uid()`
   - `obter_permissoes_usuario()` — SECURITY DEFINER, returns `{ modulo, pode_ler, pode_escrever }[]` mapped from `perfil_acesso`
   - `criar_perfil_teste(email, senha, nome, perfil_acesso)` — SECURITY DEFINER, checks `existe_perfil_admin(auth.uid())`, creates auth user + perfil, inserts audit_log entry
   - `registrar_evento_auditoria(evento, usuario_id, ip_origem, user_agent)` — SECURITY DEFINER, appends to `audit_log`
 
-- [ ] T010 [P] Create type definitions in `src/types/auth.ts`:
+- [x] T010 [P] Create type definitions in `src/types/auth.ts`:
   - `PerfilUsuario` type: `{ nome, perfil_acesso, status, avatar_url, departamento }`
   - `PermissaoModulo` type: `{ modulo, pode_ler, pode_escrever }`
   - `PerfilAcesso` union type: `'Administrador' | 'Financeiro' | 'Projetos' | 'Comercial' | 'Técnico' | 'Visualizador'`
 
-- [ ] T011 [P] Create auth service in `src/services/auth.service.ts`:
+- [x] T011 [P] Create auth service in `src/services/auth.service.ts`:
   - `getPerfilUsuario()`: calls `supabase.rpc('obter_perfil_usuario')`, handles null (force logout + redirect per Null Profile Contract)
   - `getPermissoesUsuario()`: calls `supabase.rpc('obter_permissoes_usuario')`
   - `signIn(email, password)`: wraps `supabase.auth.signInWithPassword` with error normalization
   - `signOut()`: wraps `supabase.auth.signOut`
   - `resetPassword(email)`: wraps `supabase.auth.resetPasswordForEmail`
 
-- [ ] T012 Run `supabase db reset` to apply migration and verify schema creation
+- [x] T012 Run `supabase db reset` to apply migration and verify schema creation
 
-- [ ] T013 [P] Configure GoTrue auth settings to require email confirmation: in `supabase/config.toml` set `[auth] enable_confirmations = true` (or verify it's the default). This covers FR-013 (email confirmation gate).
+- [x] T013 [P] Configure GoTrue auth settings to require email confirmation: in `supabase/config.toml` set `[auth] enable_confirmations = true` (or verify it's the default). This covers FR-013 (email confirmation gate).
 
 **Checkpoint**: Database schema, RPCs, and auth service ready — user story implementation can now begin
 
@@ -82,7 +82,7 @@
 
 ### Implementation for User Story 1
 
-- [ ] T014 [US1] Create `src/pages/Login.tsx` — full React component recreating `login.html` layout:
+- [x] T014 [US1] Create `src/pages/Login.tsx` — full React component recreating `login.html` layout:
   - Two-column layout with brand panel (logo, tagline, features list) and form panel
   - Email input with label, placeholder, `aria-invalid` state, inline error display
   - Password input with show/hide toggle (eye icon), `aria-invalid` state, inline error
@@ -92,13 +92,13 @@
   - Mobile-responsive: single column below 1024px, brand bar above form
   - All CSS inline or co-located — reuse `aptus.css` design tokens
 
-- [ ] T015 [US1] Implement form validation logic in `src/pages/Login.tsx`:
+- [x] T015 [US1] Implement form validation logic in `src/pages/Login.tsx`:
   - Email: required, valid format check (`type="email"`), trim + lowercase before submit
   - Password: required, min 8 characters (mirrors FR-009), trim not applied
   - Inline error messages in Portuguese below each field on validation failure
   - Real-time clearing of `aria-invalid` on input change
 
-- [ ] T016 [US1] Implement login submission flow in `src/pages/Login.tsx`:
+- [x] T016 [US1] Implement login submission flow in `src/pages/Login.tsx`:
   - On submit: validate → disable button 3s (client rate limit per FR-010) → call `authService.signIn(email, password)`
   - Loading: `.btn-loading` class on button with CSS spinner
   - Success: call `authService.getPerfilUsuario()` → redirect based on `perfil_acesso`:
@@ -114,17 +114,17 @@
     - Inactive account → "Conta desativada. Entre em contato com o administrador."
     - Network/unknown → "Serviço de autenticação temporariamente indisponível."
 
-- [ ] T017 [US1] Implement toast notification system in `src/components/ui/Toast.tsx`:
+- [x] T017 [US1] Implement toast notification system in `src/components/ui/Toast.tsx`:
   - Fixed position bottom-center, slide-up animation
   - Support `error` (red/danger bg) and `success` (dark bg) variants
   - Auto-dismiss after 3.5s (unless `prefers-reduced-motion`)
   - Accessible: `role="alert"`, `aria-live="polite"`
 
-- [ ] T018 [US1] Integrate toast into login error handling — all error messages from T014 display via `<Toast>` instead of inline for credential errors
+- [x] T018 [US1] Integrate toast into login error handling — all error messages from T014 display via `<Toast>` instead of inline for credential errors
 
-- [ ] T019 [US1] Update `src/App.tsx` to route `/login` to `<Login />` component (simple conditional render or React Router if available)
+- [x] T019 [US1] Update `src/App.tsx` to route `/login` to `<Login />` component (simple conditional render or React Router if available)
 
-- [ ] T020 [US1] Implement null profile handling per contracts/login-flow.md §Null Profile Contract:
+- [x] T020 [US1] Implement null profile handling per contracts/login-flow.md §Null Profile Contract:
   - If `getPerfilUsuario()` returns null: display toast "Perfil não encontrado.", call `signOut()`, redirect to `/login`
 
 **Checkpoint**: Login page fully functional — any persona can authenticate and be redirected correctly
@@ -139,7 +139,7 @@
 
 ### Implementation for User Story 2
 
-- [ ] T021 [US2] Implement forgot password modal in `src/pages/Login.tsx`:
+- [x] T021 [US2] Implement forgot password modal in `src/pages/Login.tsx`:
   - Overlay (`.modal-overlay`) with centered card (`.modal-content`)
   - Title "Recuperar acesso", description text, email input, Cancel/Send buttons
   - Open: button click → show modal, focus email input, close on Escape/overlay click
@@ -147,7 +147,7 @@
   - Send: validate email → call `authService.resetPassword(email)` → show success toast
   - Success message: "Enviamos um link de redefinição para [email] – verifique sua caixa de entrada." (per US2-Scenario2 — same message whether email exists or not)
 
-- [ ] T022 [US2] Implement password reset callback page in `src/pages/ResetPassword.tsx`:
+- [x] T022 [US2] Implement password reset callback page in `src/pages/ResetPassword.tsx`:
   - Minimal page that captures the reset token from URL hash
   - On load: if token valid, show "Senha redefinida com sucesso. Faça login com sua nova senha." and redirect to `/login` after 3s
   - If token expired/invalid: show "Link expirado. Solicite uma nova redefinição de senha." with link back to `/login`
@@ -165,7 +165,7 @@
 
 ### Implementation for User Story 3
 
-- [ ] T023 [US3] Create `supabase/seed.sql` with test users and profiles:
+- [x] T023 [US3] Create `supabase/seed.sql` with test users and profiles:
   - Read `SEED_USER_PASSWORD` from environment (fail if not set)
   - Create 5 auth users via `supabase_auth.create_user()` or raw `auth.users` insert:
     - `admin@aptusflow.local` → Administrador
@@ -177,13 +177,13 @@
   - Insert corresponding rows in `public.perfis` with correct `perfil_acesso`, `status = 'Ativo'`, `nome` matching persona
   - Ensure trigger syncs `auth.users` → `public.usuarios`
 
-- [ ] T024 [US3] Verify login for all 5 personas:
+- [x] T024 [US3] Verify login for all 5 personas:
   - Start local env (`npm run dev`)
   - Log in with each email + `SEED_USER_PASSWORD`
   - Confirm redirection matches the perfil_acesso mapping from T014
   - Confirm no PII leakage in error responses per SC-005
 
-- [ ] T025 [US3] Test edge cases per spec.md §Edge Cases:
+- [x] T025 [US3] Test edge cases per spec.md §Edge Cases:
   - Blank fields → inline validation errors
   - Wrong password → "E-mail ou senha inválidos." (generic)
   - Non-existent email → "E-mail ou senha inválidos." (same message)
@@ -198,17 +198,17 @@
 
 **Purpose**: Final quality improvements, security hardening, and documentation
 
-- [ ] T026 [P] Add `remember` session persistence: pass `remember` parameter to `signInWithPassword` options per contracts/login-flow.md §"Lembrar de mim" Contract
+- [x] T026 [P] Add `remember` session persistence: pass `remember` parameter to `signInWithPassword` options per contracts/login-flow.md §"Lembrar de mim" Contract
 
-- [ ] T027 [P] Add audit logging RPC call on login success/failure in `src/services/auth.service.ts` — call `registrar_evento_auditoria` with event type, user ID, and client IP
+- [x] T027 [P] Add audit logging RPC call on login success/failure in `src/services/auth.service.ts` — call `registrar_evento_auditoria` with event type, user ID, and client IP
 
-- [ ] T028 [P] Add `.gitignore` entry for `.env.local` to prevent accidental commit of credentials and keys
+- [x] T028 [P] Add `.gitignore` entry for `.env.local` to prevent accidental commit of credentials and keys
 
-- [ ] T029 Run `quickstart.md` validation checklist — confirm all 7 scenarios pass end-to-end
+- [x] T029 Run `quickstart.md` validation checklist — confirm all 7 scenarios pass end-to-end
 
-- [ ] T030 Update `AGENTS.md` SPECKIT block to confirm current plan reference is correct
+- [x] T030 Update `AGENTS.md` SPECKIT block to confirm current plan reference is correct
 
-- [ ] T031 Run `npm run build` to verify TypeScript compilation and Vite build succeed with no errors
+- [x] T031 Run `npm run build` to verify TypeScript compilation and Vite build succeed with no errors
 
 ---
 

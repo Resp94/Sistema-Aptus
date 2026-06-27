@@ -34,6 +34,26 @@
     "contentHash": "aa708312f08398e29022750fcf0b277bb0b7ddd7d0b98518bebceee3677fd7da"
   },
   {
+    "type": "file",
+    "name": "Login e Autenticação",
+    "slug": "login-e-autenticacao",
+    "path": "knowledge/login-e-autenticacao.md",
+    "id": "file-login-e-autenticacao",
+    "domainId": "domain-knowledge",
+    "contentLength": 2676,
+    "contentHash": "e759b2204d5baea479fa3f974f769e36528860b56a63f33fadcb375217533212"
+  },
+  {
+    "type": "file",
+    "name": "Modelo de Dados: Autenticação e Perfis (RBAC)",
+    "slug": "module-data-schema",
+    "path": "knowledge/module-data-schema.md",
+    "id": "file-module-data-schema",
+    "domainId": "domain-knowledge",
+    "contentLength": 2732,
+    "contentHash": "2e89a09d33d6074b10606752d28f121935841a1fc77ec46ae32f95051603f00f"
+  },
+  {
     "type": "folder",
     "name": "Manuals",
     "slug": "manuals",
