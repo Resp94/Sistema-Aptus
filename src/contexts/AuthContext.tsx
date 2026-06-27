@@ -32,8 +32,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return
       }
       try {
-        const p = await authService.getPerfilUsuario()
-        const perms = await authService.getPermissoesUsuario()
+        const [p, perms] = await Promise.all([
+          authService.getPerfilUsuario(),
+          authService.getPermissoesUsuario(),
+        ])
         if (ativo) {
           setPerfil(p)
           setPermissoes(perms)
@@ -52,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     carregar()
 
     const { data: sub } = supabase.auth.onAuthStateChange((_evento, session) => {
-      if (!session) {
+      if (!session && ativo) {
         setPerfil(null)
         setPermissoes([])
       }
