@@ -32,7 +32,7 @@ export const authService = {
       console.error('Erro ao obter permissões do usuário:', error);
       throw error;
     }
-    return data as PermissaoModulo[];
+    return (data ?? []) as PermissaoModulo[];
   },
 
   async signIn(email: string, password: string, remember: boolean = true): Promise<PerfilUsuario> {

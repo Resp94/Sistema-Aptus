@@ -24,6 +24,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Carrega perfil + permissões a partir da sessão ativa.
     // getPerfilUsuario lança (e faz signOut) quando o perfil está ausente/inativo.
     async function carregarPerfil() {
+      if (ativo) setCarregando(true)
       try {
         const [p, perms] = await Promise.all([
           authService.getPerfilUsuario(),
@@ -38,6 +39,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setPerfil(null)
           setPermissoes([])
         }
+      } finally {
+        if (ativo) setCarregando(false)
       }
     }
 
@@ -48,8 +51,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else if (ativo) {
         setPerfil(null)
         setPermissoes([])
+        setCarregando(false)
       }
-      if (ativo) setCarregando(false)
     }
 
     inicializar()
@@ -63,6 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         setPerfil(null)
         setPermissoes([])
+        setCarregando(false)
       }
     })
 
