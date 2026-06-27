@@ -1,0 +1,26 @@
+.metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4); }
+.dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); margin-top: var(--space-5); }
+.recent-list { display: flex; flex-direction: column; }
+.recent-item { display: flex; align-items: center; justify-content: space-between; padding: var(--space-3) 0; border-bottom: 1px solid var(--border-soft); }
+.recent-item:last-child { border-bottom: none; }
+.recent-item[data-clickable] { cursor: pointer; border-radius: 4px; padding-left: var(--space-2); padding-right: var(--space-2); margin-left: calc(-1 * var(--space-2)); margin-right: calc(-1 * var(--space-2)); }
+.recent-item[data-clickable]:hover { background: var(--border-soft); }
+.recent-item .ri-left { display: flex; flex-direction: column; gap: 2px; }
+.recent-item .ri-title { font-family: var(--font-ui); font-size: 13px; font-weight: 500; }
+.recent-item .ri-meta { font-family: var(--font-ui); font-size: 11px; color: var(--muted); }
+.recent-item .ri-value { font-family: var(--font-mono); font-size: 14px; font-weight: 500; }
+.recent-item .ri-value.positive { color: var(--success); }
+.recent-item .ri-value.negative { color: var(--danger); }
+.project-progress-list { display: flex; flex-direction: column; gap: var(--space-3); }
+.project-progress-item .pp-name { font-family: var(--font-ui); font-size: 13px; font-weight: 500; display: flex; justify-content: space-between; margin-bottom: 4px; }
+.project-progress-item .pp-percent { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.greeting { font-family: var(--font-display); font-size: var(--text-2xl); letter-spacing: -0.01em; margin: 0 0 var(--space-1); }
+.greeting-sub { font-family: var(--font-body); font-size: var(--text-sm); color: var(--muted); margin: 0 0 var(--space-5); }
+.metric-card[data-clickable] { cursor: pointer; transition: var(--motion-fast) var(--ease-standard); }
+.metric-card[data-clickable]:hover { box-shadow: var(--elev-raised); transform: translateY(-1px); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  .metric-card[data-clickable]:hover { transform: none; }
+}
+@media (max-width: 1024px) { .metric-grid { grid-template-columns: repeat(2, 1fr); } .dashboard-grid { grid-template-columns: 1fr; } }
+@media (max-width: 480px) { .metric-grid { grid-template-columns: 1fr; } }
