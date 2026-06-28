@@ -73,6 +73,73 @@ Não faz parte desta página:
   - Alterado: `docs/banco-de-dados.md`
   - Alterado: `docs/aptus-prd.md`
 
+### 2026-06-28 — Especificação das demais telas por perfil de acesso
+- **What was done**: Foi criada a feature Spec Kit `005-demais-telas-perfis` para especificar a migração das rotas ainda exibidas como "Módulo Não Migrado": Fluxo de Caixa, Contas a Pagar, Contas a Receber, Propostas, Contratos, Cobranças, Equipe, Relatórios e Configurações. A especificação define `reference/legacy-html/` como fonte principal dos exemplos visuais e comportamentais; `docs/telas.md` permanece apenas como documentação auxiliar de rotas, objetivos e permissões.
+- **Why it was done**: As features anteriores entregaram autenticação, redirecionamento por persona e as landings principais (`Dashboard`, `Projetos`, `Clientes`). O próximo corte arquitetural é completar os fluxos de cada perfil de acesso, preservando RBAC, dados persistidos e ausência de mocks.
+- **Impact on the system**: Nenhum código funcional foi alterado nesta etapa, mas a direção arquitetural da próxima implementação foi definida: todas as rotas autorizadas em escopo devem substituir o placeholder por telas reais, com estados de carregamento/vazio/erro, auditoria de ações destrutivas e tratamento honesto para integrações externas ainda não configuradas.
+- **Files affected**:
+  - Criado: `specs/005-demais-telas-perfis/spec.md`
+  - Criado: `specs/005-demais-telas-perfis/checklists/requirements.md`
+  - Criado: `.agents/project-memory/005-demais-telas-perfis.md`
+  - Alterado: `.specify/feature.json`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-06-28 — Planejamento da feature 005 e contratos RPC
+- **What was done**: Foi executado o fluxo `speckit-plan` para a feature `005-demais-telas-perfis`, gerando `plan.md`, `research.md`, `data-model.md`, `quickstart.md` e contratos RPC por domínio (`financeiro`, `comercial`, `equipe`, `relatórios/configurações` e rotas UI).
+- **Why it was done**: Transformar a especificação em um plano técnico implementável antes da geração de tarefas, definindo a ordem de entrega, as entidades novas, a reutilização das fontes canônicas existentes e os contratos de integração entre frontend React e Supabase.
+- **Impact on the system**: Nenhum código funcional foi alterado, mas foram tomadas decisões arquiteturais para a próxima implementação: `lancamentos` permanece a fonte financeira canônica; Contas a Pagar, Contas a Receber e Fluxo de Caixa serão projeções/RPCs sobre ela; novas RPCs devem validar `auth.uid()`, RBAC, `search_path` fixo e grants explícitos; integrações externas ausentes não podem retornar sucesso simulado.
+- **Files affected**:
+  - Criado/Atualizado: `specs/005-demais-telas-perfis/plan.md`
+  - Criado: `specs/005-demais-telas-perfis/research.md`
+  - Criado: `specs/005-demais-telas-perfis/data-model.md`
+  - Criado: `specs/005-demais-telas-perfis/quickstart.md`
+  - Criado: `specs/005-demais-telas-perfis/contracts/financeiro-rpc.md`
+  - Criado: `specs/005-demais-telas-perfis/contracts/comercial-rpc.md`
+  - Criado: `specs/005-demais-telas-perfis/contracts/equipe-rpc.md`
+  - Criado: `specs/005-demais-telas-perfis/contracts/relatorios-configuracoes-rpc.md`
+  - Criado: `specs/005-demais-telas-perfis/contracts/ui-routes.md`
+  - Alterado: `CLAUDE.md`
+  - Alterado: `AGENTS.md`
+  - Alterado: `.agents/project-memory/005-demais-telas-perfis.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-06-28 — Checklist de readiness dos requisitos da feature 005
+- **What was done**: Foi criado o checklist `requirements-readiness.md` para validar a qualidade dos requisitos da feature 005 antes da geração de tarefas.
+- **Why it was done**: A feature tem alto risco de ambiguidade por combinar 9 rotas, RBAC por perfil, RPC-first, ausência de mocks, integração externa pendente e reaproveitamento de entidades da feature 004. O checklist funciona como "unit tests" dos requisitos escritos.
+- **Impact on the system**: Nenhum código funcional foi alterado. O checklist adiciona critérios de revisão para completude, clareza, consistência, mensurabilidade, cobertura de cenários, edge cases, requisitos não funcionais, dependências e ambiguidades.
+- **Files affected**:
+  - Criado: `specs/005-demais-telas-perfis/checklists/requirements-readiness.md`
+  - Alterado: `.agents/project-memory/005-demais-telas-perfis.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-06-28 — Verificação do checklist de readiness da feature 005
+- **What was done**: O checklist `requirements-readiness.md` foi verificado contra a spec, plano, data model, contratos e quickstart da feature 005. Foram marcados 30 de 48 itens como completos e mantidos 18 itens abertos com justificativa.
+- **Why it was done**: Avaliar se os requisitos estavam suficientemente claros e completos antes da geração de tarefas, evitando que ambiguidades de RBAC, dados, integrações externas ou estados de tela sejam empurradas para a implementação.
+- **Impact on the system**: Nenhum código funcional foi alterado. A verificação identificou gaps que devem ser resolvidos antes de `/speckit-tasks`, incluindo matriz de seeds por perfil/rota, ownership de `cobrancas`, recovery, empty states por tipo de seção, acessibilidade, responsividade, performance por família de rota, comportamento de sessão após mudança de perfil, escopo entre `alocacoes_projeto` e `alocacoes_equipe`, e fonte única de status vencido.
+- **Files affected**:
+  - Alterado: `specs/005-demais-telas-perfis/checklists/requirements-readiness.md`
+  - Alterado: `.agents/project-memory/005-demais-telas-perfis.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-06-28 — Correção das pendências do checklist de readiness da feature 005
+- **What was done**: Os 18 itens abertos do checklist `requirements-readiness.md` foram corrigidos nos artefatos da feature 005 e o checklist foi atualizado para 48/48 itens completos.
+- **Why it was done**: Fechar ambiguidades antes de gerar tarefas, garantindo que seeds, integrações ausentes, ownership de `cobrancas`, recovery, estados vazios, filtros sem resultado, sessão após mudança de permissão, privacidade, acessibilidade, responsividade, performance por família de rota, alocações e status `Vencido` estejam especificados.
+- **Impact on the system**: Nenhum código funcional foi alterado. A feature ficou pronta para `/speckit-tasks` do ponto de vista de qualidade dos requisitos.
+- **Files affected**:
+  - Alterado: `specs/005-demais-telas-perfis/spec.md`
+  - Alterado: `specs/005-demais-telas-perfis/plan.md`
+  - Alterado: `specs/005-demais-telas-perfis/research.md`
+  - Alterado: `specs/005-demais-telas-perfis/data-model.md`
+  - Alterado: `specs/005-demais-telas-perfis/quickstart.md`
+  - Alterado: `specs/005-demais-telas-perfis/contracts/financeiro-rpc.md`
+  - Alterado: `specs/005-demais-telas-perfis/contracts/comercial-rpc.md`
+  - Alterado: `specs/005-demais-telas-perfis/contracts/equipe-rpc.md`
+  - Alterado: `specs/005-demais-telas-perfis/contracts/relatorios-configuracoes-rpc.md`
+  - Alterado: `specs/005-demais-telas-perfis/contracts/ui-routes.md`
+  - Alterado: `specs/005-demais-telas-perfis/checklists/requirements-readiness.md`
+  - Alterado: `.agents/project-memory/005-demais-telas-perfis.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
 ## 5. Current State
 
 - **Frontend atual**: Aplicação SPA baseada em Vite + React + TypeScript instalada na raiz do repositório. As dependências (React 19, Supabase JS, ESLint, Prettier e Vitest) estão instaladas.
