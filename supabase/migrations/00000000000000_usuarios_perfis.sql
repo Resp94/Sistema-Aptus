@@ -265,7 +265,7 @@ BEGIN
       
   ELSIF v_perfil_acesso = 'Projetos' THEN
     RETURN QUERY VALUES
-      ('dashboard', true, true),
+      ('dashboard', false, false),
       ('clientes', false, false),
       ('propostas', false, false),
       ('contratos', false, false),
@@ -313,7 +313,7 @@ BEGIN
       
   ELSIF v_perfil_acesso = 'Visualizador' THEN
     RETURN QUERY VALUES
-      ('dashboard', true, false),
+      ('dashboard', false, false),
       ('clientes', true, false),
       ('propostas', true, false),
       ('contratos', true, false),

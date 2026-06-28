@@ -23,6 +23,9 @@ export function rotaInicialPorPerfil(perfil: PerfilAcesso): string {
       return '/projetos'
     case 'Comercial':
       return '/clientes'
+    case 'Visualizador':
+      // Visualizador não tem acesso ao dashboard; cai numa rota que pode ler.
+      return '/clientes'
     default:
       return '/dashboard'
   }

@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { RequirePermissao } from './components/RequirePermissao'
 import Login from './pages/Login'
 import ResetPassword from './pages/ResetPassword'
 import ModuloNaoMigrado from './pages/ModuloNaoMigrado'
@@ -17,16 +18,45 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route element={<ProtectedRoute />}>
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/projetos" element={<ProjetosPage />} />
-            <Route path="/clientes" element={<ClientesPage />} />
+            <Route
+              path="/dashboard"
+              element={
+                <RequirePermissao modulo="dashboard">
+                  <DashboardPage />
+                </RequirePermissao>
+              }
+            />
+            <Route
+              path="/projetos"
+              element={
+                <RequirePermissao modulo="projetos">
+                  <ProjetosPage />
+                </RequirePermissao>
+              }
+            />
+            <Route
+              path="/clientes"
+              element={
+                <RequirePermissao modulo="clientes">
+                  <ClientesPage />
+                </RequirePermissao>
+              }
+            />
             {ITENS_NAV.filter(
               (i) =>
                 i.modulo !== 'dashboard' &&
                 i.modulo !== 'projetos' &&
                 i.modulo !== 'clientes'
             ).map((i) => (
-              <Route key={i.rota} path={i.rota} element={<ModuloNaoMigrado />} />
+              <Route
+                key={i.rota}
+                path={i.rota}
+                element={
+                  <RequirePermissao modulo={i.modulo}>
+                    <ModuloNaoMigrado />
+                  </RequirePermissao>
+                }
+              />
             ))}
           </Route>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />

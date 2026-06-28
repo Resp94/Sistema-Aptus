@@ -85,12 +85,12 @@ BEGIN
   ),
   metricas_proj AS (
     SELECT
-      COUNT(id)::integer AS total_ativos,
-      COALESCE(SUM(orcamento), 0.00) AS total_orc,
-      COALESCE(SUM(orcamento_utilizado), 0.00) AS total_utilizado,
-      COUNT(CASE WHEN em_risco = true THEN 1 END)::integer AS total_risco
-    FROM projetos_visiveis
-    WHERE status IN ('Planejamento', 'Em andamento')
+      COUNT(pv.id)::integer AS total_ativos,
+      COALESCE(SUM(pv.orcamento), 0.00) AS total_orc,
+      COALESCE(SUM(pv.orcamento_utilizado), 0.00) AS total_utilizado,
+      COUNT(CASE WHEN pv.em_risco = true THEN 1 END)::integer AS total_risco
+    FROM projetos_visiveis pv
+    WHERE pv.status IN ('Planejamento', 'Em andamento')
   ),
   metricas_tarefas AS (
     SELECT COUNT(t.id)::integer AS abertas
