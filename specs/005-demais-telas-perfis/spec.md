@@ -131,7 +131,6 @@ Como usuario autenticado de qualquer perfil, a navegacao lateral mostra apenas r
 ### Edge Cases
 
 - Perfil sem dados no modulo: a tela mostra estado vazio explicito por secao, nunca valores ficticios.
-- Filtros sem resultado: tabelas/listas mostram "Nenhum resultado encontrado" e mantem os filtros visiveis para ajuste.
 - Falha de carregamento: a tela mostra erro recuperavel e opcao de tentar novamente.
 - Permissao de escrita ausente: comandos de criar, editar, excluir, pagar, receber, alocar, convidar, renovar ou configurar nao sao renderizados e tambem sao rejeitados pela camada de dados.
 - Acao destrutiva: exige confirmacao explicita e gera registro de auditoria.
@@ -221,10 +220,10 @@ As telas migradas devem preservar a hierarquia visual dos HTML legados, mas tamb
 - **FR-015**: O sistema DEVE validar entradas obrigatorias, formatos, valores monetarios, datas e vinculos antes de persistir alteracoes.
 - **FR-016**: O sistema DEVE exibir estados de carregamento, vazio e erro recuperavel em todas as telas em escopo.
 - **FR-017**: O sistema DEVE auditar acoes destrutivas e alteracoes sensiveis: exclusoes, inativacoes, renovacoes criticas, mudanca de perfil de acesso e alteracao de parametros financeiros globais.
-- **FR-018**: O sistema DEVE manter seeds/dados iniciais suficientes para que cada perfil de teste tenha ao menos um fluxo validavel nas telas que pode acessar.
+- **FR-018**: O sistema DEVE manter seeds/dados iniciais reproduziveis por reset local para que cada perfil de teste tenha ao menos um fluxo validavel nas telas que pode acessar.
 - **FR-019**: O sistema DEVE proteger dados sensiveis por perfil, incluindo valores financeiros, custo de equipe, parametros globais, documentos e dados de outros usuarios.
 - **FR-020**: O sistema DEVE atualizar indicadores e listas apos uma acao de escrita bem-sucedida, sem exigir recarregamento manual da aplicacao.
-- **FR-021**: O sistema DEVE popular seeds por perfil conforme a matriz minima de seeds por perfil definida nesta spec.
+- **FR-021**: O sistema DEVE popular seeds por perfil e por rota conforme a matriz minima de seeds por perfil definida nesta spec.
 - **FR-022**: O sistema DEVE tratar cada integracao externa ausente conforme a tabela de resultado esperado, sem gravar sucesso simulado.
 - **FR-023**: O sistema DEVE aplicar o ownership compartilhado de `cobrancas`, separando acoes comerciais de acoes financeiras.
 - **FR-024**: O sistema DEVE derivar `Vencido` em tempo de consulta/exibicao para lancamentos, cobrancas e badges correlatos.

@@ -140,6 +140,25 @@ Não faz parte desta página:
   - Alterado: `.agents/project-memory/005-demais-telas-perfis.md`
   - Alterado: `.sauron/wiki/knowledge/architecture.md`
 
+### 2026-06-28 — Geração de tarefas da feature 005
+- **What was done**: Foi executado o fluxo `speckit-tasks` para `specs/005-demais-telas-perfis/`, gerando `tasks.md` com 104 tarefas no formato checklist Spec Kit. As tarefas foram organizadas em Setup, Foundational, seis user stories e Polish, cobrindo migrações Supabase, RLS/grants, RPCs por domínio, seeds por perfil, services/types React, páginas por rota, testes e gates finais.
+- **Why it was done**: Transformar os artefatos de requisitos e planejamento em uma sequência executável de implementação, preservando o MVP Financeiro, a independência por perfil e as regras transversais de RPC-first, ausência de mocks, privacidade por perfil e integrações externas honestamente pendentes.
+- **Impact on the system**: Nenhum código funcional foi alterado nesta etapa. A próxima implementação passa a ter backlog ordenado: US1 Financeiro como MVP; US2 Comercial e `cobrancas`; US3 Equipe; US4 Configurações; US5 Relatórios; US6 fechamento de navegação e remoção dos placeholders autorizados.
+- **Files affected**:
+  - Criado: `specs/005-demais-telas-perfis/tasks.md`
+  - Alterado: `.agents/project-memory/005-demais-telas-perfis.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-06-28 — Correção pós-análise das tarefas da feature 005
+- **What was done**: Após `/speckit-analyze`, o `tasks.md` foi ajustado de 104 para 106 tarefas. A base compartilhada de `/cobrancas` passou para a US1 Financeiro, enquanto a US2 Comercial passou a estender essa mesma página com ações comerciais. As tarefas de wiring agora removem seus próprios módulos do loop de placeholder em `src/App.tsx`, e o polish passou a incluir medição explícita das metas de performance por família de rota. A spec também teve a duplicidade do edge case de filtros sem resultado removida e os requisitos de seeds foram diferenciados entre reprodutibilidade e matriz perfil/rota.
+- **Why it was done**: Resolver inconsistências apontadas pela análise sem mudar o escopo funcional: US1 precisava ser testável independentemente com `/cobrancas`; a remoção do placeholder precisava acontecer incrementalmente para evitar conflitos de rota; e FR-033/SC-004 precisavam de tarefa verificável de performance.
+- **Impact on the system**: Nenhum código funcional foi alterado. O backlog ficou mais executável e reduz o risco de duplicidade de rota, placeholder residual e falta de validação de performance.
+- **Files affected**:
+  - Alterado: `specs/005-demais-telas-perfis/spec.md`
+  - Alterado: `specs/005-demais-telas-perfis/tasks.md`
+  - Alterado: `.agents/project-memory/005-demais-telas-perfis.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
 ## 5. Current State
 
 - **Frontend atual**: Aplicação SPA baseada em Vite + React + TypeScript instalada na raiz do repositório. As dependências (React 19, Supabase JS, ESLint, Prettier e Vitest) estão instaladas.

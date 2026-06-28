@@ -14,6 +14,10 @@ Em 2026-06-28, o checklist `requirements-readiness.md` foi verificado: 30 de 48 
 
 Em 2026-06-28, os 18 gaps abertos do checklist foram corrigidos nos artefatos da feature e o checklist passou para 48/48 itens completos.
 
+Em 2026-06-28, foi gerado o `tasks.md` da feature com 104 tarefas executaveis, organizadas por setup, fundacao, seis user stories e polish. A lista inclui migracoes Supabase criadas via `supabase migration new`, RLS/grants/RPCs, seeds por perfil, services/types React, paginas por rota, testes por dominio e gates finais de quickstart.
+
+Em 2026-06-28, apos `/speckit-analyze`, o backlog foi corrigido para 106 tarefas. As correcoes moveram a base compartilhada de `/cobrancas` para a US1 Financeiro, deixaram a US2 Comercial como extensao da mesma pagina, tornaram a remocao do loop de placeholder responsabilidade de cada wiring por historia, adicionaram medicao explicita de performance por familia de rota e removeram duplicidade textual de filtros sem resultado na spec.
+
 ## Por que foi feito
 
 As features anteriores entregaram autenticacao, redirecionamento por persona e as landings principais. O proximo passo e dar a todos os perfis de acesso seus fluxos completos dentro do sistema, preservando RBAC, dados reais e ausencia de mocks.
@@ -31,6 +35,9 @@ As features anteriores entregaram autenticacao, redirecionamento por persona e a
 - Novas RPCs devem validar `auth.uid()`, RBAC, `search_path` fixo e grants explicitos.
 - O checklist de readiness valida requisitos escritos, nao comportamento implementado; ele cobre completude, clareza, consistencia, mensurabilidade, cenarios, edge cases, requisitos nao funcionais, dependencias e ambiguidades.
 - Gaps resolvidos antes de `/speckit-tasks`: matriz de seeds por perfil/rota, detalhamento de integracoes ausentes por comando, ownership de `cobrancas`, recovery, empty states por tipo de secao, resultado de filtros para graficos/cards/relatorios, comportamento de sessao apos mudanca de permissao, entidades relacionadas ausentes/inativas, duplicidade financeiro-comercial, classificacao de PII, acessibilidade, responsividade, performance por familia de rota, nomenclatura RBAC de `cobrancas`, diferenca entre `alocacoes_projeto` e `alocacoes_equipe`, e fonte unica de status vencido.
+- As tarefas da feature devem ser executadas na ordem: Setup, Foundational, US1 Financeiro como MVP com a base compartilhada de `CobrancasPage`, US2 Comercial estendendo a mesma pagina, US3 Equipe, US4 Configuracoes, US5 Relatorios, US6 Navegacao e Polish.
+- As tarefas reforcam que migracoes Supabase devem ser criadas com `npx supabase migration new`, sem inventar nomes timestampados manualmente.
+- Cada tarefa de wiring por historia deve remover seus modulos do loop de placeholder em `src/App.tsx`; US6 funciona como auditoria final para garantir que nenhuma rota em escopo ainda renderize `ModuloNaoMigrado`.
 
 ## Arquivos afetados
 
@@ -42,6 +49,7 @@ As features anteriores entregaram autenticacao, redirecionamento por persona e a
 - `specs/005-demais-telas-perfis/contracts/*.md`
 - `specs/005-demais-telas-perfis/checklists/requirements.md`
 - `specs/005-demais-telas-perfis/checklists/requirements-readiness.md`
+- `specs/005-demais-telas-perfis/tasks.md`
 - `AGENTS.md`
 - `CLAUDE.md`
 - `.specify/feature.json`
