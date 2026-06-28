@@ -451,7 +451,7 @@ export default function ClientesPage() {
                           fontWeight: 600,
                           margin: 0,
                           textTransform: 'uppercase',
-                          letter-spacing: '0.04em',
+                          letterSpacing: '0.04em',
                           color: 'var(--muted)',
                         }}
                       >
