@@ -1,0 +1,32 @@
+{
+  "workflow": "speckit",
+  "specName": "Landing Personas",
+  "branch": "main",
+  "selectedAt": "2026-06-28T00:40:18.629Z",
+  "currentStep": "plan",
+  "status": "planning",
+  "history": [
+    {
+      "step": "specify",
+      "substep": null,
+      "kind": "start",
+      "by": "extension",
+      "at": "2026-06-28T00:40:18.629Z"
+    },
+    {
+      "step": "specify",
+      "substep": null,
+      "kind": "complete",
+      "by": "ai",
+      "at": "2026-06-28T00:46:30Z"
+    },
+    {
+      "step": "plan",
+      "substep": null,
+      "kind": "start",
+      "by": "extension",
+      "at": "2026-06-28T01:21:33.877Z"
+    }
+  ],
+  "telemetryInstanceId": "4926b16f-55c7-49ff-9e9b-a1cb096d579f"
+}
