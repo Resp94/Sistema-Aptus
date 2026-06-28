@@ -326,3 +326,12 @@ A maioria das telas compartilha a estrutura base:
 - Configurar dados da empresa
 - Gerenciar usuários e permissões
 - Ajustar notificações e tema
+
+---
+
+## Nota de Migração (Feature 004)
+
+Em 2026-06-28, as landings de **Dashboard** (`/dashboard`), **Projetos** (`/projetos`) e **Clientes e Fornecedores** (`/clientes`) foram totalmente migradas de seus protótipos estáticos para componentes React dinâmicos e persistentes, religados à API do Supabase local e de produção.
+Toda a comunicação com o banco ocorre via **RPCs (PostgreSQL Functions) `SECURITY DEFINER`**, protegidas por políticas RLS e regras de autorização RBAC específicas para cada perfil de usuário. As páginas agora reagem perfeitamente a estados de carregamento, erros recuperáveis e coleções de dados vazias.
+As referências em `reference/legacy-html/` foram mantidas exclusivamente para histórico de design e compatibilidade.
+

@@ -1,6 +1,6 @@
 # Feature Specification: Telas de Redirecionamento por Persona (Landing Pages)
 
-**Feature Branch**: `004-landing-personas`
+**Feature Branch**: `main` (diretório da spec: `004-landing-personas` — o projeto trabalha em `main` e resolve a feature por `.specify/feature.json`, não por nome de branch)
 
 **Created**: 2026-06-28
 
@@ -98,13 +98,13 @@ Nas landings em escopo, usuários com permissão de escrita podem criar, editar 
 
 1. **Given** um usuário com permissão de escrita no módulo, **When** ele cria um novo registro (projeto, tarefa ou contato) e confirma, **Then** o sistema persiste o dado no banco e o exibe na tela sem necessidade de recarga manual.
 2. **Given** um registro existente, **When** o usuário o edita ou exclui, **Then** a alteração é persistida e refletida na tela.
-3. **Given** um usuário sem permissão de escrita no módulo (ex.: Visualizador), **When** ele acessa a landing, **Then** as ações de criar/editar/excluir ficam ocultas ou desabilitadas.
+3. **Given** um usuário sem permissão de escrita no módulo (ex.: Visualizador), **When** ele acessa a landing, **Then** as ações de criar/editar/excluir ficam **ocultas** (não renderizadas) e, ainda que invocadas diretamente, são rejeitadas pela camada de dados.
 4. **Given** uma entrada inválida ou falha de persistência, **When** o usuário confirma a ação, **Then** o sistema exibe uma mensagem de erro clara e não corrompe o estado da tela.
 
 ### Edge Cases
 
-- **Persona sem dados na landing**: cada seção exibe estado vazio explícito, nunca dados fictícios.
-- **Usuário sem permissão de leitura no módulo da própria landing**: o sistema o redireciona para uma rota permitida, evitando tela em branco ou erro.
+- **Persona sem dados na landing**: cada seção exibe um estado vazio explícito, seguindo o padrão visual `empty-state` da referência legada (ícone + título curto + descrição orientando a ação), nunca dados fictícios. Mensagens-base por tipo de seção: lista/tabela → "Nenhum registro encontrado"; busca/filtro → "Nenhum resultado encontrado"; gráfico/indicador → valor zerado com rótulo "Sem dados no período".
+- **Usuário sem permissão de leitura no módulo da própria landing**: o sistema o redireciona para uma rota permitida **antes** de carregar qualquer dado do módulo, evitando tela em branco, erro ou exposição de dados não autorizados.
 - **Falha ao carregar dados do banco**: a tela exibe um estado de erro recuperável (ex.: mensagem com opção de tentar novamente), mantendo a navegação utilizável.
 - **Carregamento em andamento**: a tela apresenta um estado de carregamento (skeleton/spinner) enquanto os dados reais são buscados, evitando "flash" de conteúdo vazio.
 - **Técnico visualizando Projetos/Equipe**: vê somente os projetos em que está alocado e a visualização limitada da equipe, conforme suas permissões.
@@ -117,17 +117,19 @@ Nas landings em escopo, usuários com permissão de escrita podem criar, editar 
 - **FR-001**: O sistema DEVE converter a tela de Projetos (`/projetos`) a partir de `reference/legacy-html/projetos.html`, preservando a identidade visual e a estrutura de componentes (indicadores, progresso dos projetos, distribuição por cliente, quadro de tarefas Kanban e modais de novo projeto/nova tarefa).
 - **FR-002**: O sistema DEVE converter a tela de Clientes/Fornecedores (`/clientes`) a partir de `reference/legacy-html/clientes.html`, preservando a identidade visual e a estrutura de componentes (abas Clientes/Fornecedores, busca e filtro de status, indicadores, tabela de contatos, painel de detalhes e modal de novo contato).
 - **FR-003**: O sistema DEVE redirecionar cada persona, após o login, para a landing correspondente ao seu perfil de acesso, conforme o mapa de landing por persona.
-- **FR-004**: O sistema DEVE substituir todos os dados mockados das telas em escopo (Dashboard, Projetos, Clientes) por dados reais lidos do banco de dados; nenhum valor fictício codificado deve permanecer nessas telas.
+- **FR-004**: O sistema DEVE substituir todos os dados mockados das telas em escopo (Dashboard, Projetos, Clientes) por dados reais lidos do banco de dados; nenhum valor fictício codificado deve permanecer nessas telas. Para efeito deste requisito, **dado mockado** = qualquer valor de domínio (número, texto, item de lista, série de gráfico) fixado no código do componente/markup e não proveniente de uma chamada de leitura ao banco. Inclui-se aqui a remoção de elementos de UI alimentados por dados fictícios que não possuam fonte real nesta feature (ex.: o modal de notificações fictício do Dashboard), que devem ser removidos ou religados a dados reais.
 - **FR-005**: O sistema DEVE criar o schema de dados (tabelas, regras de segurança em nível de linha e dados de carga inicial) necessário para alimentar as três landings em escopo, abrangendo no mínimo: clientes/fornecedores, projetos, tarefas e lançamentos/contas financeiras.
 - **FR-006**: O sistema DEVE aplicar as permissões por perfil (RBAC) já definidas, exibindo em cada landing apenas os dados que o perfil do usuário tem direito de ler, e respeitando a visualização limitada do Profissional Técnico.
-- **FR-007**: O sistema DEVE exibir um estado vazio explícito em cada seção das landings quando não houver dados correspondentes no banco, sem recorrer a valores fictícios.
+- **FR-007**: O sistema DEVE exibir um estado vazio explícito em cada seção das landings quando não houver dados correspondentes no banco, sem recorrer a valores fictícios, seguindo o padrão `empty-state` (ícone + título + descrição) e as mensagens-base definidas em Edge Cases.
 - **FR-008**: O sistema DEVE exibir um estado de carregamento enquanto os dados reais são buscados e um estado de erro recuperável quando a busca falhar.
 - **FR-009**: O sistema DEVE manter os dados de carga inicial (seeds) coerentes com as personas de teste existentes, de modo que cada persona de teste visualize dados reais relevantes ao seu perfil em sua landing.
-- **FR-010**: O sistema DEVE impedir que um usuário acesse uma landing para a qual seu perfil não tem permissão de leitura, redirecionando-o para uma rota permitida.
+- **FR-010**: O sistema DEVE impedir que um usuário acesse uma landing para a qual seu perfil não tem permissão de leitura, redirecionando-o para uma rota permitida **antes** de qualquer carregamento de dados do módulo, de modo que nenhum dado não autorizado seja buscado ou exibido.
 - **FR-011**: Os indicadores, gráficos e listas das landings DEVEM ser calculados/derivados a partir dos dados reais persistidos (ex.: contagens, somatórios, percentuais), refletindo o estado atual do banco.
 - **FR-012**: As ações de criação, edição e exclusão apresentadas nas telas em escopo (ex.: novo/editar projeto, nova/editar tarefa, novo/editar contato) DEVEM persistir os dados reais no banco, refletindo as alterações imediatamente na tela sem simular persistência fictícia.
-- **FR-013**: O sistema DEVE aplicar as permissões de escrita por perfil (RBAC) nas ações de criar/editar/excluir, bloqueando ou ocultando essas ações para perfis sem direito de escrita no módulo correspondente (ex.: Visualizador, ou Técnico em módulos restritos).
+- **FR-013**: O sistema DEVE aplicar as permissões de escrita por perfil (RBAC) nas ações de criar/editar/excluir, **ocultando** (não renderizando) essas ações para perfis sem direito de escrita no módulo correspondente (ex.: Visualizador, ou Técnico em módulos restritos). A ocultação na interface é uma conveniência de UX; a imposição autoritativa ocorre na camada de dados (FR-006).
 - **FR-014**: O sistema DEVE validar os dados de entrada das ações de escrita e exibir mensagens de erro claras quando a operação falhar (validação, permissão ou erro do banco), mantendo a tela utilizável.
+- **FR-015**: O sistema DEVE registrar na trilha de auditoria (`audit_log`) as ações **destrutivas** dos módulos em escopo — exclusão de projeto, exclusão de tarefa e inativação de cliente —, com tipo de evento, usuário responsável e data/hora. Ações de criação e edição não destrutivas não são auditadas, mantendo a trilha focada em eventos de segurança e ações irreversíveis (consistente com o uso atual de `audit_log`).
+- **FR-016**: O sistema DEVE persistir a mudança de coluna de uma tarefa no quadro Kanban (A Fazer / Em Andamento / Concluído) quando o usuário a movimenta, refletindo a nova situação após recarregar a tela.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -135,7 +137,7 @@ Nas landings em escopo, usuários com permissão de escrita podem criar, editar 
 - **Atendimento/Interação**: Registro do histórico de relacionamento com um cliente. Atributos principais: identificador, vínculo com o cliente, data, descrição/resumo e responsável.
 - **Projeto**: Trabalho gerenciado pela equipe. Atributos principais: identificador, nome, cliente associado, status, progresso (%), orçamento, indicador de risco e datas. Relaciona-se com clientes, tarefas e membros alocados.
 - **Tarefa**: Unidade de trabalho de um projeto exibida no Kanban. Atributos principais: identificador, vínculo com projeto, título, situação (A Fazer / Em Andamento / Concluído), responsável e prazo.
-- **Lançamento/Conta Financeira**: Movimentação financeira que alimenta os indicadores do Dashboard. Atributos principais: identificador, tipo (receita/despesa, a pagar/a receber), descrição, valor, data de competência/vencimento, status e contraparte (cliente/fornecedor). Sustenta saldo, contas a pagar/receber, fluxo de caixa, últimos lançamentos e composição de receita.
+- **Lançamento/Conta Financeira**: Movimentação financeira que alimenta os indicadores do Dashboard. Atributos principais: identificador, tipo (receita/despesa), natureza (a pagar/a receber/realizado), descrição, valor, data de competência/vencimento, status e contraparte (cliente/fornecedor). Sustenta saldo, contas a pagar/receber, fluxo de caixa, últimos lançamentos e composição de receita. O status **Vencido** é **derivado em tempo de consulta** (lançamento `Pendente` cuja data de vencimento é anterior à data atual), não armazenado, garantindo consistência sem rotina de atualização.
 - **Alocação de Equipe** *(suporte à visualização do Técnico)*: Vínculo entre um membro/usuário e um projeto. Atributos principais: identificador, usuário, projeto e papel. Define quais projetos o Profissional Técnico pode visualizar.
 
 ## Success Criteria *(mandatory)*
@@ -144,13 +146,16 @@ Nas landings em escopo, usuários com permissão de escrita podem criar, editar 
 
 - **SC-001**: 100% das personas de teste são redirecionadas, após o login, para a landing correta do seu perfil (Dashboard, Projetos ou Clientes).
 - **SC-002**: 0 valores fictícios/codificados permanecem visíveis nas telas em escopo — todos os indicadores, gráficos e listas refletem dados do banco.
-- **SC-003**: Cada landing em escopo carrega e exibe seus dados reais em menos de 3 segundos em condições normais de rede.
+- **SC-003**: Cada landing em escopo carrega e exibe seus dados reais em menos de 3 segundos em condições normais de rede, medido sobre o volume de dados de referência provisionado pelos seeds (ordem de dezenas de registros por entidade).
 - **SC-004**: Quando não há dados, 100% das seções das landings exibem um estado vazio explícito, sem números ou itens fictícios.
 - **SC-005**: As três landings em escopo (Dashboard, Projetos, Clientes) deixam de exibir a tela "Módulo Não Migrado" para as personas correspondentes.
 - **SC-006**: Cada persona visualiza exclusivamente os dados permitidos pelo seu perfil; o Profissional Técnico vê apenas projetos em que está alocado.
 - **SC-007**: 100% das tentativas de acesso a uma landing sem permissão de leitura resultam em redirecionamento para uma rota permitida, sem tela em branco ou erro não tratado.
 - **SC-008**: Registros criados, editados ou excluídos nas landings persistem no banco e permanecem consistentes após recarregar a tela (verificável em 100% das ações de escrita testadas).
-- **SC-009**: 100% das ações de escrita executadas por perfis sem permissão são bloqueadas (ocultas/desabilitadas), e nenhuma alteração é persistida nesses casos.
+- **SC-009**: 100% das ações de escrita executadas por perfis sem permissão são bloqueadas — ocultas na interface e rejeitadas pela camada de dados —, e nenhuma alteração é persistida nesses casos.
+- **SC-010**: A reconstrução do banco (`supabase db reset`) cria as 6 tabelas novas e todas as funções de acesso (leitura e escrita) sem erros de integridade, com os seeds por persona aplicados.
+- **SC-011**: 100% das ações destrutivas em escopo (exclusão de projeto/tarefa, inativação de cliente) geram um registro correspondente em `audit_log` com usuário e data/hora.
+- **SC-012**: Mover uma tarefa entre colunas do Kanban persiste a nova situação, verificável após recarregar a tela em 100% dos casos testados.
 
 ## Assumptions
 

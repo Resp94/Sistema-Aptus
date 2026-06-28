@@ -32,16 +32,93 @@ Dados aplicacionais e de acessibilidade (RBAC) de cada usuário.
 ### `audit_log`
 Tabela imutável para logs de eventos de segurança.
 * `id` (uuid, PK): Identificador único do log.
-* `evento` (text, NOT NULL): 'login_sucesso', 'login_falha', 'senha_alterada', 'usuario_criado', 'conta_desativada', 'conta_ativada'.
+* `evento` (text, NOT NULL): 'login_sucesso', 'login_falha', 'senha_alterada', 'usuario_criado', 'conta_desativada', 'conta_ativada', 'projeto_excluido', 'tarefa_excluida', 'cliente_inativado'.
 * `usuario_id` (uuid, FK -> `usuarios.id` ON DELETE SET NULL): Usuário gerador da ação.
 * `ip_origem` (text, PII): IP do cliente.
 * `user_agent` (text): Informações do navegador/cliente do usuário.
 * `created_at` (timestamp): Data/hora da ação.
 
-## 3. Triggers e Funções Auxiliares
-* `handle_auth_user_sync()`: Executado pós-INSERT/UPDATE em `auth.users` para manter a tabela `usuarios` e criar a linha de `perfis` correspondente com valores padrão.
-* `validar_perfil_update()`: Trigger executado BEFORE UPDATE em `perfis` para bloquear a alteração de `perfil_acesso` e `status` por usuários não administradores.
-* `existe_perfil_admin(uid)`: Função utilizada pelas políticas RLS para verificar se o usuário solicitante é um administrador ativo (`SET row_security = off` ativa).
+---
 
-## 4. Data da Alteração
-* 2026-06-27
+## 3. Módulos Adicionais (Landings por Persona)
+
+Em 2026-06-28, o modelo de dados foi expandido com 6 tabelas para apoiar as landing pages funcionais.
+
+### `clientes`
+Contatos comerciais e parceiros de negócio.
+* `id` (uuid, PK): Identificador.
+* `nome_contato` (text, NOT NULL, PII): Pessoa de contato.
+* `empresa` (text, NOT NULL): Razão social / nome fantasia.
+* `email` (text, PII): E-mail do contato.
+* `telefone` (text, PII): Telefone.
+* `tipo` (text, NOT NULL): 'cliente' ou 'fornecedor'.
+* `status` (text, NOT NULL, default 'Ativo'): 'Ativo' ou 'Inativo'.
+* `created_by` (uuid, FK -> `usuarios.id`): Criador do registro.
+
+### `atendimentos`
+Histórico de interações comerciais de um cliente.
+* `id` (uuid, PK)
+* `cliente_id` (uuid, FK -> `clientes.id` ON DELETE CASCADE)
+* `data` (date, NOT NULL, default current_date)
+* `descricao` (text, NOT NULL)
+* `responsavel_id` (uuid, FK -> `usuarios.id` ON DELETE SET NULL)
+
+### `projetos`
+Entidade operacional de projetos contratados.
+* `id` (uuid, PK)
+* `nome` (text, NOT NULL)
+* `cliente_id` (uuid, FK -> `clientes.id` ON DELETE SET NULL)
+* `status` (text, NOT NULL, default 'Planejamento'): 'Planejamento', 'Em andamento', 'Concluído'.
+* `progresso` (integer, NOT NULL, default 0, CHECK 0-100)
+* `orcamento` (numeric(14,2), default 0.00)
+* `orcamento_utilizado` (numeric(14,2), default 0.00)
+* `em_risco` (boolean, NOT NULL, default false)
+* `prazo` (date)
+* `created_by` (uuid, FK -> `usuarios.id`)
+
+### `tarefas`
+Quadro Kanban de tarefas dos projetos.
+* `id` (uuid, PK)
+* `projeto_id` (uuid, FK -> `projetos.id` ON DELETE CASCADE)
+* `titulo` (text, NOT NULL)
+* `situacao` (text, NOT NULL, default 'A Fazer'): 'A Fazer', 'Em Andamento', 'Concluído'.
+* `prioridade` (text, NOT NULL, default 'Média'): 'Alta', 'Média', 'Baixa'.
+* `responsavel_id` (uuid, FK -> `usuarios.id` ON DELETE SET NULL)
+* `prazo` (date)
+* `instrucoes` (text)
+* `ordem` (integer, default 0)
+
+### `alocacoes_projeto`
+Relacionamento N:N definindo quais membros da equipe estão alocados a cada projeto (usado para escopo de acesso da persona Técnico).
+* `id` (uuid, PK)
+* `projeto_id` (uuid, FK -> `projetos.id` ON DELETE CASCADE)
+* `usuario_id` (uuid, FK -> `usuarios.id` ON DELETE CASCADE)
+* `papel` (text)
+* *Restrição Única:* `(projeto_id, usuario_id)`.
+
+### `lancamentos`
+Movimentações financeiras que alimentam a agregação do Dashboard.
+* `id` (uuid, PK)
+* `tipo` (text, NOT NULL): 'receita' ou 'despesa'.
+* `natureza` (text, NOT NULL): 'a_receber', 'a_pagar', 'realizado'.
+* `descricao` (text, NOT NULL)
+* `valor` (numeric(14,2), NOT NULL, CHECK > 0)
+* `categoria` (text)
+* `cliente_id` (uuid, FK -> `clientes.id` ON DELETE SET NULL)
+* `data_competencia` (date, NOT NULL, default current_date)
+* `data_vencimento` (date)
+* `status` (text, NOT NULL, default 'Pendente'): 'Pendente' ou 'Pago' (o estado 'Vencido' é derivado dinamicamente).
+
+---
+
+## 4. Triggers, Funções e Segurança
+
+* `permissao_modulo(p_modulo)`: Função `SECURITY DEFINER` e `SET row_security = off` que atua como fonte única de RBAC, retornando `(pode_ler, pode_escrever)` para o `auth.uid()` corrente de acordo com as permissões do módulo.
+* **RLS Policies**: Aplicado RLS nas 6 novas tabelas. A leitura é restrita a usuários authenticated com `pode_ler = true` no módulo correspondente; inserções, atualizações e exclusões exigem `pode_escrever = true` no módulo. Apenas `clientes` não permite exclusão física (soft delete via status 'Inativo').
+* **Trilha de Auditoria**: O enum de `audit_log.evento` foi expandido para suportar `'projeto_excluido'`, `'tarefa_excluida'` e `'cliente_inativado'`. Cada RPC destrutiva chama `registrar_evento_auditoria` internamente.
+
+---
+
+## 5. Data da Alteração
+* 2026-06-28
+

@@ -3,8 +3,8 @@
   "specName": "Landing Personas",
   "branch": "main",
   "selectedAt": "2026-06-28T00:40:18.629Z",
-  "currentStep": "plan",
-  "status": "planning",
+  "currentStep": "tasks",
+  "status": "ready-to-implement",
   "history": [
     {
       "step": "specify",
@@ -26,6 +26,27 @@
       "kind": "start",
       "by": "extension",
       "at": "2026-06-28T01:21:33.877Z"
+    },
+    {
+      "step": "plan",
+      "substep": null,
+      "kind": "complete",
+      "by": "ai",
+      "at": "2026-06-28T01:49:51Z"
+    },
+    {
+      "step": "tasks",
+      "substep": null,
+      "kind": "start",
+      "by": "ai",
+      "at": "2026-06-28T14:36:41Z"
+    },
+    {
+      "step": "tasks",
+      "substep": null,
+      "kind": "complete",
+      "by": "ai",
+      "at": "2026-06-28T14:36:41Z"
     }
   ],
   "telemetryInstanceId": "4926b16f-55c7-49ff-9e9b-a1cb096d579f"

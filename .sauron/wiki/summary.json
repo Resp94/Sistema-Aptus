@@ -68,6 +68,26 @@
     "id": "domain-modules"
   },
   {
+    "type": "file",
+    "name": "Módulo Clientes / Fornecedores",
+    "slug": "modulo-clientes-fornecedores",
+    "path": "modules/modulo-clientes-fornecedores.md",
+    "id": "file-module-clientes",
+    "domainId": "domain-modules",
+    "contentLength": 2235,
+    "contentHash": ""
+  },
+  {
+    "type": "file",
+    "name": "Módulo Projetos e Kanban",
+    "slug": "modulo-projetos-e-kanban",
+    "path": "modules/modulo-projetos-e-kanban.md",
+    "id": "file-module-projetos",
+    "domainId": "domain-modules",
+    "contentLength": 2378,
+    "contentHash": ""
+  },
+  {
     "type": "folder",
     "name": "Standards",
     "slug": "standards",
@@ -75,3 +95,4 @@
     "id": "domain-standards"
   }
 ]
+

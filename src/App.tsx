@@ -5,6 +5,8 @@ import Login from './pages/Login'
 import ResetPassword from './pages/ResetPassword'
 import ModuloNaoMigrado from './pages/ModuloNaoMigrado'
 import DashboardPage from './pages/DashboardPage'
+import ProjetosPage from './pages/ProjetosPage'
+import ClientesPage from './pages/ClientesPage'
 import { ITENS_NAV } from './lib/navegacao'
 
 function App() {
@@ -16,7 +18,14 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<DashboardPage />} />
-            {ITENS_NAV.filter((i) => i.modulo !== 'dashboard').map((i) => (
+            <Route path="/projetos" element={<ProjetosPage />} />
+            <Route path="/clientes" element={<ClientesPage />} />
+            {ITENS_NAV.filter(
+              (i) =>
+                i.modulo !== 'dashboard' &&
+                i.modulo !== 'projetos' &&
+                i.modulo !== 'clientes'
+            ).map((i) => (
               <Route key={i.rota} path={i.rota} element={<ModuloNaoMigrado />} />
             ))}
           </Route>
@@ -29,3 +38,4 @@ function App() {
 }
 
 export default App
+
