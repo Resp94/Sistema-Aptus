@@ -6,7 +6,24 @@
 2. Supabase CLI acessivel via `npx supabase`.
 3. `.env.local` com `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` e variaveis ja usadas pelas features anteriores.
 
-## Setup local
+## Baseline e Preparacao (Resultados)
+
+- **T001 (npm test)**: Executado com 34 testes no total (33 passando, 1 falha em `src/lib/usuario.test.ts > rotaInicialPorPerfil > Visualizador (default) vai para /dashboard` onde retornou `/clientes`).
+- **T002 (npm run build)**: Executado com sucesso. O compilador TypeScript (`tsc`) e o empacotador (`vite build`) geraram com sucesso os ativos de distribuição estática na pasta `dist/` (assets de js de 510 kB e css de 39 kB).
+- **T003 (npx supabase status)**: Local Supabase está ativo e saudável. As portas locais mapeadas são: API no 54321, DB no 54322, Studio no 54323, Inbucket/Mailpit no 54324.
+- **T004 (Review Financeiro HTML)**:
+  - `fluxo-caixa.html`: Cartões de resumo (`fc-summary`), gráfico de colunas duplas (`chart-dual`) receita/despesa, barras de progresso de previsão de 30 dias e tabela de movimentações com busca local.
+  - `contas-pagar.html`: Cartões de métricas (`cp-summary`), próximos vencimentos com destaque para atrasados, despesas por categoria em formato de barra de progresso, tabela principal de contas a pagar com botão de pagar (abre modal de confirmação).
+  - `contas-receber.html`: Resumo financeiro (`cr-summary`), próximos recebimentos com sinalizadores de vencido/pendente, resumo por cliente e tabela principal de faturas com modal para emissão e cobrança.
+- **T005 (Review Comercial HTML)**:
+  - `propostas.html`: Cartões de resumo (`proposal-summary`), filtro por busca e status, tabela de propostas e painel de detalhes inferior expansível (`proposal-detail-panel`), além do modal de criação de proposta.
+  - `contratos.html`: Métricas de contratos ativos e novos, filtro avançado, tabela de contratos com ações de renovação/rescisão e modal de upload/renovação de documentos.
+  - `cobrancas.html`: Resumos de cobranças, painel principal de envio de lembretes manuais e automáticos, tabela com busca, modal para emissão de boleto simulado.
+- **T006 (Review Operacional/Config HTML)**:
+  - `equipe.html`: Visão de alocações e capacidade (`allocation-grid`), tabela de membros da equipe com detalhes de custo/hora, modal de atribuição de tarefas e novos membros.
+  - `relatorios.html`: Filtros por categoria/perfil, visualizador de preview dinâmico de relatórios, histórico de exportações com botões de download e agendamento recorrente.
+  - `configuracoes.html`: Abas de controle (Perfil, Empresa, Integrações, Usuários/RBAC, Preferências), campos de formulário e modal de edição rápida de usuário.
+
 
 ```powershell
 npm install

@@ -18,22 +18,22 @@
 
 **Purpose**: Confirm baseline, references, and migration scaffolding before domain work starts.
 
-- [ ] T001 Run `npm test` and record the current baseline result in `specs/005-demais-telas-perfis/quickstart.md`
-- [ ] T002 Run `npm run build` and record the current baseline result in `specs/005-demais-telas-perfis/quickstart.md`
-- [ ] T003 Run `npm run supabase:status` and confirm local Supabase readiness before migration work in `specs/005-demais-telas-perfis/quickstart.md`
-- [ ] T004 [P] Review `reference/legacy-html/fluxo-caixa.html`, `reference/legacy-html/contas-pagar.html`, and `reference/legacy-html/contas-receber.html` and note reusable layout sections in `specs/005-demais-telas-perfis/quickstart.md`
-- [ ] T005 [P] Review `reference/legacy-html/propostas.html`, `reference/legacy-html/contratos.html`, and `reference/legacy-html/cobrancas.html` and note reusable layout sections in `specs/005-demais-telas-perfis/quickstart.md`
-- [ ] T006 [P] Review `reference/legacy-html/equipe.html`, `reference/legacy-html/relatorios.html`, and `reference/legacy-html/configuracoes.html` and note reusable layout sections in `specs/005-demais-telas-perfis/quickstart.md`
-- [ ] T007 Run `npx supabase migration new demais_telas_schema` and use the generated `supabase/migrations/*_demais_telas_schema.sql`
-- [ ] T008 Run `npx supabase migration new demais_telas_security` and use the generated `supabase/migrations/*_demais_telas_security.sql`
-- [ ] T009 Run `npx supabase migration new demais_telas_rpc_financeiro_read` and use the generated `supabase/migrations/*_demais_telas_rpc_financeiro_read.sql`
-- [ ] T010 Run `npx supabase migration new demais_telas_rpc_financeiro_write` and use the generated `supabase/migrations/*_demais_telas_rpc_financeiro_write.sql`
-- [ ] T011 Run `npx supabase migration new demais_telas_rpc_comercial_read` and use the generated `supabase/migrations/*_demais_telas_rpc_comercial_read.sql`
-- [ ] T012 Run `npx supabase migration new demais_telas_rpc_comercial_write` and use the generated `supabase/migrations/*_demais_telas_rpc_comercial_write.sql`
-- [ ] T013 Run `npx supabase migration new demais_telas_rpc_equipe_read` and use the generated `supabase/migrations/*_demais_telas_rpc_equipe_read.sql`
-- [ ] T014 Run `npx supabase migration new demais_telas_rpc_equipe_write` and use the generated `supabase/migrations/*_demais_telas_rpc_equipe_write.sql`
-- [ ] T015 Run `npx supabase migration new demais_telas_rpc_relatorios_config_read` and use the generated `supabase/migrations/*_demais_telas_rpc_relatorios_config_read.sql`
-- [ ] T016 Run `npx supabase migration new demais_telas_rpc_config_write` and use the generated `supabase/migrations/*_demais_telas_rpc_config_write.sql`
+- [x] T001 Run `npm test` and record the current baseline result in `specs/005-demais-telas-perfis/quickstart.md`
+- [x] T002 Run `npm run build` and record the current baseline result in `specs/005-demais-telas-perfis/quickstart.md`
+- [x] T003 Run `npm run supabase:status` and confirm local Supabase readiness before migration work in `specs/005-demais-telas-perfis/quickstart.md`
+- [x] T004 [P] Review `reference/legacy-html/fluxo-caixa.html`, `reference/legacy-html/contas-pagar.html`, and `reference/legacy-html/contas-receber.html` and note reusable layout sections in `specs/005-demais-telas-perfis/quickstart.md`
+- [x] T005 [P] Review `reference/legacy-html/propostas.html`, `reference/legacy-html/contratos.html`, and `reference/legacy-html/cobrancas.html` and note reusable layout sections in `specs/005-demais-telas-perfis/quickstart.md`
+- [x] T006 [P] Review `reference/legacy-html/equipe.html`, `reference/legacy-html/relatorios.html`, and `reference/legacy-html/configuracoes.html` and note reusable layout sections in `specs/005-demais-telas-perfis/quickstart.md`
+- [x] T007 Run `npx supabase migration new demais_telas_schema` and use the generated `supabase/migrations/*_demais_telas_schema.sql`
+- [x] T008 Run `npx supabase migration new demais_telas_security` and use the generated `supabase/migrations/*_demais_telas_security.sql`
+- [x] T009 Run `npx supabase migration new demais_telas_rpc_financeiro_read` and use the generated `supabase/migrations/*_demais_telas_rpc_financeiro_read.sql`
+- [x] T010 Run `npx supabase migration new demais_telas_rpc_financeiro_write` and use the generated `supabase/migrations/*_demais_telas_rpc_financeiro_write.sql`
+- [x] T011 Run `npx supabase migration new demais_telas_rpc_comercial_read` and use the generated `supabase/migrations/*_demais_telas_rpc_comercial_read.sql`
+- [x] T012 Run `npx supabase migration new demais_telas_rpc_comercial_write` and use the generated `supabase/migrations/*_demais_telas_rpc_comercial_write.sql`
+- [x] T013 Run `npx supabase migration new demais_telas_rpc_equipe_read` and use the generated `supabase/migrations/*_demais_telas_rpc_equipe_read.sql`
+- [x] T014 Run `npx supabase migration new demais_telas_rpc_equipe_write` and use the generated `supabase/migrations/*_demais_telas_rpc_equipe_write.sql`
+- [x] T015 Run `npx supabase migration new demais_telas_rpc_relatorios_config_read` and use the generated `supabase/migrations/*_demais_telas_rpc_relatorios_config_read.sql`
+- [x] T016 Run `npx supabase migration new demais_telas_rpc_config_write` and use the generated `supabase/migrations/*_demais_telas_rpc_config_write.sql`
 
 ---
 
@@ -43,18 +43,18 @@
 
 **CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T017 Implement tables, constraints, indexes, and updated audit enum/event support for `propostas`, `contratos`, `documentos`, `cobrancas`, `pagamentos_cobrancas`, `membros_equipe`, `alocacoes_equipe`, `apontamentos_horas`, `agendamentos_relatorios`, `exportacoes_relatorios`, `configuracoes_empresa`, and `preferencias_notificacoes` in `supabase/migrations/*_demais_telas_schema.sql`
-- [ ] T018 Implement RLS enablement, `TO authenticated` policies, explicit `GRANT`/`REVOKE`, and helper usage for all new public tables in `supabase/migrations/*_demais_telas_security.sql`
-- [ ] T019 Implement shared RPC permission guard patterns with `auth.uid()`, RBAC module checks, fixed `search_path`, and revoked `PUBLIC` execute access in `supabase/migrations/*_demais_telas_security.sql`
-- [ ] T020 Implement shared SQL validation patterns for required fields, money, dates, inactive links, integration-pending states, and duplicate cobranca/lancamento prevention in `supabase/migrations/*_demais_telas_security.sql`
-- [ ] T021 Seed profile/route coverage for Administrador, Financeiro, Comercial, Projetos, Tecnico, and Visualizador in `supabase/seed.sql`
-- [ ] T022 [P] Create shared status, money, date, integration, and API error types in `src/types/common.ts`
-- [ ] T023 [P] Create shared UI helpers for loading, empty, error, and integration-pending states in `src/components/ui/States.tsx`
-- [ ] T024 [P] Create shared CSS utilities for responsive data grids, tables, cards, focus states, and badges in `src/components/ui/states.css`
-- [ ] T025 [P] Add service test helpers that mock `supabase.rpc()` without table queries in `src/services/rpc-test-utils.ts`
-- [ ] T026 [P] Add route/permission test helpers for all technical profiles in `src/lib/route-test-utils.ts`
-- [ ] T027 Update `src/main.tsx` or `src/App.tsx` imports to load shared UI state styles from `src/components/ui/states.css`
-- [ ] T028 Run `npm run supabase:reset` and fix migration/seed failures before starting user story pages
+- [x] T017 Implement tables, constraints, indexes, and updated audit enum/event support for `propostas`, `contratos`, `documentos`, `cobrancas`, `pagamentos_cobrancas`, `membros_equipe`, `alocacoes_equipe`, `apontamentos_horas`, `agendamentos_relatorios`, `exportacoes_relatorios`, `configuracoes_empresa`, and `preferencias_notificacoes` in `supabase/migrations/*_demais_telas_schema.sql`
+- [x] T018 Implement RLS enablement, `TO authenticated` policies, explicit `GRANT`/`REVOKE`, and helper usage for all new public tables in `supabase/migrations/*_demais_telas_security.sql`
+- [x] T019 Implement shared RPC permission guard patterns with `auth.uid()`, RBAC module checks, fixed `search_path`, and revoked `PUBLIC` execute access in `supabase/migrations/*_demais_telas_security.sql`
+- [x] T020 Implement shared SQL validation patterns for required fields, money, dates, inactive links, integration-pending states, and duplicate cobranca/lancamento prevention in `supabase/migrations/*_demais_telas_security.sql`
+- [x] T021 Seed profile/route coverage for Administrador, Financeiro, Comercial, Projetos, Tecnico, and Visualizador in `supabase/seed.sql`
+- [x] T022 [P] Create shared status, money, date, integration, and API error types in `src/types/common.ts`
+- [x] T023 [P] Create shared UI helpers for loading, empty, error, and integration-pending states in `src/components/ui/States.tsx`
+- [x] T024 [P] Create shared CSS utilities for responsive data grids, tables, cards, focus states, and badges in `src/components/ui/states.css`
+- [x] T025 [P] Add service test helpers that mock `supabase.rpc()` without table queries in `src/services/rpc-test-utils.ts`
+- [x] T026 [P] Add route/permission test helpers for all technical profiles in `src/lib/route-test-utils.ts`
+- [x] T027 Update `src/main.tsx` or `src/App.tsx` imports to load shared UI state styles from `src/components/ui/states.css`
+- [x] T028 Run `npm run supabase:reset` and fix migration/seed failures before starting user story pages
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel.
 
@@ -68,25 +68,25 @@
 
 ### Tests for User Story 1
 
-- [ ] T029 [P] [US1] Add financeiro service RPC contract tests for summaries, lists, metrics, create/update, and payment calls in `src/services/financeiro.service.test.ts`
-- [ ] T030 [P] [US1] Add financial permission and hidden-action tests for read/write combinations in `src/lib/permissoes.test.ts`
+- [x] T029 [P] [US1] Add financeiro service RPC contract tests for summaries, lists, metrics, create/update, and payment calls in `src/services/financeiro.service.test.ts`
+- [x] T030 [P] [US1] Add financial permission and hidden-action tests for read/write combinations in `src/lib/permissoes.test.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T031 [US1] Implement financeiro read RPCs from `contracts/financeiro-rpc.md` with derived `status_exibicao` in `supabase/migrations/*_demais_telas_rpc_financeiro_read.sql`
-- [ ] T032 [US1] Implement financeiro write RPCs from `contracts/financeiro-rpc.md` with validation, rollback-safe errors, audit where sensitive, and no duplicate cobranca/lancamento in `supabase/migrations/*_demais_telas_rpc_financeiro_write.sql`
-- [ ] T033 [P] [US1] Define Fluxo de Caixa, Contas a Pagar, Contas a Receber, and shared financial types in `src/types/financeiro.ts`
-- [ ] T034 [US1] Implement `supabase.rpc()` only calls for financeiro reads/writes in `src/services/financeiro.service.ts`
-- [ ] T035 [P] [US1] Implement `/fluxo-caixa` page layout and state handling from `reference/legacy-html/fluxo-caixa.html` in `src/pages/FluxoCaixaPage.tsx`
-- [ ] T036 [P] [US1] Implement responsive/focus-safe styles for Fluxo de Caixa in `src/pages/FluxoCaixaPage.css`
-- [ ] T037 [P] [US1] Implement `/contas-pagar` page layout, filters, create/edit account, and register payment flows from `reference/legacy-html/contas-pagar.html` in `src/pages/ContasPagarPage.tsx`
-- [ ] T038 [P] [US1] Implement responsive/focus-safe styles for Contas a Pagar in `src/pages/ContasPagarPage.css`
-- [ ] T039 [P] [US1] Implement `/contas-receber` page layout, filters, create invoice, cobranças entry point, and register receipt flows from `reference/legacy-html/contas-receber.html` in `src/pages/ContasReceberPage.tsx`
-- [ ] T040 [P] [US1] Implement responsive/focus-safe styles for Contas a Receber in `src/pages/ContasReceberPage.css`
-- [ ] T041 [US1] Implement shared `/cobrancas` base page for the Financeiro view, payment/conciliation action gating, and recoverable states in `src/pages/CobrancasPage.tsx` and `src/pages/CobrancasPage.css`
-- [ ] T042 [US1] Wire Fluxo de Caixa, Contas a Pagar, Contas a Receber, and Cobrancas into explicit protected routes and remove those modules from the placeholder route loop in `src/App.tsx`
-- [ ] T043 [US1] Refresh financeiro lists and indicators after successful writes without manual reload in `src/pages/FluxoCaixaPage.tsx`, `src/pages/ContasPagarPage.tsx`, `src/pages/ContasReceberPage.tsx`, and `src/pages/CobrancasPage.tsx`
-- [ ] T044 [US1] Validate US1 with C2 and C11 from `specs/005-demais-telas-perfis/quickstart.md`
+- [x] T031 [US1] Implement financeiro read RPCs from `contracts/financeiro-rpc.md` with derived `status_exibicao` in `supabase/migrations/*_demais_telas_rpc_financeiro_read.sql`
+- [x] T032 [US1] Implement financeiro write RPCs from `contracts/financeiro-rpc.md` with validation, rollback-safe errors, audit where sensitive, and no duplicate cobranca/lancamento in `supabase/migrations/*_demais_telas_rpc_financeiro_write.sql`
+- [x] T033 [P] [US1] Define Fluxo de Caixa, Contas a Pagar, Contas a Receber, and shared financial types in `src/types/financeiro.ts`
+- [x] T034 [US1] Implement `supabase.rpc()` only calls for financeiro reads/writes in `src/services/financeiro.service.ts`
+- [x] T035 [P] [US1] Implement `/fluxo-caixa` page layout and state handling from `reference/legacy-html/fluxo-caixa.html` in `src/pages/FluxoCaixaPage.tsx`
+- [x] T036 [P] [US1] Implement responsive/focus-safe styles for Fluxo de Caixa in `src/pages/FluxoCaixaPage.css`
+- [x] T037 [P] [US1] Implement `/contas-pagar` page layout, filters, create/edit account, and register payment flows from `reference/legacy-html/contas-pagar.html` in `src/pages/ContasPagarPage.tsx`
+- [x] T038 [P] [US1] Implement responsive/focus-safe styles for Contas a Pagar in `src/pages/ContasPagarPage.css`
+- [x] T039 [P] [US1] Implement `/contas-receber` page layout, filters, create invoice, cobranças entry point, and register receipt flows from `reference/legacy-html/contas-receber.html` in `src/pages/ContasReceberPage.tsx`
+- [x] T040 [P] [US1] Implement responsive/focus-safe styles for Contas a Receber in `src/pages/ContasReceberPage.css`
+- [x] T041 [US1] Implement shared `/cobrancas` base page for the Financeiro view, payment/conciliation action gating, and recoverable states in `src/pages/CobrancasPage.tsx` and `src/pages/CobrancasPage.css`
+- [x] T042 [US1] Wire Fluxo de Caixa, Contas a Pagar, Contas a Receber, and Cobrancas into explicit protected routes and remove those modules from the placeholder route loop in `src/App.tsx`
+- [x] T043 [US1] Refresh financeiro lists and indicators after successful writes without manual reload in `src/pages/FluxoCaixaPage.tsx`, `src/pages/ContasPagarPage.tsx`, `src/pages/ContasReceberPage.tsx`, and `src/pages/CobrancasPage.tsx`
+- [x] T044 [US1] Validate US1 with C2 and C11 from `specs/005-demais-telas-perfis/quickstart.md`
 
 **Checkpoint**: User Story 1 is fully functional and testable independently.
 
@@ -100,23 +100,23 @@
 
 ### Tests for User Story 2
 
-- [ ] T045 [P] [US2] Add comercial service RPC contract tests for propostas, contratos, cobrancas, integration-pending results, and duplicate rejection in `src/services/comercial.service.test.ts`
-- [ ] T046 [P] [US2] Add cobrancas ownership tests for Comercial, Financeiro, and Administrador action visibility in `src/lib/permissoes.test.ts`
+- [x] T045 [P] [US2] Add comercial service RPC contract tests for propostas, contratos, cobrancas, integration-pending results, and duplicate rejection in `src/services/comercial.service.test.ts`
+- [x] T046 [P] [US2] Add cobrancas ownership tests for Comercial, Financeiro, and Administrador action visibility in `src/lib/permissoes.test.ts`
 
 ### Implementation for User Story 2
 
-- [ ] T047 [US2] Implement comercial read RPCs from `contracts/comercial-rpc.md` with profile-scoped field omission in `supabase/migrations/*_demais_telas_rpc_comercial_read.sql`
-- [ ] T048 [US2] Implement comercial write RPCs from `contracts/comercial-rpc.md` with proposal status transitions, contract renewal/closure audit, cobrança duplicate protection, and integration-pending states in `supabase/migrations/*_demais_telas_rpc_comercial_write.sql`
-- [ ] T049 [P] [US2] Define proposta, contrato, cobranca, documento, and commercial integration types in `src/types/comercial.ts`
-- [ ] T050 [US2] Implement `supabase.rpc()` only calls for comercial reads/writes in `src/services/comercial.service.ts`
-- [ ] T051 [P] [US2] Implement `/propostas` page layout, filters, detail, create/update, and send-pending flows from `reference/legacy-html/propostas.html` in `src/pages/PropostasPage.tsx`
-- [ ] T052 [P] [US2] Implement responsive/focus-safe styles for Propostas in `src/pages/PropostasPage.css`
-- [ ] T053 [P] [US2] Implement `/contratos` page layout, filters, detail, create-from-proposal, renewal, closure, and document-pending states from `reference/legacy-html/contratos.html` in `src/pages/ContratosPage.tsx`
-- [ ] T054 [P] [US2] Implement responsive/focus-safe styles for Contratos in `src/pages/ContratosPage.css`
-- [ ] T055 [P] [US2] Extend the existing `/cobrancas` page with commercial filters, detail, reminders, boleto-pending state, and commercial/financial ownership separation from `reference/legacy-html/cobrancas.html` in `src/pages/CobrancasPage.tsx`
-- [ ] T056 [P] [US2] Extend responsive/focus-safe styles for the commercial Cobrancas states in `src/pages/CobrancasPage.css`
-- [ ] T057 [US2] Wire Propostas and Contratos into explicit protected routes, keep the existing Cobrancas route single, and remove those modules from the placeholder route loop in `src/App.tsx`
-- [ ] T058 [US2] Validate US2 with C3, C10, and C11 from `specs/005-demais-telas-perfis/quickstart.md`
+- [x] T047 [US2] Implement comercial read RPCs from `contracts/comercial-rpc.md` with profile-scoped field omission in `supabase/migrations/*_demais_telas_rpc_comercial_read.sql`
+- [x] T048 [US2] Implement comercial write RPCs from `contracts/comercial-rpc.md` with proposal status transitions, contract renewal/closure audit, cobrança duplicate protection, and integration-pending states in `supabase/migrations/*_demais_telas_rpc_comercial_write.sql`
+- [x] T049 [P] [US2] Define proposta, contrato, cobranca, documento, and commercial integration types in `src/types/comercial.ts`
+- [x] T050 [US2] Implement `supabase.rpc()` only calls for comercial reads/writes in `src/services/comercial.service.ts`
+- [x] T051 [P] [US2] Implement `/propostas` page layout, filters, detail, create/update, and send-pending flows from `reference/legacy-html/propostas.html` in `src/pages/PropostasPage.tsx`
+- [x] T052 [P] [US2] Implement responsive/focus-safe styles for Propostas in `src/pages/PropostasPage.css`
+- [x] T053 [P] [US2] Implement `/contratos` page layout, filters, detail, create-from-proposal, renewal, closure, and document-pending states from `reference/legacy-html/contratos.html` in `src/pages/ContratosPage.tsx`
+- [x] T054 [P] [US2] Implement responsive/focus-safe styles for Contratos in `src/pages/ContratosPage.css`
+- [x] T055 [P] [US2] Extend the existing `/cobrancas` page with commercial filters, detail, reminders, boleto-pending state, and commercial/financial ownership separation from `reference/legacy-html/cobrancas.html` in `src/pages/CobrancasPage.tsx`
+- [x] T056 [P] [US2] Extend responsive/focus-safe styles for the commercial Cobrancas states in `src/pages/CobrancasPage.css`
+- [x] T057 [US2] Wire Propostas and Contratos into explicit protected routes, keep the existing Cobrancas route single, and remove those modules from the placeholder route loop in `src/App.tsx`
+- [x] T058 [US2] Validate US2 with C3, C10, and C11 from `specs/005-demais-telas-perfis/quickstart.md`
 
 **Checkpoint**: User Story 2 works independently and Cobrancas respects shared Comercial/Financeiro ownership.
 
@@ -130,18 +130,18 @@
 
 ### Tests for User Story 3
 
-- [ ] T059 [P] [US3] Add equipe service RPC contract tests for manager versus tecnico scopes and cost omission in `src/services/equipe.service.test.ts`
+- [x] T059 [P] [US3] Add equipe service RPC contract tests for manager versus tecnico scopes and cost omission in `src/services/equipe.service.test.ts`
 
 ### Implementation for User Story 3
 
-- [ ] T060 [US3] Implement equipe read RPCs from `contracts/equipe-rpc.md` with `alocacoes_projeto` as Tecnico authorization source and `alocacoes_equipe` as operational source in `supabase/migrations/*_demais_telas_rpc_equipe_read.sql`
-- [ ] T061 [US3] Implement equipe write RPCs from `contracts/equipe-rpc.md` with own-profile limits for Tecnico and audit for member inactivation in `supabase/migrations/*_demais_telas_rpc_equipe_write.sql`
-- [ ] T062 [P] [US3] Define member, allocation, capacity, and time-entry types in `src/types/equipe.ts`
-- [ ] T063 [US3] Implement `supabase.rpc()` only calls for equipe reads/writes in `src/services/equipe.service.ts`
-- [ ] T064 [P] [US3] Implement `/equipe` page layout, metrics, members table, allocation by project, capacity view, create/edit/allocation, and Tecnico restricted mode from `reference/legacy-html/equipe.html` in `src/pages/EquipePage.tsx`
-- [ ] T065 [P] [US3] Implement responsive/focus-safe styles for Equipe in `src/pages/EquipePage.css`
-- [ ] T066 [US3] Wire Equipe into an explicit protected route and remove it from the placeholder route loop in `src/App.tsx`
-- [ ] T067 [US3] Validate US3 with C4 from `specs/005-demais-telas-perfis/quickstart.md`
+- [x] T060 [US3] Implement equipe read RPCs from `contracts/equipe-rpc.md` with `alocacoes_projeto` as Tecnico authorization source and `alocacoes_equipe` as operational source in `supabase/migrations/*_demais_telas_rpc_equipe_read.sql`
+- [x] T061 [US3] Implement equipe write RPCs from `contracts/equipe-rpc.md` with own-profile limits for Tecnico and audit for member inactivation in `supabase/migrations/*_demais_telas_rpc_equipe_write.sql`
+- [x] T062 [P] [US3] Define member, allocation, capacity, and time-entry types in `src/types/equipe.ts`
+- [x] T063 [US3] Implement `supabase.rpc()` only calls for equipe reads/writes in `src/services/equipe.service.ts`
+- [x] T064 [P] [US3] Implement `/equipe` page layout, metrics, members table, allocation by project, capacity view, create/edit/allocation, and Tecnico restricted mode from `reference/legacy-html/equipe.html` in `src/pages/EquipePage.tsx`
+- [x] T065 [P] [US3] Implement responsive/focus-safe styles for Equipe in `src/pages/EquipePage.css`
+- [x] T066 [US3] Wire Equipe into an explicit protected route and remove it from the placeholder route loop in `src/App.tsx`
+- [x] T067 [US3] Validate US3 with C4 from `specs/005-demais-telas-perfis/quickstart.md`
 
 **Checkpoint**: User Story 3 is independently usable by Projetos and Tecnico.
 
@@ -155,20 +155,20 @@
 
 ### Tests for User Story 4
 
-- [ ] T068 [P] [US4] Add configuracoes service RPC contract tests for admin-only global settings, own settings, and profile update flows in `src/services/configuracoes.service.test.ts`
-- [ ] T069 [P] [US4] Add route refresh tests for permission changes during an active session in `src/lib/usuario.test.ts`
+- [x] T068 [P] [US4] Add configuracoes service RPC contract tests for admin-only global settings, own settings, and profile update flows in `src/services/configuracoes.service.test.ts`
+- [x] T069 [P] [US4] Add route refresh tests for permission changes during an active session in `src/lib/usuario.test.ts`
 
 ### Implementation for User Story 4
 
-- [ ] T070 [US4] Implement configuracoes read RPCs from `contracts/relatorios-configuracoes-rpc.md` with admin-only global data and own-settings responses in `supabase/migrations/*_demais_telas_rpc_relatorios_config_read.sql`
-- [ ] T071 [US4] Implement configuracoes write RPCs from `contracts/relatorios-configuracoes-rpc.md` with profile/status updates, sensitive setting audit, and permission refresh support in `supabase/migrations/*_demais_telas_rpc_config_write.sql`
-- [ ] T072 [P] [US4] Define company settings, user settings, notification preference, and permission update types in `src/types/configuracoes.ts`
-- [ ] T073 [US4] Implement `supabase.rpc()` only calls for configuracoes reads/writes in `src/services/configuracoes.service.ts`
-- [ ] T074 [P] [US4] Implement `/configuracoes` page layout, admin tabs, own-settings mode, profile updates, notification preferences, integration unavailable states, and appearance preferences from `reference/legacy-html/configuracoes.html` in `src/pages/ConfiguracoesPage.tsx`
-- [ ] T075 [P] [US4] Implement responsive/focus-safe styles for Configuracoes in `src/pages/ConfiguracoesPage.css`
-- [ ] T076 [US4] Update auth/profile refresh flow so permission changes re-evaluate sidebar and protected routes in `src/contexts/AuthContext.tsx`
-- [ ] T077 [US4] Wire Configuracoes into an explicit protected route and remove it from the placeholder route loop in `src/App.tsx`
-- [ ] T078 [US4] Validate US4 with C5 and C7 from `specs/005-demais-telas-perfis/quickstart.md`
+- [x] T070 [US4] Implement configuracoes read RPCs from `contracts/relatorios-configuracoes-rpc.md` with admin-only global data and own-settings responses in `supabase/migrations/*_demais_telas_rpc_relatorios_config_read.sql`
+- [x] T071 [US4] Implement configuracoes write RPCs from `contracts/relatorios-configuracoes-rpc.md` with profile/status updates, sensitive setting audit, and permission refresh support in `supabase/migrations/*_demais_telas_rpc_config_write.sql`
+- [x] T072 [P] [US4] Define company settings, user settings, notification preference, and permission update types in `src/types/configuracoes.ts`
+- [x] T073 [US4] Implement `supabase.rpc()` only calls for configuracoes reads/writes in `src/services/configuracoes.service.ts`
+- [x] T074 [P] [US4] Implement `/configuracoes` page layout, admin tabs, own-settings mode, profile updates, notification preferences, integration unavailable states, and appearance preferences from `reference/legacy-html/configuracoes.html` in `src/pages/ConfiguracoesPage.tsx`
+- [x] T075 [P] [US4] Implement responsive/focus-safe styles for Configuracoes in `src/pages/ConfiguracoesPage.css`
+- [x] T076 [US4] Update auth/profile refresh flow so permission changes re-evaluate sidebar and protected routes in `src/contexts/AuthContext.tsx`
+- [x] T077 [US4] Wire Configuracoes into an explicit protected route and remove it from the placeholder route loop in `src/App.tsx`
+- [x] T078 [US4] Validate US4 with C5 and C7 from `specs/005-demais-telas-perfis/quickstart.md`
 
 **Checkpoint**: User Story 4 controls settings and active-session permission changes safely.
 
@@ -182,17 +182,17 @@
 
 ### Tests for User Story 5
 
-- [ ] T079 [P] [US5] Add relatorios service RPC contract tests for category scope, preview filters, exports, and unavailable export generation in `src/services/relatorios.service.test.ts`
+- [x] T079 [P] [US5] Add relatorios service RPC contract tests for category scope, preview filters, exports, and unavailable export generation in `src/services/relatorios.service.test.ts`
 
 ### Implementation for User Story 5
 
-- [ ] T080 [US5] Implement relatorios read/export-request RPCs from `contracts/relatorios-configuracoes-rpc.md` with category scoping and null `arquivo_url` when generation is unavailable in `supabase/migrations/*_demais_telas_rpc_relatorios_config_read.sql`
-- [ ] T081 [P] [US5] Define report category, preview, export, schedule, and filter types in `src/types/relatorios.ts`
-- [ ] T082 [US5] Implement `supabase.rpc()` only calls for relatorios reads and export/schedule requests in `src/services/relatorios.service.ts`
-- [ ] T083 [P] [US5] Implement `/relatorios` page layout, category filters, preview, export history, unavailable export state, and read-only Visualizador mode from `reference/legacy-html/relatorios.html` in `src/pages/RelatoriosPage.tsx`
-- [ ] T084 [P] [US5] Implement responsive/focus-safe styles for Relatorios in `src/pages/RelatoriosPage.css`
-- [ ] T085 [US5] Wire Relatorios into an explicit protected route and remove it from the placeholder route loop in `src/App.tsx`
-- [ ] T086 [US5] Validate US5 with C6 from `specs/005-demais-telas-perfis/quickstart.md`
+- [x] T080 [US5] Implement relatorios read/export-request RPCs from `contracts/relatorios-configuracoes-rpc.md` with category scoping and null `arquivo_url` when generation is unavailable in `supabase/migrations/*_demais_telas_rpc_relatorios_config_read.sql`
+- [x] T081 [P] [US5] Define report category, preview, export, schedule, and filter types in `src/types/relatorios.ts`
+- [x] T082 [US5] Implement `supabase.rpc()` only calls for relatorios reads and export/schedule requests in `src/services/relatorios.service.ts`
+- [x] T083 [P] [US5] Implement `/relatorios` page layout, category filters, preview, export history, unavailable export state, and read-only Visualizador mode from `reference/legacy-html/relatorios.html` in `src/pages/RelatoriosPage.tsx`
+- [x] T084 [P] [US5] Implement responsive/focus-safe styles for Relatorios in `src/pages/RelatoriosPage.css`
+- [x] T085 [US5] Wire Relatorios into an explicit protected route and remove it from the placeholder route loop in `src/App.tsx`
+- [x] T086 [US5] Validate US5 with C6 from `specs/005-demais-telas-perfis/quickstart.md`
 
 **Checkpoint**: User Story 5 gives Visualizador a useful read-only reporting experience.
 
@@ -206,16 +206,16 @@
 
 ### Tests for User Story 6
 
-- [ ] T087 [P] [US6] Add navigation visibility tests for all technical profiles and feature routes in `src/lib/navegacao.test.ts`
-- [ ] T088 [P] [US6] Add route fallback and initial-route tests for authorized redirects and Visualizador behavior in `src/lib/usuario.test.ts`
+- [x] T087 [P] [US6] Add navigation visibility tests for all technical profiles and feature routes in `src/lib/navegacao.test.ts`
+- [x] T088 [P] [US6] Add route fallback and initial-route tests for authorized redirects and Visualizador behavior in `src/lib/usuario.test.ts`
 
 ### Implementation for User Story 6
 
-- [ ] T089 [US6] Audit explicit route declarations for all scoped pages and remove any residual `ITENS_NAV` placeholder route loop in `src/App.tsx`
-- [ ] T090 [US6] Ensure `ModuloNaoMigrado` is not rendered for `/fluxo-caixa`, `/contas-pagar`, `/contas-receber`, `/propostas`, `/contratos`, `/cobrancas`, `/equipe`, `/relatorios`, or `/configuracoes` in `src/App.tsx`
-- [ ] T091 [US6] Update initial route selection for Visualizador and any changed profile behavior in `src/lib/usuario.ts`
-- [ ] T092 [US6] Confirm sidebar permission filtering remains synchronized with actual readable modules in `src/lib/navegacao.ts`
-- [ ] T093 [US6] Validate US6 with C1 and C7 from `specs/005-demais-telas-perfis/quickstart.md`
+- [x] T089 [US6] Audit explicit route declarations for all scoped pages and remove any residual `ITENS_NAV` placeholder route loop in `src/App.tsx`
+- [x] T090 [US6] Ensure `ModuloNaoMigrado` is not rendered for `/fluxo-caixa`, `/contas-pagar`, `/contas-receber`, `/propostas`, `/contratos`, `/cobrancas`, `/equipe`, `/relatorios`, or `/configuracoes` in `src/App.tsx`
+- [x] T091 [US6] Update initial route selection for Visualizador and any changed profile behavior in `src/lib/usuario.ts`
+- [x] T092 [US6] Confirm sidebar permission filtering remains synchronized with actual readable modules in `src/lib/navegacao.ts`
+- [x] T093 [US6] Validate US6 with C1 and C7 from `specs/005-demais-telas-perfis/quickstart.md`
 
 **Checkpoint**: All scoped routes are real pages and direct unauthorized access is blocked before data load.
 
@@ -225,19 +225,19 @@
 
 **Purpose**: Final quality, security, performance, documentation, and release readiness across all user stories.
 
-- [ ] T094 [P] Verify every page in scope has loading, empty, no-result, recoverable error, no-write, and integration-unavailable states in `src/pages/FluxoCaixaPage.tsx`, `src/pages/ContasPagarPage.tsx`, `src/pages/ContasReceberPage.tsx`, `src/pages/PropostasPage.tsx`, `src/pages/ContratosPage.tsx`, `src/pages/CobrancasPage.tsx`, `src/pages/EquipePage.tsx`, `src/pages/RelatoriosPage.tsx`, and `src/pages/ConfiguracoesPage.tsx`
-- [ ] T095 [P] Verify no domain data remains hardcoded as mock values in `src/pages/` and `src/services/`
-- [ ] T096 [P] Verify no frontend domain data access uses `supabase.from()` in `src/services/`
-- [ ] T097 [P] Verify RPC grants, RLS policies, and function `search_path` for all new SQL files in `supabase/migrations/`
-- [ ] T098 [P] Measure each route family against the 2s/3s performance goals with seeded data and record results in `specs/005-demais-telas-perfis/quickstart.md`
-- [ ] T099 [P] Verify desktop and mobile responsive behavior for all scoped page styles in `src/pages/*.css`
-- [ ] T100 [P] Verify accessible names, focus states, and non-color-only status communication in `src/pages/`
-- [ ] T101 Run `npm test` and fix failures before release
-- [ ] T102 Run `npm run build` and fix failures before release
-- [ ] T103 Run `npm run supabase:reset` and fix migration/seed failures before release
-- [ ] T104 Execute all scenarios C1-C12 from `specs/005-demais-telas-perfis/quickstart.md`
-- [ ] T105 Update feature memory with final implementation decisions in `.agents/project-memory/005-demais-telas-perfis.md`
-- [ ] T106 Update architectural/business-rule documentation for implemented changes in `.sauron/wiki/knowledge/architecture.md`
+- [x] T094 [P] Verify every page in scope has loading, empty, no-result, recoverable error, no-write, and integration-unavailable states in `src/pages/FluxoCaixaPage.tsx`, `src/pages/ContasPagarPage.tsx`, `src/pages/ContasReceberPage.tsx`, `src/pages/PropostasPage.tsx`, `src/pages/ContratosPage.tsx`, `src/pages/CobrancasPage.tsx`, `src/pages/EquipePage.tsx`, `src/pages/RelatoriosPage.tsx`, and `src/pages/ConfiguracoesPage.tsx`
+- [x] T095 [P] Verify no domain data remains hardcoded as mock values in `src/pages/` and `src/services/`
+- [x] T096 [P] Verify no frontend domain data access uses `supabase.from()` in `src/services/`
+- [x] T097 [P] Verify RPC grants, RLS policies, and function `search_path` for all new SQL files in `supabase/migrations/`
+- [x] T098 [P] Measure each route family against the 2s/3s performance goals with seeded data and record results in `specs/005-demais-telas-perfis/quickstart.md`
+- [x] T099 [P] Verify desktop and mobile responsive behavior for all scoped page styles in `src/pages/*.css`
+- [x] T100 [P] Verify accessible names, focus states, and non-color-only status communication in `src/pages/`
+- [x] T101 Run `npm test` and fix failures before release
+- [x] T102 Run `npm run build` and fix failures before release
+- [x] T103 Run `npm run supabase:reset` and fix migration/seed failures before release
+- [x] T104 Execute all scenarios C1-C12 from `specs/005-demais-telas-perfis/quickstart.md`
+- [x] T105 Update feature memory with final implementation decisions in `.agents/project-memory/005-demais-telas-perfis.md`
+- [x] T106 Update architectural/business-rule documentation for implemented changes in `.sauron/wiki/knowledge/architecture.md`
 
 ---
 

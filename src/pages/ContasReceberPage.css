@@ -1,0 +1,32 @@
+/* ContasReceberPage.css */
+
+.contas-receber-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  width: 100%;
+}
+
+.metricas-contas .card-item {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Indicadores de cores nos cards */
+.metricas-contas .border-danger {
+  border-left: 4px solid var(--danger);
+}
+
+.metricas-contas .border-warn {
+  border-left: 4px solid var(--warn);
+}
+
+.metricas-contas .border-primary {
+  border-left: 4px solid var(--primary);
+}
+
+.card-sub {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  margin-top: var(--space-1);
+}

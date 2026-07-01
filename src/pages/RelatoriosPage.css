@@ -1,0 +1,187 @@
+/* RelatoriosPage.css */
+
+.relatorios-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  width: 100%;
+}
+
+.relatorios-workspace {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: var(--space-6);
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .relatorios-workspace {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Sidebar de Categorias */
+.relatorios-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.sidebar-title {
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--fg);
+  border-bottom: 1px solid var(--border-soft);
+  padding-bottom: var(--space-2);
+}
+
+.categories-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.category-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--space-3) var(--space-4);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--fg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.category-btn:hover {
+  background: var(--surface-alt);
+  color: var(--primary);
+}
+
+.category-btn.active {
+  background: var(--primary-soft);
+  border-color: transparent;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* Área Principal de Pré-visualização */
+.relatorios-preview-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.previa-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.previa-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-soft);
+  padding-bottom: var(--space-3);
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.previa-title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.previa-badge {
+  font-size: 10px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.previa-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-10) 0;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+/* Prévia Cards Grid */
+.previa-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-4);
+}
+
+.previa-card {
+  background: var(--surface-alt);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.previa-card-label {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.previa-card-val {
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+/* Tabelas Contábeis Previa (DRE) */
+.previa-table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.previa-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.previa-table td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-soft);
+  color: var(--fg);
+}
+
+.previa-table tr.border-top-double td {
+  border-top: 3px double var(--border-soft);
+  border-bottom: none;
+  font-size: var(--text-md);
+  background: var(--surface-alt);
+}
+
+/* Histórico de Exportações */
+.status-indisponível {
+  background: color-mix(in oklab, var(--danger), transparent 90%);
+  color: var(--danger);
+}
+
+.status-pronto {
+  background: color-mix(in oklab, var(--success), transparent 90%);
+  color: var(--success);
+}

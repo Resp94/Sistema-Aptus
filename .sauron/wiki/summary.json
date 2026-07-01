@@ -88,6 +88,16 @@
     "contentHash": ""
   },
   {
+    "type": "file",
+    "name": "Feature 005: Demais Telas e Perfis",
+    "slug": "feature-005-demais-telas-perfis",
+    "path": "modules/feature-005-demais-telas-perfis.md",
+    "id": "file-feature-005-demais-telas-perfis",
+    "domainId": "domain-modules",
+    "contentLength": 4600,
+    "contentHash": ""
+  },
+  {
     "type": "folder",
     "name": "Standards",
     "slug": "standards",
@@ -95,4 +105,3 @@
     "id": "domain-standards"
   }
 ]
-
