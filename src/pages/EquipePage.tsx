@@ -390,11 +390,11 @@ export default function EquipePage() {
                     </td>
                     <td>
                       <div className="habilidades-tags">
-                        {item.habilidades.slice(0, 3).map((h, i) => (
+                        {(item.habilidades ?? []).slice(0, 3).map((h, i) => (
                           <span key={i} className="skill-tag">{h}</span>
                         ))}
-                        {item.habilidades.length > 3 && (
-                          <span className="skill-tag skill-more">+{item.habilidades.length - 3}</span>
+                        {(item.habilidades?.length ?? 0) > 3 && (
+                          <span className="skill-tag skill-more">+{(item.habilidades?.length ?? 0) - 3}</span>
                         )}
                       </div>
                     </td>

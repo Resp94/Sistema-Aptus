@@ -109,7 +109,7 @@ export default function ProjetosPage() {
     // Carregar equipe/perfis para o formulário de tarefas (RLS friendly)
     async function carregarResponsaveis() {
       try {
-        const { data } = await supabase.from('perfis').select('usuario_id, nome, perfil_acesso');
+        const data = await projectsService.listarResponsaveisTarefas();
         if (data) {
           setResponsaveis(data.map((d) => ({ id: d.usuario_id, nome: `${d.nome} (${d.perfil_acesso})` })));
         }

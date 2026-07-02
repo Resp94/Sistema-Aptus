@@ -415,7 +415,7 @@ export default function PropostasPage() {
               <p>{detalhe.descricao || 'Nenhuma descrição detalhada anexada a esta proposta.'}</p>
             </div>
 
-            {detalhe.documentos.length > 0 && (
+            {(detalhe.documentos?.length ?? 0) > 0 && (
               <div className="detail-documents">
                 <h3 className="detail-sub">Documentos Anexos ({detalhe.documentos.length})</h3>
                 <ul className="doc-list">

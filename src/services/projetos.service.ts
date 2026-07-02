@@ -28,6 +28,14 @@ export const projectsService = {
     return data ?? [];
   },
 
+  async listarResponsaveisTarefas(): Promise<
+    { usuario_id: string; nome: string; perfil_acesso: string }[]
+  > {
+    const { data, error } = await supabase.rpc('listar_responsaveis_tarefas');
+    if (error) throw error;
+    return data ?? [];
+  },
+
   async listarTarefasKanban(): Promise<TarefaKanban[]> {
     const { data, error } = await supabase.rpc('listar_tarefas_kanban');
     if (error) throw error;

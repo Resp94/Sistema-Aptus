@@ -388,7 +388,7 @@ export default function ContratosPage() {
               </div>
             </div>
 
-            {detalhe.documentos.length > 0 && (
+            {(detalhe.documentos?.length ?? 0) > 0 && (
               <div className="detail-documents">
                 <h3 className="detail-sub">Documentos Firmados ({detalhe.documentos.length})</h3>
                 <ul className="doc-list">

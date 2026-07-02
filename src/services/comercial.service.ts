@@ -31,7 +31,7 @@ export const comercialService = {
 
   async obterPropostaDetalhe(propostaId: string): Promise<PropostaDetalhe> {
     const { data, error } = await supabase.rpc('obter_proposta_detalhe', {
-      p_proposta_id: propostaId
+      p_id: propostaId
     })
 
     if (error) {
@@ -118,7 +118,7 @@ export const comercialService = {
 
   async obterContratoDetalhe(contratoId: string): Promise<ContratoDetalhe> {
     const { data, error } = await supabase.rpc('obter_contrato_detalhe', {
-      p_contrato_id: contratoId
+      p_id: contratoId
     })
 
     if (error) {
@@ -169,9 +169,10 @@ export const comercialService = {
     return !!data
   },
 
-  async encerrarContrato(id: string): Promise<boolean> {
+  async encerrarContrato(id: string, motivo?: string): Promise<boolean> {
     const { data, error } = await supabase.rpc('encerrar_contrato', {
-      p_id: id
+      p_id: id,
+      p_motivo: motivo || 'Encerrado pelo usuário'
     })
 
     if (error) {
@@ -206,7 +207,7 @@ export const comercialService = {
 
   async obterCobrancaDetalhe(cobrancaId: string): Promise<CobrancaDetalhe> {
     const { data, error } = await supabase.rpc('obter_cobranca_detalhe', {
-      p_cobranca_id: cobrancaId
+      p_id: cobrancaId
     })
 
     if (error) {
@@ -244,9 +245,11 @@ export const comercialService = {
   ): Promise<boolean> {
     const { data, error } = await supabase.rpc('registrar_pagamento_cobranca', {
       p_id: id,
-      p_pago_em: pagoEm,
-      p_valor: valor,
-      p_forma_pagamento: formaPagamento
+      payload: {
+        pago_em: pagoEm,
+        valor,
+        forma_pagamento: formaPagamento
+      }
     })
 
     if (error) {
