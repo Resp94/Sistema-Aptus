@@ -185,7 +185,8 @@ export default function ContasReceberPage() {
 
   const formatarData = (dtStr: string) => {
     if (!dtStr) return '-'
-    const parts = dtStr.split('-')
+    const datePart = dtStr.includes('T') ? dtStr.split('T')[0] : dtStr
+    const parts = datePart.split('-')
     if (parts.length === 3) {
       return `${parts[2]}/${parts[1]}/${parts[0]}`
     }

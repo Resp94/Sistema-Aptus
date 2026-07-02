@@ -186,12 +186,14 @@ export const comercialService = {
   async listarCobrancas(
     status?: string,
     clienteId?: string,
-    busca?: string
+    dataInicio?: string,
+    dataFim?: string
   ): Promise<CobrancaItem[]> {
     const { data, error } = await supabase.rpc('listar_cobrancas', {
       p_status: status || null,
       p_cliente_id: clienteId || null,
-      p_busca: busca || null
+      p_data_inicio: dataInicio || null,
+      p_data_fim: dataFim || null
     })
 
     if (error) {

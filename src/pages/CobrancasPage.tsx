@@ -72,8 +72,7 @@ export default function CobrancasPage() {
       const [list, cliList] = await Promise.all([
         comercialService.listarCobrancas(
           statusFiltro === 'Todos' ? undefined : statusFiltro,
-          clienteFiltro || undefined,
-          buscaText.trim() || undefined
+          clienteFiltro || undefined
         ),
         clientesService.listarClientes('cliente')
       ])
@@ -86,7 +85,19 @@ export default function CobrancasPage() {
     } finally {
       setLoading(false)
     }
-  }, [statusFiltro, clienteFiltro, buscaText])
+  }, [statusFiltro, clienteFiltro])
+
+  // A RPC listar_cobrancas não aceita busca textual; filtramos no cliente
+  // sobre a lista já carregada (cliente/contrato).
+  const cobrancasFiltradas = buscaText.trim()
+    ? cobrancas.filter((item) => {
+        const termo = buscaText.trim().toLowerCase()
+        return (
+          item.cliente.toLowerCase().includes(termo) ||
+          (item.contrato || '').toLowerCase().includes(termo)
+        )
+      })
+    : cobrancas
 
   useEffect(() => {
     if (!perfil) return
@@ -205,7 +216,8 @@ export default function CobrancasPage() {
 
   const formatarData = (dtStr: string) => {
     if (!dtStr) return '-'
-    const parts = dtStr.split('-')
+    const datePart = dtStr.includes('T') ? dtStr.split('T')[0] : dtStr
+    const parts = datePart.split('-')
     if (parts.length === 3) {
       return `${parts[2]}/${parts[1]}/${parts[0]}`
     }
@@ -288,9 +300,9 @@ export default function CobrancasPage() {
           <LoadingState message="Carregando faturamento..." />
         ) : error ? (
           <ErrorState message={error} onRetry={fetchDados} />
-        ) : cobrancas.length === 0 ? (
-          <EmptyState 
-            title="Nenhuma fatura de cobrança emitida" 
+        ) : cobrancasFiltradas.length === 0 ? (
+          <EmptyState
+            title="Nenhuma fatura de cobrança emitida"
             description="Não encontramos cobranças correspondentes para os filtros configurados."
             action={temEscrita ? { label: 'Emitir Cobrança', onClick: () => setNovaCobrancaModalOpen(true) } : undefined}
           />
@@ -308,12 +320,12 @@ export default function CobrancasPage() {
                 </tr>
               </thead>
               <tbody>
-                {cobrancas.map(item => (
+                {cobrancasFiltradas.map(item => (
                   <tr key={item.id} className="table-row-hover">
                     <td>
                       <div className="font-semibold text-fg">{item.cliente}</div>
                     </td>
-                    <td>{item.contrato_titulo || '-'}</td>
+                    <td>{item.contrato || '-'}</td>
                     <td>{formatarData(item.data_vencimento)}</td>
                     <td className="text-right font-semibold text-fg">
                       {formatarMoeda(item.valor)}

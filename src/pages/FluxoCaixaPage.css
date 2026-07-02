@@ -184,7 +184,7 @@
   background: var(--surface-alt);
   padding: var(--space-3);
   border-radius: var(--radius-md);
-  border-left: 3px solid var(--primary);
+  border-left: 3px solid var(--accent);
   margin-bottom: var(--space-4);
   font-size: var(--text-sm);
   color: var(--fg);

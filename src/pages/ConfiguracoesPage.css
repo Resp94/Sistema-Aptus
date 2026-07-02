@@ -32,12 +32,12 @@
 }
 
 .tab-btn:hover {
-  color: var(--primary);
+  color: var(--accent);
 }
 
 .tab-btn.active {
-  color: var(--primary);
-  border-bottom-color: var(--primary);
+  color: var(--accent);
+  border-bottom-color: var(--accent);
   font-weight: 600;
 }
 
@@ -135,11 +135,11 @@
 }
 
 input:checked + .slider {
-  background-color: var(--primary);
+  background-color: var(--accent);
 }
 
 input:focus + .slider {
-  box-shadow: 0 0 1px var(--primary);
+  box-shadow: 0 0 1px var(--accent);
 }
 
 input:checked + .slider:before {

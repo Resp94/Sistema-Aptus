@@ -66,7 +66,7 @@ export interface ContratoDetalhe {
 export interface CobrancaItem {
   id: string
   cliente: string
-  contrato_titulo: string | null
+  contrato: string | null
   valor: number
   data_vencimento: string
   status_exibicao: string
