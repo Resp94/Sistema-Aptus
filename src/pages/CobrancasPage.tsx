@@ -15,6 +15,10 @@ export default function CobrancasPage() {
   const { perfil, permissoes } = useAuth()
   const navigate = useNavigate()
   const temEscrita = podeEscrever(permissoes, 'cobrancas')
+  // Registrar pagamento é ownership do Financeiro/Administrador (a RPC rejeita
+  // Comercial mesmo com escrita em 'cobrancas'); a ação "Baixar" só aparece
+  // para quem realmente pode executá-la.
+  const podeRegistrarPagamento = podeEscrever(permissoes, 'financeiro')
 
   // Estados de dados
   const [cobrancas, setCobrancas] = useState<CobrancaItem[]>([])
@@ -69,16 +73,22 @@ export default function CobrancasPage() {
     setLoading(true)
     setError(null)
     try {
-      const [list, cliList] = await Promise.all([
+      const [list] = await Promise.all([
         comercialService.listarCobrancas(
           statusFiltro === 'Todos' ? undefined : statusFiltro,
           clienteFiltro || undefined
-        ),
-        clientesService.listarClientes('cliente')
+        )
       ])
 
       setCobrancas(list)
-      setClientes(cliList)
+
+      // Módulo "clientes" pode ser negado por RBAC (ex.: perfil Financeiro); degrada
+      // para lista vazia em vez de quebrar a página inteira.
+      try {
+        setClientes(await clientesService.listarClientes('cliente'))
+      } catch {
+        setClientes([])
+      }
     } catch (err: any) {
       console.error(err)
       setError(err.message || 'Erro ao carregar cobranças.')
@@ -339,9 +349,11 @@ export default function CobrancasPage() {
                       <td className="text-center actions-cell">
                         {item.status_exibicao !== 'Pago' && item.status_exibicao !== 'Cancelado' && (
                           <>
-                            <button className="btn btn-xs btn-outline" onClick={() => handleOpenBaixa(item)}>
-                              Baixar
-                            </button>
+                            {podeRegistrarPagamento && (
+                              <button className="btn btn-xs btn-outline" onClick={() => handleOpenBaixa(item)}>
+                                Baixar
+                              </button>
+                            )}
                             <button className="btn btn-xs btn-outline-secondary" onClick={() => handleEmitirBoleto(item.id)}>
                               Boleto
                             </button>

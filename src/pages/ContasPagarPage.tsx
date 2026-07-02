@@ -77,20 +77,26 @@ export default function ContasPagarPage() {
     setLoading(true)
     setError(null)
     try {
-      const [list, stats, fornList] = await Promise.all([
+      const [list, stats] = await Promise.all([
         financeiroService.listarContasPagar(
           statusFiltro === 'Todos' ? undefined : statusFiltro,
           fornecedorFiltro || undefined,
           dataInicio || undefined,
           dataFim || undefined
         ),
-        financeiroService.obterMetricasContas('a_pagar', dataInicio || undefined, dataFim || undefined),
-        clientesService.listarClientes('fornecedor')
+        financeiroService.obterMetricasContas('a_pagar', dataInicio || undefined, dataFim || undefined)
       ])
 
       setContas(list)
       setMetricas(stats)
-      setFornecedores(fornList)
+
+      // Módulo "clientes" pode ser negado por RBAC (ex.: perfil Financeiro); degrada
+      // para lista vazia em vez de quebrar a página inteira.
+      try {
+        setFornecedores(await clientesService.listarClientes('fornecedor'))
+      } catch {
+        setFornecedores([])
+      }
     } catch (err: any) {
       console.error(err)
       setError(err.message || 'Erro ao carregar contas a pagar.')

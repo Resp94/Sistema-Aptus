@@ -77,20 +77,26 @@ export default function ContasReceberPage() {
     setLoading(true)
     setError(null)
     try {
-      const [list, stats, cliList] = await Promise.all([
+      const [list, stats] = await Promise.all([
         financeiroService.listarContasReceber(
           statusFiltro === 'Todos' ? undefined : statusFiltro,
           clienteFiltro || undefined,
           dataInicio || undefined,
           dataFim || undefined
         ),
-        financeiroService.obterMetricasContas('a_receber', dataInicio || undefined, dataFim || undefined),
-        clientesService.listarClientes('cliente')
+        financeiroService.obterMetricasContas('a_receber', dataInicio || undefined, dataFim || undefined)
       ])
 
       setContas(list)
       setMetricas(stats)
-      setClientes(cliList)
+
+      // Módulo "clientes" pode ser negado por RBAC (ex.: perfil Financeiro); degrada
+      // para lista vazia em vez de quebrar a página inteira.
+      try {
+        setClientes(await clientesService.listarClientes('cliente'))
+      } catch {
+        setClientes([])
+      }
     } catch (err: any) {
       console.error(err)
       setError(err.message || 'Erro ao carregar contas a receber.')

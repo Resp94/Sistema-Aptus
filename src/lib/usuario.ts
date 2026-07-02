@@ -24,7 +24,9 @@ export function rotaInicialPorPerfil(perfil: PerfilAcesso): string {
     case 'Comercial':
       return '/clientes'
     case 'Visualizador':
-      return '/dashboard'
+      // Visualizador não tem leitura em 'dashboard' (RBAC); apontar para lá
+      // criaria um loop de redirecionamento em RequirePermissao.
+      return '/relatorios'
     default:
       return '/dashboard'
   }

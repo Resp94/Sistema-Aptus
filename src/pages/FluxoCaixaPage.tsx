@@ -83,17 +83,23 @@ export default function FluxoCaixaPage() {
     setLoading(true)
     setError(null)
     try {
-      const [resumoData, lancamentosData, seriesData, clientesData] = await Promise.all([
+      const [resumoData, lancamentosData, seriesData] = await Promise.all([
         financeiroService.obterResumoFluxoCaixa(dataInicio, dataFim),
         financeiroService.listarFluxoCaixa(dataInicio, dataFim, categoriaFiltro || undefined, buscaText.trim() || undefined),
-        financeiroService.obterFluxoCaixaSeries(dataInicio, dataFim),
-        clientesService.listarClientes()
+        financeiroService.obterFluxoCaixaSeries(dataInicio, dataFim)
       ])
 
       setResumo(resumoData)
       setLancamentos(lancamentosData)
       setSeries(seriesData)
-      setClientes(clientesData)
+
+      // Módulo "clientes" pode ser negado por RBAC (ex.: perfil Financeiro); degrada
+      // para lista vazia em vez de quebrar a página inteira.
+      try {
+        setClientes(await clientesService.listarClientes())
+      } catch {
+        setClientes([])
+      }
     } catch (err: any) {
       console.error(err)
       setError(err.message || 'Erro ao carregar dados do Fluxo de Caixa.')
