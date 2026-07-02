@@ -35,3 +35,9 @@ Thumbs.db
 
 # Supabase local environment
 supabase/.temp/
+
+# Playwright MCP session logs
+.playwright-mcp/
+
+#Reference html
+.reference/
