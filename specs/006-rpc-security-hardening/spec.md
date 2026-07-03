@@ -13,11 +13,11 @@
 Uma auditoria conduzida em 2026-07-02 sobre as 20 migrations do banco (81 funções: 79 RPCs + 2 triggers) revelou duas gerações de código com padrões de segurança divergentes:
 
 - **Geração nova** (migrations `20260701*` / `20260702*`: financeiro, comercial, equipe, relatórios, configurações): já segue o padrão completo de guardrails — função com privilégio elevado, escopo de busca de schema fixo, checagem de permissão de módulo no corpo, revogação de execução do público geral e concessão explícita apenas a usuários autenticados.
-- **Geração antiga** (batch `20260628*`: clientes, projetos, tarefas, dashboard; e o arquivo base de usuários/perfis): 26 funções fora do padrão — sem escopo de busca fixo, sem revogação de execução e sem concessão explícita.
+- **Geração antiga** (batch `20260628*`: clientes, projetos, tarefas, dashboard; e o arquivo base de usuários/perfis): funções fora do padrão — sem escopo de busca fixo, sem revogação de execução e sem concessão explícita. Estas se dividem em dois grupos de tratamento: (a) um conjunto crítico corrigido na **Fase 0** — a função de criação de perfil de teste (removida), a de registro de auditoria, a de verificação de administrador e os dois gatilhos de sincronização/validação de perfil; e (b) **26 funções** padronizadas na **Fase 1** — 23 de domínio (clientes, projetos, tarefas, dashboard) mais 3 helpers de permissão/perfil.
 
 A auditoria confirmou que o sistema **já é orientado a RPC** (78 chamadas de RPC nos serviços contra 1 única consulta direta a tabela, esta legítima), portanto o valor desta feature está em **fechar brechas de segurança e uniformizar o padrão**, não em refatorar a arquitetura de leitura.
 
-Duas das 26 funções antigas têm falhas **exploráveis** (uma delas por chamador anônimo), tratadas como prioridade máxima.
+Duas das funções antigas têm falhas **exploráveis** (uma delas por chamador anônimo) e são tratadas como prioridade máxima na Fase 0.
 
 Esta avaliação também **rejeitou formalmente** uma proposta anterior de migrar para "1 RPC agregadora por página": ela não fecha nenhuma brecha de segurança e traz custo e risco altos. A decisão fica registrada como diretriz arquitetural (ver User Story 5).
 
@@ -140,28 +140,29 @@ As decisões de arquitetura tomadas nesta avaliação precisam ficar documentada
 - **FR-001**: O sistema MUST remover a função de criação de perfil de teste do banco de produção, de modo que ela não exista em nenhum ambiente publicado.
 - **FR-002**: O processo de preparação do banco local MUST continuar criando os usuários de teste dos 6 perfis sem depender de qualquer função exposta em produção (definição efêmera restrita ao seed).
 - **FR-003**: A função de registro de eventos de auditoria MUST, para chamador autenticado, gravar sempre a identidade da sessão como autor do evento, ignorando qualquer identificador de autor recebido por parâmetro.
-- **FR-003a**: A função de registro de eventos de auditoria MUST permitir chamador anônimo apenas para uma lista fixa de eventos de segurança pré-autenticação (no mínimo a falha de login), gravando-os com autor nulo, e MUST rejeitar qualquer outro evento quando o chamador for anônimo.
+- **FR-003a**: A função de registro de eventos de auditoria MUST permitir chamador anônimo apenas para uma **lista fechada e explicitamente mantida** de eventos de segurança pré-autenticação — atualmente exatamente `login_falha` — gravando-os com autor nulo, e MUST rejeitar qualquer outro evento quando o chamador for anônimo. Ampliar essa lista exige alteração explícita da função (nunca por parâmetro do chamador).
 - **FR-003b**: A função de registro de eventos de auditoria MUST remover o parâmetro de identificador de autor da sua assinatura, e os pontos de chamada no cliente (falha de login, sucesso de login e senha alterada) MUST ser ajustados para não mais informar o autor.
-- **FR-004**: O gatilho de sincronização de usuários MUST atribuir o perfil de menor privilégio (Visualizador) a todo novo usuário, sem exceção, ignorando qualquer nível de acesso presente em metadados editáveis pelo usuário.
+- **FR-004**: O gatilho de sincronização de usuários (caminho de auto-cadastro) MUST atribuir o perfil de menor privilégio (Visualizador) a todo novo usuário, sem exceção, ignorando qualquer nível de acesso presente em metadados editáveis pelo usuário. A definição de um perfil diferente só ocorre após a criação, pela promoção administrativa governada (FR-005) — nunca no próprio gatilho.
 - **FR-005**: A elevação de perfil de um usuário MUST ocorrer exclusivamente pela função administrativa dedicada, disponível apenas a administradores.
 - **FR-006**: O gatilho de sincronização MAY preservar dados não-sensíveis do cadastro (nome, departamento), por não constituírem autorização.
 - **FR-007**: A função de verificação de existência de administrador MUST ter sua execução revogada do público geral e concedida apenas a usuários autenticados.
+- **FR-007a**: O gatilho de validação que impede alteração de perfil/status por não-administradores MUST ter o escopo de busca de schema fixado. A guarda que permite alterações em contexto de sistema (sem sessão) MAY ser preservada, pois é requerida pelos processos de sincronização e pelo seed local; o requisito aqui é apenas fixar o `search_path` para eliminar o risco de resolução de nomes em função com privilégio elevado.
 
 **Padronização retroativa (Fase 1)**
 
 - **FR-008**: Todas as 26 funções da geração antiga MUST passar a ter escopo de busca de schema fixado.
 - **FR-009**: Todas as 26 funções MUST ter a execução revogada do público geral e concedida explicitamente apenas a usuários autenticados.
 - **FR-010**: Todas as 26 funções MUST conter uma guarda explícita que rejeita chamadores sem identidade autenticada com um erro de não-autorizado.
-- **FR-011**: A padronização MUST NOT alterar a assinatura nem o comportamento observável de nenhuma das funções, de modo a não exigir qualquer mudança no código cliente.
+- **FR-011**: A padronização MUST NOT alterar a assinatura nem o comportamento observável para chamadores legítimos (autenticados e autorizados) de nenhuma das 26 funções, de modo a não exigir qualquer mudança no código cliente. A única diferença observável admitida é que um chamador anônimo passa a receber um erro explícito de não-autorizado (FR-010) em vez do resultado vazio silencioso anterior — o que não é considerado mudança de comportamento porque o anônimo nunca foi um chamador legítimo.
 
 **Verificação automatizada e testes (Fases 2 e 3)**
 
 - **FR-012**: O sistema MUST prover uma verificação automática que reprova qualquer função com privilégio elevado que não apresente o conjunto completo de guardrails (privilégio elevado declarado, escopo de busca fixo, checagem de permissão quando aplicável, execução revogada do público geral, execução concedida a autenticados).
 - **FR-013**: O sistema MUST prover uma verificação automática que reprova consultas diretas a tabelas na camada de serviço de domínio, com uma lista de exceções explícita (verificação de saúde).
 - **FR-014**: O sistema MUST prover uma verificação automática que reprova o uso de metadados editáveis pelo usuário em lógica de autorização, tanto no banco quanto no cliente.
-- **FR-015**: O sistema MUST prover uma suíte de testes de banco que valide, por perfil de acesso (Administrador, Gestor, Financeiro, Comercial, Técnico, Visualizador): rejeição de anônimo em toda função com privilégio elevado; rejeição por falta de permissão de módulo; falha de escrita sem permissão de escrita; e a regressão de autoconcessão de perfil no cadastro.
+- **FR-015**: O sistema MUST prover uma suíte de testes de banco que valide, por perfil de acesso (Administrador, Financeiro, Projetos, Comercial, Técnico, Visualizador — os 6 perfis reais do sistema): rejeição de anônimo em toda função com privilégio elevado; rejeição por falta de permissão de módulo; falha de escrita sem permissão de escrita; e a regressão de autoconcessão de perfil no cadastro. A matriz esperada de permissões `(pode_ler, pode_escrever)` por perfil tem como **fonte única de verdade** a função `obter_permissoes_usuario`, contra a qual os testes devem ser comparados (evitando duplicar a matriz e o risco de divergência).
 - **FR-016**: O teste de rejeição de anônimo MUST ser guiado pelo catálogo do banco (enumerando as funções existentes) e não por uma lista mantida manualmente, aplicando uma lista de exceções explícita e mínima para as funções legitimamente chamáveis por anônimo (a função de auditoria, restrita à sua lista fixa de eventos de pré-autenticação).
-- **FR-017**: O pipeline de integração contínua MUST executar, em sequência, a compilação do projeto, os testes automatizados, a verificação de qualidade do schema, os avisos de segurança nativos da plataforma e os scripts de auditoria, e MUST bloquear a integração se qualquer etapa falhar.
+- **FR-017**: O pipeline de integração contínua MUST executar, em sequência, a compilação do projeto, os testes automatizados (unitários do cliente e a suíte de testes de banco/pgTAP), a verificação de qualidade do schema, os avisos de segurança nativos da plataforma e os scripts de auditoria, e MUST bloquear a integração se qualquer etapa falhar.
 
 **Diretrizes arquiteturais (Fase 4)**
 
@@ -172,7 +173,7 @@ As decisões de arquitetura tomadas nesta avaliação precisam ficar documentada
 ### Key Entities *(include if feature involves data)*
 
 - **Função de banco com privilégio elevado (RPC)**: unidade de acesso a dados invocada pelo cliente. Atributos de segurança relevantes: nível de privilégio, escopo de busca de schema, presença de checagem de permissão, e concessões de execução.
-- **Perfil de acesso**: nível de autorização de um usuário (Administrador, Gestor, Financeiro, Comercial, Técnico, Visualizador). Deriva de fonte confiável, nunca de metadados editáveis pelo usuário.
+- **Perfil de acesso**: nível de autorização de um usuário (Administrador, Financeiro, Projetos, Comercial, Técnico, Visualizador). Deriva de fonte confiável, nunca de metadados editáveis pelo usuário.
 - **Evento de auditoria**: registro de uma ação relevante, com autor (sempre a identidade da sessão), tipo de evento e origem.
 - **Permissão de módulo**: par de capacidades (ler / escrever) que um perfil possui sobre uma área funcional do sistema.
 
@@ -182,12 +183,12 @@ As decisões de arquitetura tomadas nesta avaliação precisam ficar documentada
 
 - **SC-001**: Nenhuma função com privilégio elevado é executável por um chamador anônimo sem rejeição explícita de não-autorizado, salvo a única exceção documentada da função de auditoria restrita à sua lista fixa de eventos de pré-autenticação (exatamente 1 exceção catalogada).
 - **SC-002**: A função de criação de perfil de teste não existe em nenhum ambiente de produção.
-- **SC-003**: 100% das 81 funções do banco passam no script de auditoria de guardrails.
+- **SC-003**: 100% das funções remanescentes do banco passam no script de auditoria de guardrails. A auditoria partiu de 81 funções; após a remoção da função de criação de perfil de teste (FR-001), o alvo é o conjunto restante (80 funções, incluindo a função de auditoria recriada com nova assinatura).
 - **SC-004**: É impossível gravar um evento de auditoria atribuído a um usuário diferente do autor autenticado da sessão.
 - **SC-005**: Um cadastro que tenta autoconceder qualquer perfil diferente de Visualizador resulta, em 100% dos casos, no perfil Visualizador.
 - **SC-006**: A suíte de testes de banco passa em verde cobrindo os 6 perfis de acesso.
 - **SC-007**: A introdução deliberada de uma função fora do padrão, ou de uma consulta direta a tabela num serviço de domínio, é reprovada pela integração contínua antes da integração.
-- **SC-008**: A padronização das 26 funções legadas não exige nenhuma alteração no código cliente (0 pontos de chamada modificados por conta da Fase 1).
+- **SC-008**: A padronização das 26 funções legadas (Fase 1) não exige nenhuma alteração no código cliente (0 pontos de chamada modificados por conta da Fase 1). Os únicos pontos de chamada modificados no cliente são os 3 da função de auditoria (Fase 0, decorrentes da mudança de assinatura em FR-003b) — que não contam para este critério.
 
 ## Assumptions
 
@@ -198,6 +199,7 @@ As decisões de arquitetura tomadas nesta avaliação precisam ficar documentada
 - A camada de serviço de domínio é o local onde consultas diretas a tabela devem ser proibidas; o arquivo de verificação de saúde é a única exceção legítima atual.
 - Os testes de banco usam o mecanismo de testes de schema da própria plataforma, executáveis localmente e na integração contínua.
 - A padronização das 26 funções preserva assinaturas; qualquer necessidade de mudança de assinatura (como na função de auditoria) é tratada explicitamente como parte das correções críticas, com ajuste dos pontos de chamada.
+- Registros históricos de `audit_log` gravados antes desta feature (cujo autor pôde ter sido informado pelo cliente) são **aceitos como estão** — não há migração nem expurgo de dados históricos. A garantia de autoria confiável (autor = identidade da sessão) vale a partir da entrada em vigor da função de auditoria corrigida; auditorias que dependam de integridade de autoria devem considerar apenas eventos posteriores a essa data.
 
 ## Out of Scope
 

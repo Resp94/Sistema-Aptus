@@ -1,5 +1,5 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at specs/005-demais-telas-perfis/plan.md
+at specs/006-rpc-security-hardening/plan.md
 <!-- SPECKIT END -->
