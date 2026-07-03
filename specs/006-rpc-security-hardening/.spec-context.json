@@ -1,0 +1,9 @@
+{
+  "workflow": "speckit",
+  "specName": "006-rpc-security-hardening",
+  "branch": "006-rpc-security-hardening",
+  "selectedAt": "2026-07-02T20:46:05.958Z",
+  "currentStep": "specify",
+  "status": "draft",
+  "history": []
+}
