@@ -44,6 +44,110 @@ DECLARE
   v_membro_financeiro_id uuid;
   v_membro_admin_id uuid;
 BEGIN
+  -- FR-002: função efêmera de criação de personas (não persiste em produção)
+  CREATE OR REPLACE FUNCTION public.criar_perfil_teste(
+    p_email text,
+    p_senha text,
+    p_nome text,
+    p_perfil_acesso text
+  )
+  RETURNS TABLE (
+    usuario_id uuid,
+    perfil_id uuid
+  )
+  LANGUAGE plpgsql SECURITY DEFINER
+  SET row_security = off
+  AS $func$
+  DECLARE
+    v_user_id uuid;
+    v_profile_id uuid;
+    v_encrypted_password text;
+  BEGIN
+    IF auth.uid() IS NOT NULL AND NOT public.existe_perfil_admin(auth.uid()) THEN
+      RAISE EXCEPTION 'Apenas administradores podem criar perfis de teste';
+    END IF;
+
+    v_encrypted_password := crypt(p_senha, gen_salt('bf', 10));
+
+    INSERT INTO auth.users (
+      instance_id,
+      id,
+      aud,
+      role,
+      email,
+      encrypted_password,
+      email_confirmed_at,
+      raw_app_meta_data,
+      raw_user_meta_data,
+      created_at,
+      updated_at,
+      confirmation_token,
+      recovery_token,
+      email_change_token_new,
+      is_super_admin,
+      email_change,
+      email_change_token_current,
+      phone_change,
+      phone_change_token
+    ) VALUES (
+      '00000000-0000-0000-0000-000000000000',
+      gen_random_uuid(),
+      'authenticated',
+      'authenticated',
+      p_email,
+      v_encrypted_password,
+      now(),
+      '{"provider": "email", "providers": ["email"]}'::jsonb,
+      jsonb_build_object('nome', p_nome),
+      now(),
+      now(),
+      '',
+      '',
+      '',
+      false,
+      '',
+      '',
+      '',
+      ''
+    )
+    RETURNING id INTO v_user_id;
+
+    INSERT INTO auth.identities (
+      id,
+      user_id,
+      identity_data,
+      provider,
+      provider_id,
+      last_sign_in_at,
+      created_at,
+      updated_at
+    ) VALUES (
+      v_user_id,
+      v_user_id,
+      jsonb_build_object('sub', v_user_id, 'email', p_email),
+      'email',
+      p_email,
+      now(),
+      now(),
+      now()
+    );
+
+    UPDATE public.perfis SET
+      nome = p_nome,
+      perfil_acesso = p_perfil_acesso,
+      status = 'Ativo'
+    WHERE perfis.usuario_id = v_user_id
+    RETURNING id INTO v_profile_id;
+
+    INSERT INTO public.audit_log (evento, usuario_id, ip_origem, user_agent)
+    VALUES ('usuario_criado', v_user_id, '0.0.0.0', 'System (criar_perfil_teste)');
+
+    RETURN QUERY SELECT v_user_id, v_profile_id;
+  END;
+  $func$;
+
+  -- Bloco de seed com garantia de cleanup da função efêmera
+  BEGIN
   -- Obtém a senha de teste
   v_senha := 'SenhaDeTesteSegura123!';
 
@@ -352,5 +456,12 @@ BEGIN
     ((SELECT id FROM public.perfis WHERE usuario_id = v_financeiro_id), 'Email', 'Cobrancas', true),
     ((SELECT id FROM public.perfis WHERE usuario_id = v_financeiro_id), 'Sistema', 'Alertas', true);
 
-  RAISE NOTICE 'Seed executado com sucesso: 6 personas e dados completos cadastrados.';
+    RAISE NOTICE 'Seed executado com sucesso: 6 personas e dados completos cadastrados.';
+  EXCEPTION WHEN OTHERS THEN
+    DROP FUNCTION IF EXISTS public.criar_perfil_teste(text, text, text, text);
+    RAISE;
+  END;
+
+  -- Garante remoção da função efêmera mesmo em caso de erro no bloco acima
+  DROP FUNCTION IF EXISTS public.criar_perfil_teste(text, text, text, text);
 END $$;

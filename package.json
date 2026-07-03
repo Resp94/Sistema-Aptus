@@ -10,10 +10,15 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css,md}\"",
     "preview": "vite preview",
     "test": "vitest run",
+    "db:test": "npx supabase test db",
     "supabase:start": "npx supabase start",
     "supabase:stop": "npx supabase stop",
     "supabase:status": "npx supabase status",
-    "supabase:reset": "npx supabase db reset"
+    "supabase:reset": "npx supabase db reset",
+    "audit:rpc": "node scripts/audit-rpc.mjs",
+    "audit:from": "node scripts/check-no-from.mjs",
+    "audit:metadata": "node scripts/check-no-user-metadata.mjs",
+    "audit": "npm run audit:rpc && npm run audit:from && npm run audit:metadata"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.8",

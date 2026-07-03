@@ -68,7 +68,6 @@ export const ResetPassword: React.FC = () => {
         if (user) {
           await supabase.rpc('registrar_evento_auditoria', {
             p_evento: 'senha_alterada',
-            p_usuario_id: user.id,
             p_ip_origem: '0.0.0.0',
             p_user_agent: window.navigator.userAgent
           });

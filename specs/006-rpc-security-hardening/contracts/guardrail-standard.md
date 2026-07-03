@@ -56,6 +56,7 @@ Para cada função `CREATE [OR REPLACE] FUNCTION public.<nome>` nas migrations, 
 - Funções de trigger (`RETURNS trigger`): exigem apenas `SECURITY DEFINER` + `search_path` (não têm grants nem RBAC de módulo).
 - `registrar_evento_auditoria`: `GRANT` inclui `anon`; RBAC de módulo não se aplica; guarda é condicional (whitelist).
 - Helpers de permissão/perfil (`permissao_modulo`, `obter_permissoes_usuario`, `obter_perfil_usuario`, `existe_perfil_admin`): não exigem `permissao_modulo` no corpo (são a base do RBAC), mas exigem os demais guardrails.
+- `atualizar_usuario_perfil`: admin-only por design (FR-005), guardado por `existe_perfil_admin` em vez de `permissao_modulo` — não exige o guard de módulo, mas exige os demais guardrails.
 
 **Saída**: código de saída ≠ 0 e relatório tabular das funções fora do padrão. Em verde, imprime contagem total conforme (meta: 80/80, SC-003 — 81 auditadas menos `criar_perfil_teste` removida).
 

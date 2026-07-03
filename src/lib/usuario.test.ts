@@ -47,7 +47,7 @@ describe('rotaInicialPorPerfil', () => {
   it('Comercial vai para /clientes', () => {
     expect(rotaInicialPorPerfil('Comercial')).toBe('/clientes')
   })
-  it('Visualizador (default) vai para /dashboard', () => {
-    expect(rotaInicialPorPerfil('Visualizador')).toBe('/dashboard')
+  it('Visualizador vai para /relatorios', () => {
+    expect(rotaInicialPorPerfil('Visualizador')).toBe('/relatorios')
   })
 })

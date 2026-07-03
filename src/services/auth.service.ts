@@ -54,7 +54,6 @@ export const authService = {
       try {
         await supabase.rpc('registrar_evento_auditoria', {
           p_evento: 'login_falha',
-          p_usuario_id: null,
           p_ip_origem: '127.0.0.1',
           p_user_agent: typeof window !== 'undefined' ? window.navigator.userAgent : 'System (Vitest)'
         });
@@ -87,7 +86,6 @@ export const authService = {
       try {
         await supabase.rpc('registrar_evento_auditoria', {
           p_evento: 'login_sucesso',
-          p_usuario_id: data.user.id,
           p_ip_origem: '127.0.0.1',
           p_user_agent: typeof window !== 'undefined' ? window.navigator.userAgent : 'System (Vitest)'
         });
