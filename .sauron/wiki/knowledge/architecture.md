@@ -59,11 +59,11 @@ Não faz parte desta página:
   - Gerar arquivos localmente no navegador, sem persistência.
   - Gerar arquivos de forma centralizada, persistir o artefato e registrar histórico baixável.
   - Manter apenas solicitação assíncrona sem arquivo imediato.
-- **Choice**: Especificar exportação real de PDF e CSV por categoria selecionada, com período obrigatório, histórico persistente, re-download enquanto válido e expiração em 12 meses.
-- **Justification**: A persistência do arquivo torna o histórico útil, evita sucesso simulado e permite auditoria operacional. A separação entre leitura e exportação preserva a matriz de capacidades: Visualizador continua apenas lendo, enquanto Administrador, Financeiro e Projetos exportam somente quando possuem `relatorios.exportar`. O histórico segue escopo por persona: Administrador acessa todos os arquivos válidos; Financeiro e Projetos acessam apenas os próprios.
+- **Choice**: Especificar exportação real de PDF e CSV por categoria selecionada, com período obrigatório, histórico persistente, re-download enquanto válido e expiração em 12 meses. O desenho técnico aprovado usa Supabase Edge Function para geração e download, RPCs para autorização/dados, e bucket privado de Storage para os arquivos.
+- **Justification**: A persistência do arquivo torna o histórico útil, evita sucesso simulado e permite auditoria operacional. A separação entre leitura e exportação preserva a matriz de capacidades: Visualizador continua apenas lendo, enquanto Administrador, Financeiro e Projetos exportam somente quando possuem `relatorios.exportar`. O histórico segue escopo por persona: Administrador acessa todos os arquivos válidos; Financeiro e Projetos acessam apenas os próprios. A Edge Function mantém geração e assinatura de download no servidor, sem expor service role ou URL pública permanente.
 - **Trade-offs**:
   - *Prós*: Download imediato, histórico reutilizável, rastreabilidade, experiência consistente para PDF e CSV.
-  - *Contras*: Exige contrato de dados completos por categoria, armazenamento de arquivos, política de expiração, validações adicionais de autorização no download posterior e geração de pacote para CSV quando houver resumo e detalhes.
+  - *Contras*: Exige contrato de dados completos por categoria, armazenamento de arquivos, política de expiração, validações adicionais de autorização no download posterior, geração de pacote para CSV quando houver resumo e detalhes e manutenção de uma Edge Function server-side.
 
 ## 4. Change History
 
@@ -289,6 +289,61 @@ Não faz parte desta página:
   - Criado: `specs/008-exportar-relatorios/checklists/requirements.md`
   - Criado: `.agents/project-memory/008-exportar-relatorios.md`
   - Alterado: `.specify/feature.json`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-07-04 — Planejamento da exportação real de relatórios
+- **What was done**: Foi executado o fluxo `speckit-plan` para `specs/008-exportar-relatorios/`, gerando plano técnico, pesquisa, modelo de dados, quickstart e contratos para Edge Function, RPCs, Storage/retencao, frontend e auditoria/testes. O plano define `relatorios-exportacao` como função server-side para gerar PDF ou ZIP CSV, salvar em bucket privado `relatorios-exportados`, concluir o historico em `exportacoes_relatorios` e retornar signed URL temporario. O desenho tambem expande o historico com periodo, solicitante, expiracao, metadados do arquivo e status de exibicao `Expirado` computado.
+- **Why it was done**: Transformar os requisitos deliberados em arquitetura implementavel antes da geracao de tarefas, garantindo alinhamento entre front, RPCs, Storage, Edge Function, historico, validade de 12 meses e regras por persona.
+- **Impact on the system**: Nenhum codigo funcional foi alterado nesta etapa. A proxima implementacao passa a ter contratos claros: frontend chama Edge Function, RPCs validam `relatorios.exportar` e escopo de categoria/historico, Storage permanece privado sem URL publica permanente, e Visualizador/Comercial/Tecnico permanecem bloqueados para exportacao/download.
+- **Files affected**:
+  - Criado/Atualizado: `specs/008-exportar-relatorios/plan.md`
+  - Criado: `specs/008-exportar-relatorios/research.md`
+  - Criado: `specs/008-exportar-relatorios/data-model.md`
+  - Criado: `specs/008-exportar-relatorios/quickstart.md`
+  - Criado: `specs/008-exportar-relatorios/contracts/edge-function-exportacao.md`
+  - Criado: `specs/008-exportar-relatorios/contracts/rpc-exportacao-relatorios.md`
+  - Criado: `specs/008-exportar-relatorios/contracts/storage-and-retention.md`
+  - Criado: `specs/008-exportar-relatorios/contracts/frontend-relatorios.md`
+  - Criado: `specs/008-exportar-relatorios/contracts/audit-and-tests.md`
+  - Alterado: `AGENTS.md`
+  - Alterado: `CLAUDE.md`
+  - Alterado: `.agents/project-memory/008-exportar-relatorios.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-07-04 — Checklist de qualidade do plano de exportação de relatórios
+- **What was done**: Foi executado o fluxo `speckit-checklist` sobre `specs/008-exportar-relatorios/plan.md`, criando `specs/008-exportar-relatorios/checklists/plan-quality.md` com 46 itens de revisao de qualidade dos requisitos e do plano.
+- **Why it was done**: Validar se a especificacao, plano, modelo de dados e contratos estao completos, claros, consistentes e mensuraveis antes de transformar a feature em tarefas executaveis.
+- **Impact on the system**: Nenhum codigo funcional foi alterado. O checklist adiciona um gate documental para reduzir ambiguidades sobre categorias, conteudo completo por relatorio, periodo, CSV ZIP, historico, signed URLs, Storage privado, RBAC por persona, expiracao e falhas parciais.
+- **Files affected**:
+  - Criado: `specs/008-exportar-relatorios/checklists/plan-quality.md`
+  - Alterado: `.agents/project-memory/008-exportar-relatorios.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-07-04 — Validação do checklist de qualidade da feature 008
+- **What was done**: Os 46 checkpoints de `specs/008-exportar-relatorios/checklists/plan-quality.md` foram validados contra spec, plano, research, data model e contratos. Foram marcados 32 itens como atendidos e mantidos 14 abertos com justificativa.
+- **Why it was done**: Identificar lacunas documentais antes de gerar tarefas, evitando que ambiguidades sobre dados por categoria, boundary de datas, performance, acessibilidade, observabilidade, autorizacao por categoria e legado de RPC avancem para implementacao.
+- **Impact on the system**: Nenhum codigo funcional foi alterado. A feature ainda precisa resolver os 14 checkpoints abertos antes de `/speckit-tasks` para reduzir risco de tarefas incompletas ou contraditorias.
+- **Files affected**:
+  - Alterado: `specs/008-exportar-relatorios/checklists/plan-quality.md`
+  - Alterado: `.agents/project-memory/008-exportar-relatorios.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-07-04 — Fechamento das lacunas do checklist da feature 008
+- **What was done**: As 14 lacunas abertas do checklist `plan-quality.md` foram deliberadas e fechadas nos artefatos da feature 008. Foram definidas categorias exportaveis iniciais (Financeiro, DRE, Clientes, Projetos), exclusao de `Personalizado` no escopo 008, fonte canonica de categoria por persona, conteudo completo por categoria, semantica inclusiva de periodo e limite de 12 meses, volume operacional comum, cobertura PDF/CSV por persona, requisitos de acessibilidade/responsividade, observabilidade, bibliotecas `pdf-lib`/`fflate`, visibilidade do solicitante e descontinuacao do uso frontend da RPC legada.
+- **Why it was done**: Remover ambiguidades antes de gerar tarefas, garantindo que front, Edge Function, RPCs, Storage, RBAC e historico tenham contratos alinhados.
+- **Impact on the system**: Nenhum codigo funcional foi alterado. A feature 008 agora esta documentalmente pronta para `/speckit-tasks`, com checklist de qualidade 46/46 aprovado.
+- **Files affected**:
+  - Alterado: `specs/008-exportar-relatorios/spec.md`
+  - Alterado: `specs/008-exportar-relatorios/plan.md`
+  - Alterado: `specs/008-exportar-relatorios/research.md`
+  - Alterado: `specs/008-exportar-relatorios/data-model.md`
+  - Alterado: `specs/008-exportar-relatorios/quickstart.md`
+  - Alterado: `specs/008-exportar-relatorios/contracts/edge-function-exportacao.md`
+  - Alterado: `specs/008-exportar-relatorios/contracts/rpc-exportacao-relatorios.md`
+  - Alterado: `specs/008-exportar-relatorios/contracts/frontend-relatorios.md`
+  - Alterado: `specs/008-exportar-relatorios/contracts/audit-and-tests.md`
+  - Alterado: `specs/008-exportar-relatorios/checklists/plan-quality.md`
+  - Alterado: `.agents/project-memory/008-exportar-relatorios.md`
   - Alterado: `.sauron/wiki/knowledge/architecture.md`
 
 ## 5. Current State

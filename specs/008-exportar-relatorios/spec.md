@@ -17,6 +17,11 @@
 - Q: Qual e o periodo maximo permitido por exportacao? → A: Periodo maximo de 12 meses por exportacao.
 - Q: Como o periodo deve afetar cada categoria de relatorio? → A: Financeiro/DRE usam movimentacoes do periodo; Clientes/Projetos usam snapshot atual com metricas de atividade no periodo.
 - Q: Como o formato CSV deve representar resumo e detalhes? → A: ZIP com CSV de resumo e CSV de detalhes quando a categoria tiver ambos.
+- Q: Quais categorias fazem parte da exportacao inicial? → A: Financeiro, DRE, Clientes e Projetos; Personalizado fica fora da exportacao 008 ate existir contrato proprio.
+- Q: Qual regra exata define periodo maximo de 12 meses? → A: Datas sao inclusivas; `data_inicial <= data_final`; `2026-01-01` a `2026-12-31` e permitido, enquanto `2026-01-01` a `2027-01-01` e bloqueado.
+- Q: O que significa volume operacional comum para download imediato? → A: Ate 5.000 linhas detalhadas ou ate 10 MB antes de compressao; acima disso, a exportacao pode falhar com mensagem clara ou evoluir depois para fila/background worker.
+- Q: Qual e a fonte canonica para categoria permitida por persona? → A: A leitura/preview usa `listar_categorias_relatorios`; a exportacao/download deve usar helper/RPC de autorizacao de categoria exportavel por perfil, derivado da mesma matriz de categorias.
+- Q: Como tratar a RPC legada `solicitar_exportacao_relatorio`? → A: O frontend da feature 008 deixa de usa-la; ela permanece apenas como compatibilidade legada, sem participar do fluxo novo e sem simular sucesso.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -33,6 +38,7 @@ Como usuario autorizado a exportar relatorios, quero selecionar uma categoria, i
 1. **Given** um Administrador em Relatorios com categoria selecionada, **When** informa um periodo valido, escolhe PDF e confirma a exportacao, **Then** o sistema gera um PDF completo da categoria selecionada e disponibiliza download imediato.
 2. **Given** um usuario Financeiro em Relatorios com categoria financeira permitida, **When** informa data inicial e data final validas, escolhe CSV e confirma, **Then** o sistema gera um CSV completo apenas daquela categoria e periodo.
 3. **Given** um usuario Projetos em Relatorios com categoria Projetos selecionada, **When** exporta o relatorio, **Then** o arquivo inclui dados completos da categoria Projetos respeitando o periodo informado.
+4. **Given** cada persona exportadora autorizada, **When** exporta uma categoria permitida, **Then** deve haver cobertura de PDF e CSV para Administrador, Financeiro e Projetos durante a validacao da feature.
 
 ---
 
@@ -79,6 +85,10 @@ Como usuario com acesso limitado, quero que a tela diferencie leitura de relator
 - Falha durante a geracao deve registrar status de falha e nao apresentar sucesso simulado.
 - Exportacoes duplicadas para mesma categoria, periodo e formato podem existir como eventos separados, pois representam solicitacoes feitas em momentos diferentes.
 - Nomes de arquivos devem ser claros para o usuario e indicar categoria, periodo e formato.
+- Exportacao de `Personalizado` deve ficar indisponivel no escopo 008 e informar que a categoria ainda nao possui contrato de exportacao completo.
+- Exportacao com data inicial igual a data final deve ser permitida e representar um periodo de um dia.
+- Exportacao exatamente de `2026-01-01` a `2026-12-31` deve ser permitida; exportacao de `2026-01-01` a `2027-01-01` deve ser bloqueada.
+- Exportacao que exceder 5.000 linhas detalhadas ou 10 MB antes de compressao deve falhar com mensagem clara, sem registrar sucesso simulado.
 
 ## Requirements *(mandatory)*
 
@@ -116,6 +126,24 @@ Como usuario com acesso limitado, quero que a tela diferencie leitura de relator
 - **FR-022**: O sistema MUST manter o historico de exportacoes ordenado pelas solicitacoes mais recentes primeiro.
 - **FR-023**: O sistema MUST diferenciar visualmente no historico os estados Pronto, Falhou e Expirado.
 - **FR-024**: O sistema MUST preservar a separacao entre visualizar relatorios e exportar arquivos, para que leitura de Relatorios nao implique direito de extracao.
+- **FR-025**: O sistema MUST limitar a exportacao inicial as categorias Financeiro, DRE, Clientes e Projetos.
+- **FR-026**: O sistema MUST tratar Personalizado como categoria sem exportacao no escopo 008 ate que exista contrato completo proprio.
+- **FR-027**: O sistema MUST usar a mesma fonte canonica de categorias para leitura/preview e derivar dela a matriz de categorias exportaveis por persona para geracao e download.
+- **FR-028**: O sistema MUST registrar observabilidade minima por exportacao: id da exportacao, usuario, categoria, formato, periodo, status, duracao, tamanho do arquivo quando existir e erro sanitizado quando falhar.
+- **FR-029**: O sistema MUST substituir no frontend o uso da RPC legada `solicitar_exportacao_relatorio` pelo fluxo da Edge Function `relatorios-exportacao`.
+
+### Content Requirements by Category
+
+- **CR-001 Financeiro**: O relatorio completo MUST conter resumo de receitas, despesas, saldo, quantidade de lancamentos e linhas detalhadas dos lancamentos do periodo com data, tipo, natureza/status, categoria, descricao, cliente/projeto quando aplicavel e valor.
+- **CR-002 DRE**: O relatorio completo MUST conter resumo de faturamento bruto, deducoes, custos operacionais e resultado liquido, alem de linhas/classificacoes dos lancamentos do periodo que compoem cada grupo da DRE.
+- **CR-003 Clientes**: O relatorio completo MUST conter snapshot atual de clientes totais, ativos e inativos, metricas de atividade no periodo e linhas por cliente com identificacao, empresa/contato, status, tipo, data de cadastro/atualizacao e metricas de atividade do periodo quando existirem.
+- **CR-004 Projetos**: O relatorio completo MUST conter snapshot atual de projetos totais por status, metricas de atividade no periodo e linhas por projeto com identificacao, cliente, status, periodo planejado/real, responsavel quando existir, progresso/valor quando disponivel e metricas de atividade do periodo.
+
+### Non-Functional Requirements
+
+- **NFR-001 Performance**: O alvo de download imediato em ate 10 segundos se aplica a exportacoes com ate 5.000 linhas detalhadas ou ate 10 MB antes de compressao.
+- **NFR-002 Accessibility**: O modal de exportacao e o historico MUST ser utilizaveis por teclado, ter labels explicitos, foco inicial no primeiro campo editavel, fechamento por Esc, estados comunicados sem depender apenas de cor e layout responsivo a partir de 320px de largura.
+- **NFR-003 Observability**: Falhas de geracao, upload, conclusao e download devem produzir registros rastreaveis com `exportacao_id`, usuario, categoria, formato, periodo, duracao e erro sanitizado.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -141,13 +169,16 @@ Como usuario com acesso limitado, quero que a tela diferencie leitura de relator
 - **SC-010**: 100% dos arquivos gerados contem resumo executivo identificavel e linhas detalhadas, exceto quando o periodo nao tem registros, caso em que o arquivo informa explicitamente a ausencia de dados.
 - **SC-011**: 100% das tentativas com periodo superior a 12 meses sao bloqueadas antes da geracao do arquivo.
 - **SC-012**: 100% das exportacoes CSV com resumo e detalhes entregam ambos os conjuntos de dados em arquivos tabulares separados no mesmo download.
+- **SC-013**: Administrador, Financeiro e Projetos possuem pelo menos um cenario validado em PDF e um em CSV para suas categorias permitidas.
+- **SC-014**: 100% das exportacoes acima do volume operacional comum falham de forma compreensivel, sem arquivo parcial apresentado como sucesso.
 
 ## Assumptions
 
 - A matriz de capacidades nomeadas da feature 007 permanece a fonte de verdade para decidir quem pode exportar.
 - Visualizador continua tendo leitura restrita de Relatorios e Configuracoes proprias, mas nenhuma capacidade de exportacao.
 - O historico anterior de exportacoes indisponiveis pode coexistir com os novos registros prontos, falhos ou expirados.
-- A exportacao inicial cobre categorias existentes na tela Relatorios; novas categorias futuras devem aderir ao mesmo contrato de periodo, historico e permissao.
+- A exportacao inicial cobre apenas Financeiro, DRE, Clientes e Projetos; novas categorias futuras devem aderir ao mesmo contrato de periodo, historico, conteudo completo e permissao.
 - A validade de 12 meses conta a partir da data/hora em que o arquivo foi gerado.
 - Arquivos expirados podem permanecer registrados para auditoria, mas nao ficam disponiveis para download.
 - O formato CSV e orientado a planilhas; o formato PDF e orientado a leitura e compartilhamento humano.
+- Bibliotecas de geracao aprovadas para a implementacao inicial: `pdf-lib` para PDF, `fflate` para ZIP e serializador CSV interno.
