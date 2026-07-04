@@ -79,8 +79,55 @@ Todas as migrations são escritas manualmente e versionadas em `supabase/migrati
 - Funções são recriadas com `CREATE OR REPLACE` e ajustes de `REVOKE`/`GRANT` quando necessário.
 - Correções críticas e padronizações retroativas devem ficar em migrations separadas por fase de risco.
 
-## 7. Referências
+## 7. RBAC por capacidades nomeadas para ações sensíveis
+
+A permissão por módulo (`permissao_modulo`/`obter_permissoes_usuario`) continua sendo a fonte canônica de **leitura, rota e menu**. Ela não muda com esta seção. O que muda é a autorização de **ações** dentro de um módulo já acessível.
+
+### 7.1 Tabela `public.capacidades_perfil`
+
+- Representa uma capacidade nomeada no formato `recurso.acao` (ex.: `clientes.criar`, `cobrancas.boleto`, `tarefas.mover_propria`).
+- Chave primária composta: `(perfil_acesso, capacidade)`.
+- `perfil_acesso` corresponde a um valor válido de `public.perfis.perfil_acesso` (`Administrador`, `Financeiro`, `Projetos`, `Comercial`, `Técnico`, `Visualizador`).
+- Um perfil sem linha na tabela não possui aquela capacidade; `Visualizador` não possui nenhuma linha (zero capacidades).
+- RLS habilitado. **Não é contrato direto do frontend**: não há `supabase.from('capacidades_perfil')` nem policy de `SELECT` ampla para `authenticated`. A leitura pelo frontend ocorre exclusivamente pela RPC `obter_capacidades_usuario()`.
+- A matriz inicial é populada por migration/seed versionado; uma UI administrativa para editar linhas é possível no futuro, mas está fora do escopo atual.
+
+### 7.2 Helpers `tem_capacidade` e `obter_capacidades_usuario`
+
+- **`public.tem_capacidade(p_capacidade text) RETURNS boolean`**: usado **dentro do corpo das RPCs de escrita/efeito** para autorizar a ação antes de qualquer mutação. Retorna `false` para chamador anônimo ou perfil inativo/ausente, e `true` somente se existir linha em `capacidades_perfil` para o perfil ativo do usuário autenticado. Nunca deriva de `user_metadata` (ver seção 5).
+- **`public.obter_capacidades_usuario() RETURNS text[]`**: usada pelo **frontend** para carregar a lista de capacidades do usuário junto ao perfil/permissões na inicialização da sessão, alimentando a UX (mostrar/esconder controles). Requer usuário autenticado, retorna lista vazia para `Visualizador` ou usuário sem capacidades.
+- Ambas seguem os guardrails padrão: `SECURITY DEFINER`, `SET search_path = public`, `REVOKE EXECUTE FROM PUBLIC`, `GRANT EXECUTE TO authenticated`.
+
+### 7.3 Regra central de autorização
+
+- `permissao_modulo` / `obter_permissoes_usuario()` respondem "o usuário pode ver/navegar neste módulo?" — continuam controlando rota, menu e leituras (`listar_*`, `obter_*_detalhe`).
+- `tem_capacidade` / capacidades nomeadas respondem "o usuário pode executar esta ação específica?" — são a fonte de autorização para **ações sensíveis**: toda escrita (criar/atualizar/excluir) e todo efeito de negócio (emitir boleto, notificar, exportar, enviar proposta, gerar contrato, baixar cobrança/lançamento).
+- Capacidades no formato `*_propria`/`*_proprio` exigem checagem adicional de **ownership** por relacionamento (ex.: `tarefas.responsavel_id` = `membros_equipe.id` vinculado ao `perfis.usuario_id = auth.uid()`), nunca por hardcode de nome de perfil.
+- Padrão canônico no corpo da RPC:
+
+  ```sql
+  IF auth.uid() IS NULL THEN
+    RAISE EXCEPTION 'Unauthorized' USING ERRCODE = '42501';
+  END IF;
+
+  IF NOT public.tem_capacidade('<recurso.acao>') THEN
+    RAISE EXCEPTION 'Forbidden' USING ERRCODE = '42501';
+  END IF;
+  ```
+
+- Detalhe completo do mapeamento RPC → capacidade em [`specs/007-rbac-capacidades-nomeadas/contracts/rpc-capability-contract.md`](../specs/007-rbac-capacidades-nomeadas/contracts/rpc-capability-contract.md) e da matriz por perfil em [`specs/007-rbac-capacidades-nomeadas/contracts/capability-matrix.md`](../specs/007-rbac-capacidades-nomeadas/contracts/capability-matrix.md).
+
+### 7.4 Regra de consumo frontend/backend
+
+- O frontend consome `capacidades` (lista de `obter_capacidades_usuario()`) **somente para UX**, via helper `pode(capacidades, 'recurso.acao')` — para decidir se mostra ou esconde um botão/ação na tela.
+- A autorização **real** de qualquer ação sensível acontece sempre na RPC, via `tem_capacidade`, nunca no frontend.
+- A presença (ou ausência) de um botão no frontend **nunca substitui** o guard de `tem_capacidade` no backend. Uma chamada direta à RPC sem o botão correspondente deve ser bloqueada do mesmo jeito.
+
+## 8. Referências
 
 - [contracts/guardrail-standard.md](../specs/006-rpc-security-hardening/contracts/guardrail-standard.md)
 - [contracts/rpc-signatures.md](../specs/006-rpc-security-hardening/contracts/rpc-signatures.md)
 - [contracts/ci-and-audit.md](../specs/006-rpc-security-hardening/contracts/ci-and-audit.md)
+- [specs/007-rbac-capacidades-nomeadas/data-model.md](../specs/007-rbac-capacidades-nomeadas/data-model.md)
+- [specs/007-rbac-capacidades-nomeadas/contracts/capability-matrix.md](../specs/007-rbac-capacidades-nomeadas/contracts/capability-matrix.md)
+- [specs/007-rbac-capacidades-nomeadas/contracts/rpc-capability-contract.md](../specs/007-rbac-capacidades-nomeadas/contracts/rpc-capability-contract.md)

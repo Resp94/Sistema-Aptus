@@ -4,7 +4,8 @@ import { AppShell } from '../components/AppShell'
 import { useAuth } from '../contexts/AuthContext'
 import { comercialService } from '../services/comercial.service'
 import { clientesService } from '../services/clientes.service'
-import { podeLer, podeEscrever } from '../lib/permissoes'
+import { podeLer } from '../lib/permissoes'
+import { pode } from '../lib/capacidades'
 import { rotaInicialPorPerfil } from '../lib/usuario'
 import { LoadingState, EmptyState, ErrorState, IntegrationPendingState } from '../components/ui/States'
 import type { PropostaItem, PropostaDetalhe } from '../types/comercial'
@@ -12,9 +13,11 @@ import type { Cliente } from '../types/clientes'
 import './PropostasPage.css'
 
 export default function PropostasPage() {
-  const { perfil, permissoes } = useAuth()
+  const { perfil, permissoes, capacidades } = useAuth()
   const navigate = useNavigate()
-  const temEscrita = podeEscrever(permissoes, 'propostas')
+  const podeCriarProposta = pode(capacidades, 'propostas.criar')
+  const podeEnviarProposta = pode(capacidades, 'propostas.enviar')
+  const podeGerarContrato = pode(capacidades, 'propostas.gerar_contrato')
 
   // Estados
   const [propostas, setPropostas] = useState<PropostaItem[]>([])
@@ -109,6 +112,26 @@ export default function PropostasPage() {
       showToast(err.message || 'Erro ao obter detalhes da proposta.')
     }
   }
+
+  const handleFecharDetalhe = () => {
+    setDetalhe(null)
+  }
+
+  // Fecha o painel de detalhe da proposta ao pressionar Esc
+  useEffect(() => {
+    if (!detalhe) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleFecharDetalhe()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [detalhe])
 
   const handleCriarProposta = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -235,7 +258,7 @@ export default function PropostasPage() {
             <h1 className="page-title">Propostas Comerciais</h1>
             <p className="page-subtitle">Acompanhe negociações comerciais, envie propostas e feche novos contratos.</p>
           </div>
-          {temEscrita && (
+          {podeCriarProposta && (
             <button className="btn btn-primary btn-icon" onClick={() => setNovaPropostaModalOpen(true)}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="12" y1="5" x2="12" y2="19" strokeLinecap="round" />
@@ -299,7 +322,7 @@ export default function PropostasPage() {
           <EmptyState 
             title="Nenhuma proposta comercial" 
             description="Não encontramos propostas lançadas para os filtros configurados."
-            action={temEscrita ? { label: 'Nova Proposta', onClick: () => setNovaPropostaModalOpen(true) } : undefined}
+            action={podeCriarProposta ? { label: 'Nova Proposta', onClick: () => setNovaPropostaModalOpen(true) } : undefined}
           />
         ) : (
           <div className="responsive-table-container card-box">
@@ -351,16 +374,25 @@ export default function PropostasPage() {
                 <h2 className="detail-title">{detalhe.titulo}</h2>
               </div>
               <div className="detail-header-actions">
-                {temEscrita && detalhe.status === 'Rascunho' && (
+                {podeEnviarProposta && detalhe.status === 'Rascunho' && (
                   <button className="btn btn-secondary" onClick={() => handleRegistrarEnvio(detalhe.id)}>
                     Enviar para Cliente
                   </button>
                 )}
-                {temEscrita && detalhe.status === 'Aprovado' && (
+                {podeGerarContrato && detalhe.status === 'Aprovado' && (
                   <button className="btn btn-primary" onClick={handleOpenGerarContrato}>
                     Gerar Contrato
                   </button>
                 )}
+                <button
+                  type="button"
+                  className="modal-close-btn"
+                  onClick={handleFecharDetalhe}
+                  aria-label="Fechar detalhes da proposta"
+                  title="Fechar"
+                >
+                  ×
+                </button>
               </div>
             </div>
 

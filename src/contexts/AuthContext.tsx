@@ -8,6 +8,7 @@ interface AuthState {
   carregando: boolean
   perfil: PerfilUsuario | null
   permissoes: PermissaoModulo[]
+  capacidades: string[]
   sair: () => Promise<void>
 }
 
@@ -17,27 +18,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [carregando, setCarregando] = useState(true)
   const [perfil, setPerfil] = useState<PerfilUsuario | null>(null)
   const [permissoes, setPermissoes] = useState<PermissaoModulo[]>([])
+  const [capacidades, setCapacidades] = useState<string[]>([])
 
   useEffect(() => {
     let ativo = true
 
-    // Carrega perfil + permissões a partir da sessão ativa.
+    // Carrega perfil + permissões + capacidades a partir da sessão ativa.
     // getPerfilUsuario lança (e faz signOut) quando o perfil está ausente/inativo.
     async function carregarPerfil() {
       if (ativo) setCarregando(true)
       try {
-        const [p, perms] = await Promise.all([
+        const [p, perms, caps] = await Promise.all([
           authService.getPerfilUsuario(),
           authService.getPermissoesUsuario(),
+          authService.getCapacidadesUsuario(),
         ])
         if (ativo) {
           setPerfil(p)
           setPermissoes(perms)
+          setCapacidades(caps)
         }
       } catch {
         if (ativo) {
           setPerfil(null)
           setPermissoes([])
+          setCapacidades([])
         }
       } finally {
         if (ativo) setCarregando(false)
@@ -51,6 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else if (ativo) {
         setPerfil(null)
         setPermissoes([])
+        setCapacidades([])
         setCarregando(false)
       }
     }
@@ -66,6 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         setPerfil(null)
         setPermissoes([])
+        setCapacidades([])
         setCarregando(false)
       }
     })
@@ -80,10 +87,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await authService.signOut()
     setPerfil(null)
     setPermissoes([])
+    setCapacidades([])
   }
 
   return (
-    <AuthContext.Provider value={{ carregando, perfil, permissoes, sair }}>
+    <AuthContext.Provider value={{ carregando, perfil, permissoes, capacidades, sair }}>
       {children}
     </AuthContext.Provider>
   )

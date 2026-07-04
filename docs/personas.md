@@ -1,5 +1,9 @@
 # Personas
 
+> **Cinco personas operacionais.** O sistema tem exatamente cinco personas operacionais, cada uma espelhada por um perfil técnico de acesso: Administrador, Analista Financeiro (perfil `Financeiro`), Gerente de Projetos (perfil `Projetos`), Consultor Comercial (perfil `Comercial`) e Profissional Técnico (perfil `Técnico`). **Visualizador não é uma persona operacional.** É o perfil técnico mínimo atribuído automaticamente no signup (estado inicial), sem nenhuma capacidade nomeada de ação e com leitura restrita a Relatórios e às próprias Configurações, até que um Administrador promova o usuário a um dos cinco perfis operacionais. Ver detalhes na seção [Perfis técnicos de acesso (RBAC)](#perfis-técnicos-de-acesso-rbac) ao final deste documento.
+>
+> **Acesso ao Dashboard.** O Dashboard é tela de acesso oficial (leitura) apenas para Administrador e Financeiro. Projetos, Comercial, Técnico e Visualizador não têm Dashboard oficial.
+
 ## Administrador
 
 Perfil com acesso total ao sistema. Responsável pela gestão de usuários, permissões e visão estratégica da empresa. Pode visualizar todos os módulos e realizar alterações críticas.
@@ -43,7 +47,7 @@ Responsável por gerenciar projetos e tarefas da equipe, acompanhar prazos e pro
 - Como Gerente de Projetos, eu quero Adicionar tarefas e atribuir responsáveis para distribuir a carga de trabalho
 - Como Gerente de Projetos, eu quero Visualizar a alocação da equipe para planejar capacidade e disponibilidade
 
-**Telas:** Dashboard, Projetos, Equipe, Relatórios (operacionais)
+**Telas:** Projetos, Equipe, Relatórios (operacionais). Sem Dashboard oficial: o Dashboard estratégico é acesso exclusivo de Administrador e Financeiro.
 
 ---
 
@@ -81,15 +85,17 @@ Especialista responsável pela execução técnica dos projetos, como desenvolve
 
 ## Perfis técnicos de acesso (RBAC)
 
-A tela **Configurações > Usuários** define os seguintes perfis técnicos de acesso ao sistema. Cada perfil técnico espelha diretamente uma persona de negócio, garantindo que as permissões reflitam o papel real do usuário.
+A tela **Configurações > Usuários** define os seguintes perfis técnicos de acesso ao sistema. Os cinco primeiros são perfis **operacionais** e cada um espelha diretamente uma persona de negócio, garantindo que as permissões reflitam o papel real do usuário. **Visualizador não é um perfil operacional**: é o estado técnico mínimo de signup (ver nota abaixo).
+
+Desde a introdução do RBAC por capacidades nomeadas (feature `007-rbac-capacidades-nomeadas`), estas permissões gerais continuam valendo como leitura/rota/navegação (`obter_permissoes_usuario`/`permissao_modulo`), mas ações sensíveis (escrita e efeitos de negócio como emitir boleto, notificar, exportar, enviar proposta, gerar contrato) são autorizadas por capacidades nomeadas (`recurso.acao`) específicas de cada perfil — ver `docs/arquitetura-dados.md` e `specs/007-rbac-capacidades-nomeadas/contracts/capability-matrix.md` para a matriz completa.
 
 | Perfil técnico | Persona | Permissões gerais |
 |----------------|---------|-------------------|
-| **Administrador** | Administrador | Acesso total a todos os módulos, usuários e configurações do sistema. |
-| **Financeiro** | Analista Financeiro | Acesso ao módulo financeiro (Fluxo de Caixa, Contas a Pagar, Contas a Receber, Cobranças), Dashboard e relatórios financeiros. |
-| **Projetos** | Gerente de Projetos | Acesso a Projetos (Kanban, tarefas, progresso), Equipe (alocações, capacidade), Dashboard e relatórios operacionais. |
-| **Comercial** | Consultor Comercial | Acesso a Clientes, Propostas, Contratos, Cobranças (lembretes e status) e histórico de atendimento. |
-| **Técnico** | Profissional Técnico | Acesso somente aos projetos em que está alocado, suas tarefas no Kanban, equipe (visualização limitada) e própria ficha em Configurações. Sem acesso a Dashboard, financeiro ou dados comerciais de terceiros. |
-| **Visualizador** | — | Acesso somente leitura a dashboards e relatórios, sem permissão para criar ou editar registros. Pode ser atribuído como restrição adicional a qualquer persona. |
+| **Administrador** | Administrador | Acesso total a todos os módulos, usuários e configurações do sistema. Todas as capacidades nomeadas do catálogo. Dashboard oficial. |
+| **Financeiro** | Analista Financeiro | Acesso ao módulo financeiro (Fluxo de Caixa, Contas a Pagar, Contas a Receber, Cobranças), Dashboard e relatórios financeiros. Dashboard oficial. |
+| **Projetos** | Gerente de Projetos | Acesso a Projetos (Kanban, tarefas, progresso), Equipe (alocações, capacidade) e relatórios operacionais. **Sem Dashboard oficial** (não consta na matriz de capacidades/leitura oficial do perfil). |
+| **Comercial** | Consultor Comercial | Acesso a Clientes, Propostas, Contratos, Cobranças (emissão e lembretes) e histórico de atendimento. Sem Dashboard oficial. |
+| **Técnico** | Profissional Técnico | Acesso somente aos projetos em que está alocado, suas tarefas próprias no Kanban (capacidades `tarefas.editar_propria`/`tarefas.mover_propria`), apontamento próprio de horas, equipe (visualização limitada aos colegas dos mesmos projetos) e própria ficha em Configurações. Sem acesso a Dashboard, financeiro ou dados comerciais de terceiros. |
+| **Visualizador** | — (não é persona operacional) | Perfil técnico mínimo de signup. Zero capacidades nomeadas de ação. Leitura restrita a Relatórios e às próprias Configurações. Não pode criar, editar, exportar nem disparar nenhum efeito de negócio. |
 
-> **Nota:** Os 5 primeiros perfis técnicos espelham diretamente as 5 personas de negócio. O perfil **Visualizador** é um modo restrito auxiliar.
+> **Nota sobre o Visualizador:** o perfil **Visualizador** não representa uma persona de negócio nem é um "modo restrito" atribuível a outras personas. É o valor padrão atribuído a toda conta recém-criada (signup), funcionando como estado anti-escalação até que um Administrador promova o usuário a um dos cinco perfis operacionais (Administrador, Financeiro, Projetos, Comercial ou Técnico). Enquanto estiver como Visualizador, o usuário tem zero capacidades nomeadas e leitura limitada a Relatórios e às suas próprias Configurações — nenhum outro módulo, dashboard ou dado de terceiros é acessível.

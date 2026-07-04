@@ -4,7 +4,8 @@ import { AppShell } from '../components/AppShell'
 import { useAuth } from '../contexts/AuthContext'
 import { comercialService } from '../services/comercial.service'
 import { clientesService } from '../services/clientes.service'
-import { podeLer, podeEscrever } from '../lib/permissoes'
+import { podeLer } from '../lib/permissoes'
+import { pode } from '../lib/capacidades'
 import { rotaInicialPorPerfil } from '../lib/usuario'
 import { LoadingState, EmptyState, ErrorState } from '../components/ui/States'
 import type { ContratoItem, ContratoDetalhe } from '../types/comercial'
@@ -12,9 +13,11 @@ import type { Cliente } from '../types/clientes'
 import './ContratosPage.css'
 
 export default function ContratosPage() {
-  const { perfil, permissoes } = useAuth()
+  const { perfil, permissoes, capacidades } = useAuth()
   const navigate = useNavigate()
-  const temEscrita = podeEscrever(permissoes, 'contratos')
+  const podeCriarContrato = pode(capacidades, 'contratos.criar')
+  const podeRenovarContrato = pode(capacidades, 'contratos.renovar')
+  const podeEncerrarContrato = pode(capacidades, 'contratos.encerrar')
 
   // Estados
   const [contratos, setContratos] = useState<ContratoItem[]>([])
@@ -87,6 +90,22 @@ export default function ContratosPage() {
 
     fetchDados()
   }, [perfil, permissoes, fetchDados, navigate])
+
+  // Fecha o painel de detalhe via tecla Esc, quando estiver aberto
+  useEffect(() => {
+    if (!detalhe) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setDetalhe(null)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [detalhe])
 
   const handleVerDetalhe = async (id: string) => {
     try {
@@ -217,7 +236,7 @@ export default function ContratosPage() {
             <h1 className="page-title">Contratos de Clientes</h1>
             <p className="page-subtitle">Acompanhe contratos de prestação de serviços, termos ativos e vencimentos.</p>
           </div>
-          {temEscrita && (
+          {podeCriarContrato && (
             <button className="btn btn-primary btn-icon" onClick={() => setNovoContratoModalOpen(true)}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="12" y1="5" x2="12" y2="19" strokeLinecap="round" />
@@ -279,7 +298,7 @@ export default function ContratosPage() {
           <EmptyState 
             title="Nenhum contrato ativo" 
             description="Não encontramos contratos registrados correspondentes aos filtros aplicados."
-            action={temEscrita ? { label: 'Novo Contrato', onClick: () => setNovoContratoModalOpen(true) } : undefined}
+            action={podeCriarContrato ? { label: 'Novo Contrato', onClick: () => setNovoContratoModalOpen(true) } : undefined}
           />
         ) : (
           <div className="responsive-table-container card-box">
@@ -333,16 +352,28 @@ export default function ContratosPage() {
                 <h2 className="detail-title">{detalhe.titulo}</h2>
               </div>
               <div className="detail-header-actions">
-                {temEscrita && detalhe.status_exibicao !== 'Encerrado' && (
+                {detalhe.status_exibicao !== 'Encerrado' && (
                   <>
-                    <button className="btn btn-secondary" onClick={handleOpenRenovar}>
-                      Renovar / Estender
-                    </button>
-                    <button className="btn btn-outline color-danger" onClick={handleEncerrarContrato}>
-                      Encerrar Contrato
-                    </button>
+                    {podeRenovarContrato && (
+                      <button className="btn btn-secondary" onClick={handleOpenRenovar}>
+                        Renovar / Estender
+                      </button>
+                    )}
+                    {podeEncerrarContrato && (
+                      <button className="btn btn-outline color-danger" onClick={handleEncerrarContrato}>
+                        Encerrar Contrato
+                      </button>
+                    )}
                   </>
                 )}
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm detail-close-btn"
+                  onClick={() => setDetalhe(null)}
+                  aria-label="Fechar detalhes do contrato"
+                >
+                  Fechar
+                </button>
               </div>
             </div>
 

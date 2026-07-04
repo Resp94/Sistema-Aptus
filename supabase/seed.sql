@@ -9,7 +9,6 @@ DECLARE
   v_projetos_id uuid;
   v_comercial_id uuid;
   v_tecnico_id uuid;
-  v_visualizador_id uuid;
 
   v_cliente_inovatec_id uuid;
   v_cliente_dataflow_id uuid;
@@ -187,7 +186,6 @@ BEGIN
   SELECT usuario_id INTO v_projetos_id FROM public.criar_perfil_teste('projetos@aptusflow.local', v_senha, 'Projetos Persona', 'Projetos');
   SELECT usuario_id INTO v_comercial_id FROM public.criar_perfil_teste('comercial@aptusflow.local', v_senha, 'Comercial Persona', 'Comercial');
   SELECT usuario_id INTO v_tecnico_id FROM public.criar_perfil_teste('tecnico@aptusflow.local', v_senha, 'Técnico Persona', 'Técnico');
-  SELECT usuario_id INTO v_visualizador_id FROM public.criar_perfil_teste('visualizador@aptusflow.local', v_senha, 'Visualizador Persona', 'Visualizador');
 
   -------------------------------------------------------------
   -- 1. SEEDS DE CLIENTES E FORNECEDORES
@@ -456,7 +454,7 @@ BEGIN
     ((SELECT id FROM public.perfis WHERE usuario_id = v_financeiro_id), 'Email', 'Cobrancas', true),
     ((SELECT id FROM public.perfis WHERE usuario_id = v_financeiro_id), 'Sistema', 'Alertas', true);
 
-    RAISE NOTICE 'Seed executado com sucesso: 6 personas e dados completos cadastrados.';
+    RAISE NOTICE 'Seed executado com sucesso: 5 personas operacionais e dados completos cadastrados.';
   EXCEPTION WHEN OTHERS THEN
     DROP FUNCTION IF EXISTS public.criar_perfil_teste(text, text, text, text);
     RAISE;

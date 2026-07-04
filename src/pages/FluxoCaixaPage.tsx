@@ -4,7 +4,8 @@ import { AppShell } from '../components/AppShell'
 import { useAuth } from '../contexts/AuthContext'
 import { financeiroService } from '../services/financeiro.service'
 import { clientesService } from '../services/clientes.service'
-import { podeLer, podeEscrever } from '../lib/permissoes'
+import { podeLer } from '../lib/permissoes'
+import { pode } from '../lib/capacidades'
 import { rotaInicialPorPerfil } from '../lib/usuario'
 import { LoadingState, EmptyState, ErrorState } from '../components/ui/States'
 import type { FluxoCaixaItem, ResumoFluxoCaixa, FluxoCaixaSerie } from '../types/financeiro'
@@ -12,9 +13,10 @@ import type { Cliente } from '../types/clientes'
 import './FluxoCaixaPage.css'
 
 export default function FluxoCaixaPage() {
-  const { perfil, permissoes } = useAuth()
+  const { perfil, permissoes, capacidades } = useAuth()
   const navigate = useNavigate()
-  const temEscrita = podeEscrever(permissoes, 'fluxo-caixa')
+  const podeLancarLancamento = pode(capacidades, 'financeiro.lancar')
+  const podeBaixarLancamento = pode(capacidades, 'financeiro.baixar_lancamento')
 
   // Filtros de data padrão: do início do mês atual até o fim do mês atual
   const obterDatasPadrao = () => {
@@ -217,7 +219,7 @@ export default function FluxoCaixaPage() {
             <h1 className="page-title">Fluxo de Caixa</h1>
             <p className="page-subtitle">Acompanhe as entradas, saídas e projeção de saldo da empresa.</p>
           </div>
-          {temEscrita && (
+          {podeLancarLancamento && (
             <button className="btn btn-primary btn-icon" onClick={() => setLancamentoModalOpen(true)}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="12" y1="5" x2="12" y2="19" strokeLinecap="round" />
@@ -350,7 +352,7 @@ export default function FluxoCaixaPage() {
           <EmptyState 
             title="Nenhum lançamento financeiro" 
             description="Não encontramos nenhum registro correspondente ao período ou filtros aplicados."
-            action={temEscrita ? { label: 'Novo Lançamento', onClick: () => setLancamentoModalOpen(true) } : undefined}
+            action={podeLancarLancamento ? { label: 'Novo Lançamento', onClick: () => setLancamentoModalOpen(true) } : undefined}
           />
         ) : (
           <div className="responsive-table-container card-box">
@@ -365,7 +367,7 @@ export default function FluxoCaixaPage() {
                   <th>Cliente/Fornecedor</th>
                   <th className="text-right">Valor</th>
                   <th>Status</th>
-                  {temEscrita && <th className="text-center">Ações</th>}
+                  {podeBaixarLancamento && <th className="text-center">Ações</th>}
                 </tr>
               </thead>
               <tbody>
@@ -393,7 +395,7 @@ export default function FluxoCaixaPage() {
                           {item.status_exibicao}
                         </span>
                       </td>
-                      {temEscrita && (
+                      {podeBaixarLancamento && (
                         <td className="text-center">
                           {item.status_exibicao === 'Pendente' && (
                             <button className="btn btn-xs btn-outline" onClick={() => handleOpenBaixa(item)}>

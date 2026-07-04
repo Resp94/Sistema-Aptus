@@ -4,7 +4,8 @@ import { AppShell } from '../components/AppShell'
 import { useAuth } from '../contexts/AuthContext'
 import { financeiroService } from '../services/financeiro.service'
 import { clientesService } from '../services/clientes.service'
-import { podeLer, podeEscrever } from '../lib/permissoes'
+import { podeLer } from '../lib/permissoes'
+import { pode } from '../lib/capacidades'
 import { rotaInicialPorPerfil } from '../lib/usuario'
 import { LoadingState, EmptyState, ErrorState } from '../components/ui/States'
 import type { ContaPagarItem, MetricasContas } from '../types/financeiro'
@@ -12,9 +13,10 @@ import type { Cliente } from '../types/clientes'
 import './ContasPagarPage.css'
 
 export default function ContasPagarPage() {
-  const { perfil, permissoes } = useAuth()
+  const { perfil, permissoes, capacidades } = useAuth()
   const navigate = useNavigate()
-  const temEscrita = podeEscrever(permissoes, 'contas-pagar')
+  const podeLancar = pode(capacidades, 'financeiro.lancar')
+  const podeBaixar = pode(capacidades, 'financeiro.baixar_lancamento')
 
   // Datas padrão para os próximos 30 dias de contas a pagar
   const obterDatasPadrao = () => {
@@ -209,7 +211,7 @@ export default function ContasPagarPage() {
             <h1 className="page-title">Contas a Pagar</h1>
             <p className="page-subtitle">Monitore os compromissos financeiros e saídas agendadas.</p>
           </div>
-          {temEscrita && (
+          {podeLancar && (
             <button className="btn btn-primary btn-icon" onClick={() => setNovoGastoModalOpen(true)}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="12" y1="5" x2="12" y2="19" strokeLinecap="round" />
@@ -305,7 +307,7 @@ export default function ContasPagarPage() {
           <EmptyState 
             title="Nenhuma despesa para pagar" 
             description="Não encontramos nenhuma conta agendada para os filtros selecionados."
-            action={temEscrita ? { label: 'Adicionar Conta', onClick: () => setNovoGastoModalOpen(true) } : undefined}
+            action={podeLancar ? { label: 'Adicionar Conta', onClick: () => setNovoGastoModalOpen(true) } : undefined}
           />
         ) : (
           <div className="responsive-table-container card-box">
@@ -318,7 +320,7 @@ export default function ContasPagarPage() {
                   <th>Categoria</th>
                   <th className="text-right">Valor</th>
                   <th>Status</th>
-                  {temEscrita && <th className="text-center">Ações</th>}
+                  {podeBaixar && <th className="text-center">Ações</th>}
                 </tr>
               </thead>
               <tbody>
@@ -338,7 +340,7 @@ export default function ContasPagarPage() {
                         {item.status_exibicao}
                       </span>
                     </td>
-                    {temEscrita && (
+                    {podeBaixar && (
                       <td className="text-center">
                         {item.status_exibicao !== 'Pago' && (
                           <button className="btn btn-xs btn-outline" onClick={() => handleOpenBaixa(item)}>

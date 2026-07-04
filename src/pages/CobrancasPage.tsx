@@ -4,7 +4,8 @@ import { AppShell } from '../components/AppShell'
 import { useAuth } from '../contexts/AuthContext'
 import { comercialService } from '../services/comercial.service'
 import { clientesService } from '../services/clientes.service'
-import { podeLer, podeEscrever } from '../lib/permissoes'
+import { podeLer } from '../lib/permissoes'
+import { pode } from '../lib/capacidades'
 import { rotaInicialPorPerfil } from '../lib/usuario'
 import { LoadingState, EmptyState, ErrorState, IntegrationPendingState } from '../components/ui/States'
 import type { CobrancaItem, ContratoItem } from '../types/comercial'
@@ -12,13 +13,20 @@ import type { Cliente } from '../types/clientes'
 import './CobrancasPage.css'
 
 export default function CobrancasPage() {
-  const { perfil, permissoes } = useAuth()
+  const { perfil, permissoes, capacidades } = useAuth()
   const navigate = useNavigate()
-  const temEscrita = podeEscrever(permissoes, 'cobrancas')
-  // Registrar pagamento é ownership do Financeiro/Administrador (a RPC rejeita
-  // Comercial mesmo com escrita em 'cobrancas'); a ação "Baixar" só aparece
-  // para quem realmente pode executá-la.
-  const podeRegistrarPagamento = podeEscrever(permissoes, 'financeiro')
+  // Gates por capacidade nomeada (substituem o antigo gate genérico por
+  // módulo `podeEscrever(permissoes, 'cobrancas')`), pois a RPC exige
+  // capacidades específicas e diferentes perfis têm combinações distintas
+  // (ex.: Comercial tem boleto/notificar mas não baixar; Financeiro tem
+  // baixar mas não boleto/notificar).
+  const podeEmitirCobranca = pode(capacidades, 'cobrancas.emitir')
+  const podeEmitirBoleto = pode(capacidades, 'cobrancas.boleto')
+  const podeNotificar = pode(capacidades, 'cobrancas.notificar')
+  const podeRegistrarPagamento = pode(capacidades, 'cobrancas.baixar')
+  // Controla a exibição da coluna/célula de ações: existe ao menos uma ação
+  // sensível disponível para o usuário atual.
+  const temAlgumaAcao = podeEmitirBoleto || podeNotificar || podeRegistrarPagamento
 
   // Estados de dados
   const [cobrancas, setCobrancas] = useState<CobrancaItem[]>([])
@@ -251,7 +259,7 @@ export default function CobrancasPage() {
             <h1 className="page-title">Faturamento & Cobranças</h1>
             <p className="page-subtitle">Emita e acompanhe cobranças de clientes e status de adimplência.</p>
           </div>
-          {temEscrita && (
+          {podeEmitirCobranca && (
             <button className="btn btn-primary btn-icon" onClick={() => setNovaCobrancaModalOpen(true)}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="12" y1="5" x2="12" y2="19" strokeLinecap="round" />
@@ -314,7 +322,7 @@ export default function CobrancasPage() {
           <EmptyState
             title="Nenhuma fatura de cobrança emitida"
             description="Não encontramos cobranças correspondentes para os filtros configurados."
-            action={temEscrita ? { label: 'Emitir Cobrança', onClick: () => setNovaCobrancaModalOpen(true) } : undefined}
+            action={podeEmitirCobranca ? { label: 'Emitir Cobrança', onClick: () => setNovaCobrancaModalOpen(true) } : undefined}
           />
         ) : (
           <div className="responsive-table-container card-box">
@@ -326,7 +334,7 @@ export default function CobrancasPage() {
                   <th>Vencimento</th>
                   <th className="text-right">Valor</th>
                   <th>Status</th>
-                  {temEscrita && <th className="text-center">Ações</th>}
+                  {temAlgumaAcao && <th className="text-center">Ações</th>}
                 </tr>
               </thead>
               <tbody>
@@ -345,7 +353,7 @@ export default function CobrancasPage() {
                         {item.status_exibicao}
                       </span>
                     </td>
-                    {temEscrita && (
+                    {temAlgumaAcao && (
                       <td className="text-center actions-cell">
                         {item.status_exibicao !== 'Pago' && item.status_exibicao !== 'Cancelado' && (
                           <>
@@ -354,12 +362,16 @@ export default function CobrancasPage() {
                                 Baixar
                               </button>
                             )}
-                            <button className="btn btn-xs btn-outline-secondary" onClick={() => handleEmitirBoleto(item.id)}>
-                              Boleto
-                            </button>
-                            <button className="btn btn-xs btn-outline-secondary" onClick={() => handleEnviarLembrete(item.id)}>
-                              Notificar
-                            </button>
+                            {podeEmitirBoleto && (
+                              <button className="btn btn-xs btn-outline-secondary" onClick={() => handleEmitirBoleto(item.id)}>
+                                Boleto
+                              </button>
+                            )}
+                            {podeNotificar && (
+                              <button className="btn btn-xs btn-outline-secondary" onClick={() => handleEnviarLembrete(item.id)}>
+                                Notificar
+                              </button>
+                            )}
                           </>
                         )}
                       </td>

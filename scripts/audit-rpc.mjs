@@ -1,18 +1,26 @@
-#!/usr/bin/env node
 import { readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
+import { pathToFileURL } from 'url';
 
 const MIGRATIONS_DIR = 'supabase/migrations';
 
 const AUDIT_EXCEPTIONS = new Set(['registrar_evento_auditoria']);
+
+// Funções helper de autorização: elas SÃO os guards (permissao_modulo,
+// tem_capacidade, etc.) e não precisam chamar a si mesmas ou umas às outras
+// dentro do próprio corpo. Ver contracts/audit-and-tests.md e
+// contracts/rpc-capability-contract.md.
 const HELPERS = new Set([
   'permissao_modulo',
   'obter_permissoes_usuario',
   'obter_perfil_usuario',
   'existe_perfil_admin',
+  'tem_capacidade',
+  'obter_capacidades_usuario',
 ]);
-// Funções admin-only guardadas por existe_perfil_admin em vez de permissao_modulo
-// (gestão de perfis de terceiros não é uma permissão de módulo). Ver FR-005 /
+// Funções admin-only guardadas por existe_perfil_admin em vez de
+// permissao_modulo/tem_capacidade (gestão de perfis de terceiros não é uma
+// permissão de módulo nem uma capacidade nomeada comum). Ver FR-005 /
 // contracts/rpc-signatures.md.
 const ADMIN_GATED = new Set(['atualizar_usuario_perfil']);
 
@@ -33,8 +41,8 @@ function funcKey(name, args) {
   return `${name}(${normalizeArgs(args)})`;
 }
 
-function parseMigrations() {
-  const files = readdirSync(MIGRATIONS_DIR)
+function parseMigrations(migrationsDir = MIGRATIONS_DIR) {
+  const files = readdirSync(migrationsDir)
     .filter((f) => f.endsWith('.sql'))
     .sort();
 
@@ -42,7 +50,7 @@ function parseMigrations() {
   const grants = new Map();
 
   for (const file of files) {
-    const content = readFileSync(join(MIGRATIONS_DIR, file), 'utf8');
+    const content = readFileSync(join(migrationsDir, file), 'utf8');
 
     // DROP FUNCTION honors removal from the catalog
     const dropRegex = /DROP\s+FUNCTION\s+(?:IF\s+EXISTS\s+)?public\.(\w+)\s*\(([^)]*)\)/gi;
@@ -104,6 +112,28 @@ function hasSearchPath(header) {
   return /SET\s+search_path\s*=\s*public/i.test(header);
 }
 
+// Heurística de classificação (T070): a marca mais confiável de "leitura de
+// domínio" vs "escrita direta/efeito de negócio" é a presença de STABLE no
+// header da função (LANGUAGE plpgsql STABLE ...). Funções STABLE são
+// leituras puras (listar_*, obter_*, e até algum gerar_*_previa que apenas
+// consulta dados) e continuam exigindo permissao_modulo(...). Funções sem
+// STABLE têm efeito colateral (criar_*, atualizar_*, excluir_*, inativar_*,
+// registrar_*, mover_*, alocar_*, solicitar_*, renovar_*, encerrar_*,
+// agendar_*, etc.) e passam a exigir tem_capacidade(...). Essa heurística foi
+// validada contra todas as funções reais das migrations: 100% de aderência.
+function isReadFunction(header) {
+  return /\bSTABLE\b/i.test(header);
+}
+
+/**
+ * Classifica uma função (não-trigger, não-helper, não-admin-gated,
+ * não-audit) como 'read' (leitura de domínio) ou 'write' (escrita direta ou
+ * efeito de negócio), de acordo com a heurística baseada em STABLE.
+ */
+function classifyFunction(header) {
+  return isReadFunction(header) ? 'read' : 'write';
+}
+
 function checkFunction(fn, grants) {
   const { name, header, body } = fn;
   const issues = [];
@@ -124,8 +154,15 @@ function checkFunction(fn, grants) {
   const isAudit = AUDIT_EXCEPTIONS.has(name);
 
   if (!isHelper && !isAudit) {
-    if (!/permissao_modulo\s*\(/i.test(body)) {
-      issues.push('missing permissao_modulo check');
+    const kind = classifyFunction(header);
+    if (kind === 'read') {
+      if (!/permissao_modulo\s*\(/i.test(body)) {
+        issues.push('missing permissao_modulo check');
+      }
+    } else {
+      if (!/tem_capacidade\s*\(/i.test(body)) {
+        issues.push('missing tem_capacidade check');
+      }
     }
   }
 
@@ -154,8 +191,8 @@ function checkFunction(fn, grants) {
   return issues;
 }
 
-function main() {
-  const { functions, grants } = parseMigrations();
+function runAudit(migrationsDir = MIGRATIONS_DIR) {
+  const { functions, grants } = parseMigrations(migrationsDir);
 
   const active = [];
   const failures = [];
@@ -168,6 +205,12 @@ function main() {
       failures.push({ key: k, file: fn.file, issues });
     }
   }
+
+  return { active, failures };
+}
+
+function main() {
+  const { active, failures } = runAudit();
 
   const total = active.length;
   const pass = total - failures.length;
@@ -185,4 +228,22 @@ function main() {
   }
 }
 
-main();
+export {
+  AUDIT_EXCEPTIONS,
+  HELPERS,
+  ADMIN_GATED,
+  normalizeArgs,
+  funcKey,
+  parseMigrations,
+  isTrigger,
+  isSecurityDefiner,
+  hasSearchPath,
+  isReadFunction,
+  classifyFunction,
+  checkFunction,
+  runAudit,
+};
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main();
+}

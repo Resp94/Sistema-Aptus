@@ -1,4 +1,13 @@
 -- FR-015: matriz de permissões por perfil e falha de escrita sem pode_escrever
+--
+-- Feature 007 (RBAC por Capacidades Nomeadas) / US3 (T041): este arquivo cobre
+-- apenas as CINCO personas operacionais (Administrador, Financeiro, Projetos,
+-- Comercial, Técnico). Visualizador deixou de ser persona operacional — ele é
+-- validado separadamente como "estado técnico mínimo" (zero capacidades,
+-- leitura restrita a relatorios/configuracoes, nenhuma escrita) em
+-- supabase/tests/05_capacidades.sql, seção "Visualizador como estado técnico
+-- mínimo". Ver specs/007-rbac-capacidades-nomeadas/contracts/capability-matrix.md
+-- e data-model.md ("Entidade: Visualizador").
 
 SELECT * FROM no_plan();
 
@@ -120,39 +129,6 @@ SELECT set_eq(
     ('relatorios', false, false),
     ('configuracoes', true, true)$$,
   'Técnico permissions match obter_permissoes_usuario'
-);
-
--- Visualizador
-SELECT set_auth_by_email('visualizador@aptusflow.local');
-
-SELECT set_eq(
-  'SELECT modulo, pode_ler, pode_escrever FROM public.obter_permissoes_usuario()',
-  $$VALUES
-    ('dashboard', false, false),
-    ('clientes', true, false),
-    ('propostas', true, false),
-    ('contratos', true, false),
-    ('cobrancas', true, false),
-    ('projetos', true, false),
-    ('equipe', true, false),
-    ('financeiro', true, false),
-    ('fluxo-caixa', true, false),
-    ('contas-pagar', true, false),
-    ('contas-receber', true, false),
-    ('relatorios', true, false),
-    ('configuracoes', true, false)$$,
-  'Visualizador permissions match obter_permissoes_usuario'
-);
-
-SELECT lives_ok(
-  $$SELECT public.listar_clientes()$$,
-  'Visualizador can read clientes'
-);
-
-SELECT throws_ok(
-  $$SELECT public.criar_cliente('Visualizador Teste', 'Vis Empresa', 'vis_teste@aptusflow.local', '11999999997', 'cliente')$$,
-  'Sem permissão de escrita',
-  'Visualizador cannot create cliente'
 );
 
 SELECT reset_auth();

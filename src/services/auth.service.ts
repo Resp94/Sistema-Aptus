@@ -35,6 +35,15 @@ export const authService = {
     return (data ?? []) as PermissaoModulo[];
   },
 
+  async getCapacidadesUsuario(): Promise<string[]> {
+    const { data, error } = await supabase.rpc('obter_capacidades_usuario');
+    if (error) {
+      console.error('Erro ao obter capacidades do usuário:', error);
+      throw error;
+    }
+    return (data ?? []) as string[];
+  },
+
   async signIn(email: string, password: string, remember: boolean = true): Promise<PerfilUsuario> {
     const normalizedEmail = email.trim().toLowerCase();
     

@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { AppShell } from '../components/AppShell'
 import { useAuth } from '../contexts/AuthContext'
 import { configuracoesService } from '../services/configuracoes.service'
-import { podeLer, podeEscrever } from '../lib/permissoes'
+import { podeLer } from '../lib/permissoes'
+import { pode } from '../lib/capacidades'
 import { rotaInicialPorPerfil } from '../lib/usuario'
 import { LoadingState, ErrorState } from '../components/ui/States'
 import type { ConfiguracaoEmpresa, UsuarioConfigItem, PreferenciaNotificacaoItem, AuditoriaEventoItem } from '../types/configuracoes'
@@ -12,9 +13,11 @@ import './ConfiguracoesPage.css'
 type TabConfig = 'minha-conta' | 'empresa' | 'usuarios' | 'auditoria'
 
 export default function ConfiguracoesPage() {
-  const { perfil, permissoes } = useAuth()
+  const { perfil, permissoes, capacidades } = useAuth()
   const navigate = useNavigate()
-  const temEscrita = podeEscrever(permissoes, 'configuracoes')
+  const podeGerenciarUsuarios = pode(capacidades, 'configuracoes.gerenciar_usuarios')
+  const podeEditarEmpresa = pode(capacidades, 'configuracoes.editar_empresa')
+  const podeEditarProprioPerfil = pode(capacidades, 'configuracoes.editar_proprio_perfil')
   const isAdmin = perfil?.perfil_acesso === 'Administrador'
 
   // Estados
@@ -276,7 +279,7 @@ export default function ConfiguracoesPage() {
                       required 
                       value={formNome} 
                       onChange={(e) => setFormNome(e.target.value)} 
-                      disabled={!temEscrita}
+                      disabled={!podeEditarProprioPerfil}
                     />
                   </div>
 
@@ -287,7 +290,7 @@ export default function ConfiguracoesPage() {
                       value={formAvatar} 
                       onChange={(e) => setFormAvatar(e.target.value)} 
                       placeholder="https://..."
-                      disabled={!temEscrita}
+                      disabled={!podeEditarProprioPerfil}
                     />
                   </div>
 
@@ -299,7 +302,7 @@ export default function ConfiguracoesPage() {
                         value={formDepto} 
                         onChange={(e) => setFormDepto(e.target.value)}
                         placeholder="Ex: Engenharia / Comercial" 
-                        disabled={!temEscrita}
+                        disabled={!podeEditarProprioPerfil}
                       />
                     </div>
                     <div>
@@ -308,7 +311,7 @@ export default function ConfiguracoesPage() {
                     </div>
                   </div>
 
-                  {temEscrita && (
+                  {podeEditarProprioPerfil && (
                     <button type="submit" className="btn btn-primary align-self-start">
                       Salvar Cadastro
                     </button>
@@ -332,7 +335,7 @@ export default function ConfiguracoesPage() {
                             type="checkbox" 
                             checked={pref.ativo}
                             onChange={() => handleTogglePreferencia(pref)}
-                            disabled={!temEscrita}
+                            disabled={!podeEditarProprioPerfil}
                           />
                           <span className="slider round"></span>
                         </label>
@@ -350,48 +353,53 @@ export default function ConfiguracoesPage() {
                   <h2 className="section-title">Cadastro da Empresa</h2>
                   <div className="form-group">
                     <label>Razão Social</label>
-                    <input 
-                      type="text" 
-                      required 
-                      value={empRazao} 
-                      onChange={(e) => setEmpRazao(e.target.value)} 
+                    <input
+                      type="text"
+                      required
+                      value={empRazao}
+                      onChange={(e) => setEmpRazao(e.target.value)}
+                      disabled={!podeEditarEmpresa}
                     />
                   </div>
                   <div className="form-group row-2">
                     <div>
                       <label>CNPJ / Documento</label>
-                      <input 
-                        type="text" 
-                        required 
-                        value={empDoc} 
-                        onChange={(e) => setEmpDoc(e.target.value)} 
+                      <input
+                        type="text"
+                        required
+                        value={empDoc}
+                        onChange={(e) => setEmpDoc(e.target.value)}
+                        disabled={!podeEditarEmpresa}
                       />
                     </div>
                     <div>
                       <label>E-mail Corporativo</label>
-                      <input 
-                        type="email" 
-                        required 
-                        value={empEmail} 
-                        onChange={(e) => setEmpEmail(e.target.value)} 
+                      <input
+                        type="email"
+                        required
+                        value={empEmail}
+                        onChange={(e) => setEmpEmail(e.target.value)}
+                        disabled={!podeEditarEmpresa}
                       />
                     </div>
                   </div>
                   <div className="form-group row-2">
                     <div>
                       <label>Telefone</label>
-                      <input 
-                        type="text" 
-                        value={empTel} 
-                        onChange={(e) => setEmpTel(e.target.value)} 
+                      <input
+                        type="text"
+                        value={empTel}
+                        onChange={(e) => setEmpTel(e.target.value)}
+                        disabled={!podeEditarEmpresa}
                       />
                     </div>
                     <div>
                       <label>Endereço Físico</label>
-                      <input 
-                        type="text" 
-                        value={empEnd} 
-                        onChange={(e) => setEmpEnd(e.target.value)} 
+                      <input
+                        type="text"
+                        value={empEnd}
+                        onChange={(e) => setEmpEnd(e.target.value)}
+                        disabled={!podeEditarEmpresa}
                       />
                     </div>
                   </div>
@@ -402,41 +410,46 @@ export default function ConfiguracoesPage() {
                   <div className="form-group row-2">
                     <div>
                       <label>Dia Vencimento Padrão</label>
-                      <input 
-                        type="number" 
-                        min="1" 
-                        max="31" 
-                        required 
-                        value={empVenc} 
-                        onChange={(e) => setEmpVenc(e.target.value)} 
+                      <input
+                        type="number"
+                        min="1"
+                        max="31"
+                        required
+                        value={empVenc}
+                        onChange={(e) => setEmpVenc(e.target.value)}
+                        disabled={!podeEditarEmpresa}
                       />
                     </div>
                     <div>
                       <label>Multa por Atraso (%)</label>
-                      <input 
-                        type="number" 
-                        step="0.01" 
-                        min="0" 
-                        required 
-                        value={empMulta} 
-                        onChange={(e) => setEmpMulta(e.target.value)} 
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        required
+                        value={empMulta}
+                        onChange={(e) => setEmpMulta(e.target.value)}
+                        disabled={!podeEditarEmpresa}
                       />
                     </div>
                   </div>
                   <div className="form-group checkbox-group">
                     <label className="checkbox-label">
-                      <input 
-                        type="checkbox" 
+                      <input
+                        type="checkbox"
                         checked={empCobrancaAuto}
                         onChange={(e) => setEmpCobrancaAuto(e.target.checked)}
+                        disabled={!podeEditarEmpresa}
                       />
                       Gatilho automático de cobranças vencidas por e-mail
                     </label>
                   </div>
 
-                  <button type="submit" className="btn btn-primary align-self-start">
-                    Salvar Parâmetros
-                  </button>
+                  {podeEditarEmpresa && (
+                    <button type="submit" className="btn btn-primary align-self-start">
+                      Salvar Parâmetros
+                    </button>
+                  )}
                 </div>
               </form>
             )}
@@ -471,9 +484,11 @@ export default function ConfiguracoesPage() {
                           </span>
                         </td>
                         <td className="text-center">
-                          <button className="btn btn-xs btn-outline" onClick={() => handleOpenGerenciarUsuario(usr)}>
-                            Gerenciar
-                          </button>
+                          {podeGerenciarUsuarios && (
+                            <button className="btn btn-xs btn-outline" onClick={() => handleOpenGerenciarUsuario(usr)}>
+                              Gerenciar
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -540,7 +555,6 @@ export default function ConfiguracoesPage() {
                     <option value="Projetos">Gerente de Projetos</option>
                     <option value="Comercial">Consultor Comercial</option>
                     <option value="Técnico">Profissional Técnico</option>
-                    <option value="Visualizador">Visualizador (Somente Leitura)</option>
                   </select>
                 </div>
 

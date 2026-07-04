@@ -3,16 +3,17 @@ import { useNavigate } from 'react-router-dom'
 import { AppShell } from '../components/AppShell'
 import { useAuth } from '../contexts/AuthContext'
 import { relatoriosService } from '../services/relatorios.service'
-import { podeLer, podeEscrever } from '../lib/permissoes'
+import { podeLer } from '../lib/permissoes'
+import { pode } from '../lib/capacidades'
 import { rotaInicialPorPerfil } from '../lib/usuario'
 import { LoadingState, ErrorState, IntegrationPendingState } from '../components/ui/States'
 import type { ExportacaoRelatorioItem } from '../types/relatorios'
 import './RelatoriosPage.css'
 
 export default function RelatoriosPage() {
-  const { perfil, permissoes } = useAuth()
+  const { perfil, permissoes, capacidades } = useAuth()
   const navigate = useNavigate()
-  const temEscrita = podeEscrever(permissoes, 'relatorios')
+  const temEscrita = pode(capacidades, 'relatorios.exportar')
 
   // Estados de dados
   const [categorias, setCategorias] = useState<string[]>([])

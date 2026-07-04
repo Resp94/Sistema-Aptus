@@ -39,6 +39,8 @@ Esperado:
 - `05_capacidades.sql` valida catalogo, matriz, ownership e leitura de equipe do Tecnico.
 - Visualizador aparece somente como caso tecnico minimo.
 
+**Nota (descoberta na validacao):** `05_capacidades.sql` cria fixtures (`[FIXTURE 05] ...`) via chamadas reais as RPCs de escrita para provar ownership e guardas de capacidade. Essas linhas nao sao revertidas automaticamente pelo `supabase test db` e ficam visiveis no frontend (clientes, propostas, contratos, lancamentos, membros de equipe). Rode `npm run supabase:reset` novamente antes da secao 5 (validacao de frontend por persona) para partir de um estado limpo.
+
 ## 3. Validar auditorias
 
 ```powershell

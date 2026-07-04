@@ -4,7 +4,8 @@ import { AppShell } from '../components/AppShell'
 import { useAuth } from '../contexts/AuthContext'
 import { financeiroService } from '../services/financeiro.service'
 import { clientesService } from '../services/clientes.service'
-import { podeLer, podeEscrever } from '../lib/permissoes'
+import { podeLer } from '../lib/permissoes'
+import { pode } from '../lib/capacidades'
 import { rotaInicialPorPerfil } from '../lib/usuario'
 import { LoadingState, EmptyState, ErrorState } from '../components/ui/States'
 import type { ContaReceberItem, MetricasContas } from '../types/financeiro'
@@ -12,9 +13,10 @@ import type { Cliente } from '../types/clientes'
 import './ContasReceberPage.css'
 
 export default function ContasReceberPage() {
-  const { perfil, permissoes } = useAuth()
+  const { perfil, permissoes, capacidades } = useAuth()
   const navigate = useNavigate()
-  const temEscrita = podeEscrever(permissoes, 'contas-receber')
+  const podeLancar = pode(capacidades, 'financeiro.lancar')
+  const podeBaixar = pode(capacidades, 'financeiro.baixar_lancamento')
 
   // Datas padrão para os próximos 30 dias de contas a receber
   const obterDatasPadrao = () => {
@@ -209,7 +211,7 @@ export default function ContasReceberPage() {
             <h1 className="page-title">Contas a Receber</h1>
             <p className="page-subtitle">Acompanhe as receitas previstas, faturas e recebimentos.</p>
           </div>
-          {temEscrita && (
+          {podeLancar && (
             <button className="btn btn-primary btn-icon" onClick={() => setNovaReceitaModalOpen(true)}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="12" y1="5" x2="12" y2="19" strokeLinecap="round" />
@@ -305,7 +307,7 @@ export default function ContasReceberPage() {
           <EmptyState 
             title="Nenhuma fatura a receber" 
             description="Nenhuma previsão de receita encontrada para os filtros aplicados."
-            action={temEscrita ? { label: 'Lançar Receita', onClick: () => setNovaReceitaModalOpen(true) } : undefined}
+            action={podeLancar ? { label: 'Lançar Receita', onClick: () => setNovaReceitaModalOpen(true) } : undefined}
           />
         ) : (
           <div className="responsive-table-container card-box">
@@ -318,7 +320,7 @@ export default function ContasReceberPage() {
                   <th>Vencimento</th>
                   <th className="text-right">Valor</th>
                   <th>Status</th>
-                  {temEscrita && <th className="text-center">Ações</th>}
+                  {podeBaixar && <th className="text-center">Ações</th>}
                 </tr>
               </thead>
               <tbody>
@@ -338,7 +340,7 @@ export default function ContasReceberPage() {
                         {item.status_exibicao}
                       </span>
                     </td>
-                    {temEscrita && (
+                    {podeBaixar && (
                       <td className="text-center">
                         {item.status_exibicao !== 'Pago' && (
                           <button className="btn btn-xs btn-outline" onClick={() => handleOpenBaixa(item)}>

@@ -4,7 +4,8 @@ import { AppShell } from '../components/AppShell'
 import { useAuth } from '../contexts/AuthContext'
 import { equipeService } from '../services/equipe.service'
 import { projectsService } from '../services/projetos.service'
-import { podeLer, podeEscrever } from '../lib/permissoes'
+import { podeLer } from '../lib/permissoes'
+import { pode } from '../lib/capacidades'
 import { rotaInicialPorPerfil } from '../lib/usuario'
 import { LoadingState, EmptyState, ErrorState } from '../components/ui/States'
 import type { MembroEquipeItem, AlocacaoEquipeItem, ApontamentoHorasItem, MetricasEquipe } from '../types/equipe'
@@ -12,9 +13,15 @@ import type { Projeto, TarefaKanban } from '../types/projetos'
 import './EquipePage.css'
 
 export default function EquipePage() {
-  const { perfil, permissoes } = useAuth()
+  const { perfil, permissoes, capacidades } = useAuth()
   const navigate = useNavigate()
-  const temEscrita = podeEscrever(permissoes, 'equipe')
+
+  // Gates por capacidade nomeada (substituem o antigo podeEscrever(permissoes, 'equipe') genérico)
+  const podeAdicionarMembro = pode(capacidades, 'equipe.adicionar_membro')
+  const podeAlocar = pode(capacidades, 'equipe.alocar')
+  const podeInativar = pode(capacidades, 'equipe.inativar_membro')
+  const podeApontarQualquer = pode(capacidades, 'apontamentos.registrar_qualquer')
+  const podeApontarProprio = pode(capacidades, 'apontamentos.registrar_proprio')
 
   // Estados de dados
   const [membros, setMembros] = useState<MembroEquipeItem[]>([])
@@ -206,8 +213,10 @@ export default function EquipePage() {
   }
 
   const handleOpenApontar = (membro: MembroEquipeItem) => {
-    setApontarMembroId(membro.id)
-    // Se for o Técnico logado, restringe apenas a ele
+    // Quando o usuário não pode apontar para qualquer membro (ex.: Técnico),
+    // trava sempre no próprio membro vinculado, independentemente do card clicado.
+    const membroAlvo = !podeApontarQualquer && meuMembro ? meuMembro : membro
+    setApontarMembroId(membroAlvo.id)
     setApontarModalOpen(true)
   }
 
@@ -283,6 +292,18 @@ export default function EquipePage() {
     return new Date(dtStr).toLocaleDateString('pt-BR')
   }
 
+  // Identifica o próprio membro de equipe do usuário logado a partir da lista
+  // retornada por listar_membros_equipe. Quando o usuário não tem leitura ampla
+  // de equipe (ex.: Técnico), o backend retorna perfil_id preenchido somente no
+  // próprio registro e nulo para colegas de projeto — por isso, nesse cenário,
+  // o único item com perfil_id não nulo é o próprio membro.
+  const meuMembro = !podeApontarQualquer
+    ? membros.find(m => m.perfil_id !== null) ?? null
+    : null
+
+  const podeApontarParaMembro = (membroId: string) =>
+    podeApontarQualquer || (podeApontarProprio && meuMembro?.id === membroId)
+
   return (
     <AppShell titulo="Gestão de Equipe">
       <div className="equipe-container">
@@ -293,7 +314,7 @@ export default function EquipePage() {
             <h1 className="page-title">Equipe & Alocação</h1>
             <p className="page-subtitle">Monitore a capacidade do time, aloque engenheiros em projetos e lance horas de trabalho.</p>
           </div>
-          {temEscrita && (
+          {podeAdicionarMembro && (
             <button className="btn btn-primary btn-icon" onClick={() => setNovoMembroModalOpen(true)}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="12" y1="5" x2="12" y2="19" strokeLinecap="round" />
@@ -366,7 +387,7 @@ export default function EquipePage() {
           <EmptyState 
             title="Nenhum membro cadastrado" 
             description="Não encontramos nenhum registro de equipe para os filtros configurados."
-            action={temEscrita ? { label: 'Adicionar Membro', onClick: () => setNovoMembroModalOpen(true) } : undefined}
+            action={podeAdicionarMembro ? { label: 'Adicionar Membro', onClick: () => setNovoMembroModalOpen(true) } : undefined}
           />
         ) : (
           <div className="responsive-table-container card-box">
@@ -411,15 +432,15 @@ export default function EquipePage() {
                       <button className="btn btn-xs btn-outline" onClick={() => handleVerDetalhe(item)}>
                         Visualizar
                       </button>
-                      {temEscrita && (
-                        <>
-                          <button className="btn btn-xs btn-outline-secondary" onClick={() => handleOpenAlocar(item)}>
-                            Alocar
-                          </button>
-                          <button className="btn btn-xs btn-outline-secondary" onClick={() => handleOpenApontar(item)}>
-                            Apontar
-                          </button>
-                        </>
+                      {podeAlocar && (
+                        <button className="btn btn-xs btn-outline-secondary" onClick={() => handleOpenAlocar(item)}>
+                          Alocar
+                        </button>
+                      )}
+                      {podeApontarParaMembro(item.id) && (
+                        <button className="btn btn-xs btn-outline-secondary" onClick={() => handleOpenApontar(item)}>
+                          Apontar
+                        </button>
                       )}
                     </td>
                   </tr>
@@ -439,7 +460,7 @@ export default function EquipePage() {
                 <p className="text-sm text-muted">{detalhe.funcao}</p>
               </div>
               <div className="detail-header-actions">
-                {temEscrita && (
+                {podeInativar && (
                   <button className="btn btn-outline color-danger" onClick={() => handleInativarMembro(detalhe.id, detalhe.nome)}>
                     Desativar Profissional
                   </button>
@@ -657,8 +678,8 @@ export default function EquipePage() {
               <form onSubmit={handleApontarHoras}>
                 <div className="form-group">
                   <label>Membro Responsável</label>
-                  <select 
-                    disabled={perfil?.perfil_acesso === 'Técnico'}
+                  <select
+                    disabled={!podeApontarQualquer}
                     value={apontarMembroId}
                     onChange={(e) => setApontarMembroId(e.target.value)}
                   >

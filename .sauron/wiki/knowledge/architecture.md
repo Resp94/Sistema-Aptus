@@ -256,6 +256,18 @@ Não faz parte desta página:
   - Alterado: `.agents/project-memory/007-rbac-capacidades-nomeadas.md`
   - Alterado: `.sauron/wiki/knowledge/architecture.md`
 
+### 2026-07-03 — Fundação do RBAC por capacidades nomeadas e documentação da feature 007
+- **What was done**: Foi implementada a migração `supabase/migrations/20260703000001_rbac_capacidades_foundation.sql`, criando a tabela `public.capacidades_perfil` (PK composta `perfil_acesso, capacidade`, RLS habilitado, sem grant a `authenticated`/`PUBLIC`), os helpers `public.tem_capacidade(p_capacidade text)` e `public.obter_capacidades_usuario()`, o seed da matriz inicial de 37 capacidades por perfil (Administrador com todas; Visualizador com zero linhas de propósito) e o ajuste de `public.obter_permissoes_usuario()` para que Visualizador passe a ter leitura mínima apenas em `relatorios`/`configuracoes` e `Projetos` continue sem Dashboard oficial. O arquivo `supabase/migrations/20260703000002_rbac_capacidades_rpc_guards.sql` foi criado como próximo passo (migração das ~35 RPCs de escrita/efeito de negócio para guardas `tem_capacidade`), ainda pendente de implementação. Em paralelo, a documentação da feature foi atualizada: `docs/personas.md` passou a deixar explícito que existem cinco personas operacionais (Administrador, Financeiro, Projetos, Comercial, Técnico) e que Visualizador não é mais persona operacional, e sim o perfil técnico mínimo de signup, com zero capacidades e leitura restrita a Relatórios/Configurações próprias; também documentou que o Dashboard é acesso oficial exclusivo de Administrador e Financeiro. `docs/arquitetura-dados.md` ganhou uma seção descrevendo `capacidades_perfil`, os helpers `tem_capacidade`/`obter_capacidades_usuario`, a regra central de autorização (`permissao_modulo` para leitura/rota, `tem_capacidade` para ações sensíveis) e a regra de consumo frontend/backend (capacidades só para UX; autorização real sempre na RPC).
+- **Why it was done**: Fechar a fundação de banco definida no plano da feature 007 (tabela auditável + helpers canônicos + matriz inicial) e manter a documentação de personas/arquitetura sincronizada com a nova regra de autorização antes de migrar as RPCs de escrita/efeito e remover o Visualizador do fluxo operacional no frontend.
+- **Impact on the system**: O banco já possui a fonte canônica de capacidades nomeadas e a leitura por módulo já reflete o Visualizador mínimo; nenhuma RPC de escrita/efeito foi migrada para `tem_capacidade` ainda (arquivo de guardas é placeholder), então a autorização de ações sensíveis continua, por ora, dependente das guardas antigas até a próxima migração. A documentação de personas e arquitetura de dados já reflete o estado-alvo (cinco personas operacionais, Visualizador mínimo, Dashboard oficial de Administrador/Financeiro, regra de capacidade nomeada).
+- **Files affected**:
+  - Criado: `supabase/migrations/20260703000001_rbac_capacidades_foundation.sql`
+  - Criado (placeholder, pendente): `supabase/migrations/20260703000002_rbac_capacidades_rpc_guards.sql`
+  - Alterado: `docs/personas.md`
+  - Alterado: `docs/arquitetura-dados.md`
+  - Alterado: `.agents/project-memory/007-rbac-capacidades-nomeadas.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
 ## 5. Current State
 
 - **Frontend atual**: Aplicação SPA baseada em Vite + React + TypeScript instalada na raiz do repositório. As dependências (React 19, Supabase JS, ESLint, Prettier e Vitest) estão instaladas.

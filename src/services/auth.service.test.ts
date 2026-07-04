@@ -1,6 +1,7 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterEach } from 'vitest';
 import { authService } from './auth.service';
 import { supabase } from './supabase';
+import { mockSupabaseRpc, restaurarMocksRpc } from './rpc-test-utils';
 
 describe('Auth Service Integration Tests (Personas & Edge Cases)', () => {
   // A senha configurada no seed é 'SenhaDeTesteSegura123!' como fallback
@@ -57,5 +58,35 @@ describe('Auth Service Integration Tests (Personas & Edge Cases)', () => {
     await expect(
       authService.signIn('inexistente@aptusflow.local', testPassword)
     ).rejects.toThrowError('E-mail ou senha inválidos.');
+  });
+});
+
+describe('getCapacidadesUsuario (mocked)', () => {
+  afterEach(() => {
+    restaurarMocksRpc();
+  });
+
+  it('deve chamar somente a RPC obter_capacidades_usuario e retornar a lista', async () => {
+    const mockCapacidades = ['clientes.criar', 'clientes.editar'];
+    const mockRpc = mockSupabaseRpc('obter_capacidades_usuario', mockCapacidades);
+
+    const res = await authService.getCapacidadesUsuario();
+
+    expect(mockRpc).toHaveBeenCalledWith('obter_capacidades_usuario');
+    expect(res).toEqual(mockCapacidades);
+  });
+
+  it('deve retornar lista vazia quando a RPC retorna null (sessão vazia)', async () => {
+    mockSupabaseRpc('obter_capacidades_usuario', null);
+
+    const res = await authService.getCapacidadesUsuario();
+
+    expect(res).toEqual([]);
+  });
+
+  it('deve propagar o erro quando a RPC falha', async () => {
+    mockSupabaseRpc('obter_capacidades_usuario', null, { message: 'Erro simulado' });
+
+    await expect(authService.getCapacidadesUsuario()).rejects.toBeTruthy();
   });
 });

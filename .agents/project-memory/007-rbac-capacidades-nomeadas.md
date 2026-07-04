@@ -121,3 +121,16 @@ Resultado atualizado do backlog:
 ## Proxima etapa
 
 Executar `/speckit-implement` quando a implementacao da feature 007 for aprovada.
+
+## Decisoes de implementacao (research.md) e documentacao (US7)
+
+Resumo das decisoes tecnicas do `research.md` que guiam a implementacao e foram refletidas em `docs/personas.md`, `docs/arquitetura-dados.md` e `.sauron/wiki/knowledge/architecture.md` (T082-T086):
+
+- **Capacidade nomeada como tabela auditavel**: `public.capacidades_perfil(perfil_acesso, capacidade)` com PK composta e seed versionado por migration, em vez de enum fechado ou JSON em `perfis`. Prioriza auditoria em git e evolucao futura sem quebrar schema.
+- **`tem_capacidade` complementa `permissao_modulo`, nao substitui**: leitura/rota/menu continuam por `permissao_modulo`/`obter_permissoes_usuario`; toda escrita e todo efeito de negocio (boleto, notificacao, exportacao, baixa, envio, geracao) passam a exigir `tem_capacidade`. Auditoria (`audit-rpc.mjs`) passa a diferenciar guard de leitura vs guard de acao.
+- **Ownership por relacionamento, nao por nome de perfil**: capacidades `*_propria`/`*_proprio` sempre validam ownership no corpo da RPC (ex.: `tarefas.responsavel_id = membros_equipe.id` do membro vinculado a `perfis.usuario_id = auth.uid()`), evitando hardcode de `perfil = 'Técnico'`.
+- **Visualizador como perfil tecnico minimo**: deixa de ser persona operacional; e o estado padrao de signup, com zero linhas em `capacidades_perfil` e leitura restrita a `relatorios` e `configuracoes` proprias ate promocao administrativa. Nao e removido do banco (quebraria o fluxo anti-escalacao).
+- **Reativacao de cliente via `atualizar_cliente`**: nenhuma RPC nova; `atualizar_cliente` aceita status `Ativo` em cliente inativo quando o usuario tem `clientes.reativar`, mantendo `clientes.editar` para as demais edicoes.
+- **Tabela de capacidades com RLS habilitado e sem acesso direto do frontend**: leitura via `obter_capacidades_usuario()` apenas; `tem_capacidade(p_capacidade text)` roda dentro das RPCs de escrita/efeito.
+- **Leitura de equipe do Tecnico por projeto compartilhado**: `listar_membros_equipe` retorna proprio membro + colegas com alocacao ativa no mesmo projeto em andamento, com campos sensiveis (`perfil_id`, `custo_hora`, permissoes, contatos, historico de apontamentos) ocultos para colegas.
+- **Consumo frontend/backend**: frontend usa `capacidades` (helper `pode()`) somente para UX (mostrar/esconder botao); autorizacao real sempre na RPC via `tem_capacidade`. Botao no frontend nunca substitui o guard no backend.

@@ -4,7 +4,8 @@ import { AppShell } from '../components/AppShell';
 import { useAuth } from '../contexts/AuthContext';
 import { projectsService } from '../services/projetos.service';
 import { clientesService } from '../services/clientes.service';
-import { podeLer, podeEscrever } from '../lib/permissoes';
+import { podeLer } from '../lib/permissoes';
+import { pode } from '../lib/capacidades';
 import { rotaInicialPorPerfil } from '../lib/usuario';
 import { supabase } from '../services/supabase';
 import type { Projeto, ResumoProjetos, DistribuicaoCliente, TarefaKanban } from '../types/projetos';
@@ -12,9 +13,45 @@ import type { Cliente } from '../types/clientes';
 import './ProjetosPage.css';
 
 export default function ProjetosPage() {
-  const { perfil, permissoes } = useAuth();
+  const { perfil, permissoes, capacidades } = useAuth();
   const navigate = useNavigate();
-  const temEscrita = podeEscrever(permissoes, 'projetos');
+
+  // Capacidades por ação (T037): cada botão sensível é controlado pela
+  // capacidade nomeada correspondente, não mais por um flag genérico de
+  // escrita do módulo "projetos".
+  const podeCriarProjeto = pode(capacidades, 'projetos.criar');
+  const podeExcluirProjeto = pode(capacidades, 'projetos.excluir');
+  const podeCriarTarefa = pode(capacidades, 'tarefas.criar');
+  const podeExcluirTarefa = pode(capacidades, 'tarefas.excluir');
+
+  // Capacidades de mover/editar tarefa (T038): "qualquer" libera qualquer
+  // tarefa; "propria" exige adicionalmente que a tarefa seja do usuário logado.
+  const podeEditarTarefaQualquer = pode(capacidades, 'tarefas.editar_qualquer');
+  const podeEditarTarefaPropria = pode(capacidades, 'tarefas.editar_propria');
+  const podeMoverTarefaQualquer = pode(capacidades, 'tarefas.mover_qualquer');
+  const podeMoverTarefaPropria = pode(capacidades, 'tarefas.mover_propria');
+
+  // Comparação de UX para "é minha tarefa": listar_tarefas_kanban retorna o
+  // responsável como texto (nome), não como id, então usamos o nome do
+  // perfil logado como melhor aproximação disponível na página. Isso NÃO é
+  // a autorização real — a RPC (atualizar_tarefa/mover_tarefa) valida
+  // ownership de verdade via `tarefas.responsavel_id = auth.uid()`. Um falso
+  // positivo raro aqui (ex.: nomes coincidentes) é rejeitado pela RPC e
+  // tratado com toast, sem quebrar a tela.
+  const ehMinhaTarefa = useCallback(
+    (tarefa: TarefaKanban) => !!perfil?.nome && tarefa.responsavel === perfil.nome,
+    [perfil]
+  );
+
+  const podeEditarTarefa = useCallback(
+    (tarefa: TarefaKanban) => podeEditarTarefaQualquer || (podeEditarTarefaPropria && ehMinhaTarefa(tarefa)),
+    [podeEditarTarefaQualquer, podeEditarTarefaPropria, ehMinhaTarefa]
+  );
+
+  const podeMoverTarefa = useCallback(
+    (tarefa: TarefaKanban) => podeMoverTarefaQualquer || (podeMoverTarefaPropria && ehMinhaTarefa(tarefa)),
+    [podeMoverTarefaQualquer, podeMoverTarefaPropria, ehMinhaTarefa]
+  );
 
   // Estados de dados
   const [projetos, setProjetos] = useState<Projeto[]>([]);
@@ -325,11 +362,16 @@ export default function ProjetosPage() {
   const tarefasProgress = tarefas.filter((t) => t.situacao === 'Em Andamento');
   const tarefasDone = tarefas.filter((t) => t.situacao === 'Concluído');
 
+  // Tarefa atualmente aberta no modal de Instruções (que também é uma edição
+  // de tarefa via atualizarTarefa) — controla se o campo é editável (T038).
+  const tarefaInstrucoesAtual = tarefas.find((t) => t.id === instrucoesTarefaId) || null;
+  const podeEditarInstrucoesAtual = tarefaInstrucoesAtual ? podeEditarTarefa(tarefaInstrucoesAtual) : false;
+
   return (
     <AppShell
       titulo="Projetos"
       headerActions={
-        temEscrita && (
+        podeCriarProjeto && (
           <button className="btn btn-primary btn-sm" onClick={() => setProjetoModalOpen(true)}>
             + Novo projeto
           </button>
@@ -445,7 +487,7 @@ export default function ProjetosPage() {
                           <div className="pp-name">
                             <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                               {proj.nome}
-                              {temEscrita && (
+                              {podeExcluirProjeto && (
                                 <button
                                   className="card-action-btn delete-btn"
                                   style={{ padding: 2, display: 'inline-flex' }}
@@ -504,7 +546,7 @@ export default function ProjetosPage() {
           <div className="card" data-od-id="kanban-section">
             <div className="card-header">
               <h3>Kanban: tarefas</h3>
-              {temEscrita && (
+              {podeCriarTarefa && (
                 <button className="btn btn-secondary btn-sm" onClick={() => setTarefaModalOpen(true)}>
                   + Adicionar Tarefa
                 </button>
@@ -531,7 +573,7 @@ export default function ProjetosPage() {
                       key={tarefa.id}
                       className="kanban-card"
                       data-card-id={tarefa.id}
-                      draggable={temEscrita}
+                      draggable={podeMoverTarefa(tarefa)}
                       onDragStart={(e) => handleDragStart(e, tarefa.id)}
                       onDragEnd={handleDragEnd}
                     >
@@ -568,7 +610,7 @@ export default function ProjetosPage() {
                           </svg>
                           Instruções
                         </button>
-                        {temEscrita && (
+                        {podeExcluirTarefa && (
                           <button
                             className="card-action-btn delete-btn"
                             onClick={() => handleExcluirTarefa(tarefa.id, tarefa.titulo)}
@@ -604,7 +646,7 @@ export default function ProjetosPage() {
                       key={tarefa.id}
                       className="kanban-card"
                       data-card-id={tarefa.id}
-                      draggable={temEscrita}
+                      draggable={podeMoverTarefa(tarefa)}
                       onDragStart={(e) => handleDragStart(e, tarefa.id)}
                       onDragEnd={handleDragEnd}
                     >
@@ -641,7 +683,7 @@ export default function ProjetosPage() {
                           </svg>
                           Instruções
                         </button>
-                        {temEscrita && (
+                        {podeExcluirTarefa && (
                           <button
                             className="card-action-btn delete-btn"
                             onClick={() => handleExcluirTarefa(tarefa.id, tarefa.titulo)}
@@ -677,7 +719,7 @@ export default function ProjetosPage() {
                       key={tarefa.id}
                       className="kanban-card"
                       data-card-id={tarefa.id}
-                      draggable={temEscrita}
+                      draggable={podeMoverTarefa(tarefa)}
                       onDragStart={(e) => handleDragStart(e, tarefa.id)}
                       onDragEnd={handleDragEnd}
                     >
@@ -712,7 +754,7 @@ export default function ProjetosPage() {
                           </svg>
                           Instruções
                         </button>
-                        {temEscrita && (
+                        {podeExcluirTarefa && (
                           <button
                             className="card-action-btn delete-btn"
                             onClick={() => handleExcluirTarefa(tarefa.id, tarefa.titulo)}
@@ -923,22 +965,22 @@ export default function ProjetosPage() {
                   </div>
                 )}
                 <div className="field">
-                  <label>{temEscrita ? 'Escrever novas instruções' : 'Visualizar instruções'}</label>
+                  <label>{podeEditarInstrucoesAtual ? 'Escrever novas instruções' : 'Visualizar instruções'}</label>
                   <textarea
                     className="textarea"
                     placeholder="Descreva os passos e observações técnicas..."
                     value={instrucoesNovas}
                     onChange={(e) => setInstrucoesNovas(e.target.value)}
-                    disabled={!temEscrita}
+                    disabled={!podeEditarInstrucoesAtual}
                     style={{ minHeight: 120 }}
                   />
                 </div>
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-ghost" onClick={() => setInstrucoesModalOpen(false)}>
-                  {temEscrita ? 'Cancelar' : 'Fechar'}
+                  {podeEditarInstrucoesAtual ? 'Cancelar' : 'Fechar'}
                 </button>
-                {temEscrita && <button type="submit" className="btn btn-primary">Salvar</button>}
+                {podeEditarInstrucoesAtual && <button type="submit" className="btn btn-primary">Salvar</button>}
               </div>
             </form>
           </div>

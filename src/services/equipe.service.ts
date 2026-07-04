@@ -148,15 +148,24 @@ export const equipeService = {
   },
 
   async registrarApontamentoHoras(payload: {
-    tarefa_id: string
+    tarefa_id: string | null
     projeto_id: string
     membro_equipe_id: string
     horas: number
     descricao: string
     data: string
   }): Promise<string> {
+    // Normaliza a seleção de "Atividade Geral do Projeto (Sem tarefa)" para
+    // tarefa_id: null antes de chamar a RPC. A sentinela textual 'geral'
+    // nunca deve ser enviada ao backend.
+    const tarefaIdNormalizado =
+      !payload.tarefa_id || payload.tarefa_id === 'geral' ? null : payload.tarefa_id
+
     const { data, error } = await supabase.rpc('registrar_apontamento_horas', {
-      payload
+      payload: {
+        ...payload,
+        tarefa_id: tarefaIdNormalizado
+      }
     })
 
     if (error) {

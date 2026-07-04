@@ -3,15 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../components/AppShell';
 import { useAuth } from '../contexts/AuthContext';
 import { clientesService } from '../services/clientes.service';
-import { podeLer, podeEscrever } from '../lib/permissoes';
+import { podeLer } from '../lib/permissoes';
+import { pode } from '../lib/capacidades';
 import { rotaInicialPorPerfil } from '../lib/usuario';
 import type { Cliente, EstatisticasClientes, ClienteDetalhe } from '../types/clientes';
 import './ClientesPage.css';
 
 export default function ClientesPage() {
-  const { perfil, permissoes } = useAuth();
+  const { perfil, permissoes, capacidades } = useAuth();
   const navigate = useNavigate();
-  const temEscrita = podeEscrever(permissoes, 'clientes');
 
   // Estados de dados
   const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -162,6 +162,27 @@ export default function ClientesPage() {
     }
   };
 
+  // Ações CRUD: Reativar Contato
+  const handleReativarContato = async (cliente: ClienteDetalhe) => {
+    try {
+      await clientesService.atualizarCliente({
+        id: cliente.id,
+        nome_contato: cliente.nome_contato,
+        empresa: cliente.empresa,
+        email: cliente.email,
+        telefone: cliente.telefone,
+        tipo: cliente.tipo,
+        status: 'Ativo',
+      });
+      showToast('Contato reativado com sucesso');
+      fetchDados();
+      handleVerDetalhe(cliente.id);
+    } catch (err) {
+      console.error(err);
+      showToast(err instanceof Error ? err.message : 'Erro ao reativar contato.');
+    }
+  };
+
   // Ações CRUD: Registrar Atendimento
   const handleRegistrarAtendimento = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -204,7 +225,7 @@ export default function ClientesPage() {
     <AppShell
       titulo="Clientes e Fornecedores"
       headerActions={
-        temEscrita && (
+        pode(capacidades, 'clientes.criar') && (
           <button className="btn btn-primary btn-sm" onClick={() => setClienteModalOpen(true)}>
             + Novo contato
           </button>
@@ -395,12 +416,20 @@ export default function ClientesPage() {
             <div className="card-header">
               <h3 id="detailClientName">{detalhe.empresa}</h3>
               <div style={{ display: 'flex', gap: 8 }}>
-                {temEscrita && detalhe.status === 'Ativo' && (
+                {pode(capacidades, 'clientes.inativar') && detalhe.status === 'Ativo' && (
                   <button
                     className="btn btn-danger btn-sm"
                     onClick={() => handleInativarContato(detalhe.id, detalhe.empresa)}
                   >
                     Inativar Contato
+                  </button>
+                )}
+                {pode(capacidades, 'clientes.reativar') && detalhe.status === 'Inativo' && (
+                  <button
+                    className="btn btn-primary btn-sm"
+                    onClick={() => handleReativarContato(detalhe)}
+                  >
+                    Reativar Contato
                   </button>
                 )}
                 <button className="btn btn-ghost btn-sm" onClick={() => setDetalhe(null)}>
@@ -457,7 +486,7 @@ export default function ClientesPage() {
                       >
                         Histórico de Atendimento
                       </h4>
-                      {temEscrita && (
+                      {pode(capacidades, 'clientes.registrar_atendimento') && (
                         <button className="btn btn-secondary btn-xs" onClick={() => setAtendimentoModalOpen(true)}>
                           + Registrar Atendimento
                         </button>
