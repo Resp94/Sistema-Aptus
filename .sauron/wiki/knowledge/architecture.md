@@ -41,6 +41,18 @@ Não faz parte desta página:
   - *Prós*: Menor tempo de setup, backend gerenciado, ambiente local fiel à produção, custo previsível.
   - *Contras*: Vendor lock-in parcial, necessidade de sincronizar schema/migrações entre local e nuvem.
 
+### DA-003 — RBAC por capacidades nomeadas para ações sensíveis
+- **Problema**: A matriz `pode_ler`/`pode_escrever` por módulo é suficiente para navegação e leitura, mas não representa ações finas dentro do mesmo módulo. A validação E2E das personas em 2026-07-03 mostrou o problema no perfil Técnico: ele precisa mover tarefas próprias e apontar horas próprias, mas não pode criar/excluir projetos nem gerenciar equipe.
+- **Options Considered**:
+  - Manter apenas permissões por módulo e corrigir botões pontualmente.
+  - Criar capacidades nomeadas por ação, consumidas pelo frontend e validadas pelas RPCs.
+  - Criar contratos de tela altamente acoplados, com cada RPC de listagem retornando todas as ações permitidas da página.
+- **Choice**: Adotar capacidades nomeadas como fonte canônica de autorização de ações, mantendo permissões por módulo para rota, leitura e navegação. A fundação canônica especificada para a próxima implementação é `public.capacidades_perfil`, `tem_capacidade(p_capacidade text)` e `obter_capacidades_usuario()`.
+- **Justification**: A capacidade nomeada resolve a causa raiz sem quebrar RPC-first: o frontend usa a lista de capacidades para exibir controles, e o backend valida a mesma capacidade antes de executar mutações. Isso evita tanto excesso de privilégio quanto botões ausentes para ações legítimas.
+- **Trade-offs**:
+  - *Prós*: Menor ambiguidade por perfil, autorização mais testável, UX alinhada ao backend, evolução auditável da matriz.
+  - *Contras*: Exige migrar RPCs de escrita, atualizar gates do frontend e manter testes de matriz/ownership para impedir drift.
+
 ## 4. Change History
 
 ### 2026-06-26 — Implementação e ativação da nova stack tecnológica
@@ -157,6 +169,91 @@ Não faz parte desta página:
   - Alterado: `specs/005-demais-telas-perfis/spec.md`
   - Alterado: `specs/005-demais-telas-perfis/tasks.md`
   - Alterado: `.agents/project-memory/005-demais-telas-perfis.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-07-03 — Especificação do RBAC por capacidades nomeadas
+- **What was done**: Foi criada a feature Spec Kit `007-rbac-capacidades-nomeadas`, definindo capacidades nomeadas no formato `recurso.acao` como a nova fonte canônica para autorização de ações sensíveis. A especificação preserva `obter_permissoes_usuario` para leitura, rota e navegação, mas direciona o frontend a abandonar `pode_escrever` como gate principal de botões. A fundação canônica especificada usa `public.capacidades_perfil`, `tem_capacidade(p_capacidade text)` e `obter_capacidades_usuario()`. Também registra a decisão de remover Visualizador como persona operacional, mantendo-o apenas como perfil técnico mínimo de signup.
+- **Why it was done**: A validação E2E das personas mostrou desalinhamento entre frontend e backend quando a autorização depende apenas de escrita ampla por módulo. O perfil Técnico ficou sobreprivilegiado em Projetos, bloqueado em apontamento próprio e limitado demais na leitura de equipe.
+- **Impact on the system**: Nenhum código funcional foi alterado nesta etapa. A próxima implementação passa a ter uma direção arquitetural clara: frontend usa capacidades para UX; RPCs usam capacidades para autorização real; testes e auditorias bloqueiam escrita sem capacidade nomeada.
+- **Files affected**:
+  - Criado: `specs/007-rbac-capacidades-nomeadas/spec.md`
+  - Criado: `specs/007-rbac-capacidades-nomeadas/checklists/requirements.md`
+  - Criado: `.agents/project-memory/007-rbac-capacidades-nomeadas.md`
+  - Alterado: `.specify/feature.json`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-07-03 — Planejamento do RBAC por capacidades nomeadas
+- **What was done**: Foi executado o fluxo `speckit-plan` para `specs/007-rbac-capacidades-nomeadas/`, gerando `plan.md`, `research.md`, `data-model.md`, `quickstart.md` e contratos de matriz, RPCs, frontend e auditoria/testes.
+- **Why it was done**: Transformar a especificação de capacidades nomeadas em desenho técnico implementável, alinhando banco, frontend, testes e guardrails sem quebrar RPC-first.
+- **Impact on the system**: Nenhum código funcional foi alterado nesta etapa. O plano consolida as decisões para a implementação: capacidades em `public.capacidades_perfil`, leitura por `obter_capacidades_usuario()`, autorização de ação por `tem_capacidade`, leitura/rota por `permissao_modulo`, Visualizador como perfil técnico mínimo e auditoria diferenciando leitura de ação.
+- **Files affected**:
+  - Criado/Atualizado: `specs/007-rbac-capacidades-nomeadas/plan.md`
+  - Criado: `specs/007-rbac-capacidades-nomeadas/research.md`
+  - Criado: `specs/007-rbac-capacidades-nomeadas/data-model.md`
+  - Criado: `specs/007-rbac-capacidades-nomeadas/quickstart.md`
+  - Criado: `specs/007-rbac-capacidades-nomeadas/contracts/capability-matrix.md`
+  - Criado: `specs/007-rbac-capacidades-nomeadas/contracts/rpc-capability-contract.md`
+  - Criado: `specs/007-rbac-capacidades-nomeadas/contracts/frontend-capabilities.md`
+  - Criado: `specs/007-rbac-capacidades-nomeadas/contracts/audit-and-tests.md`
+  - Alterado: `AGENTS.md`
+  - Alterado: `CLAUDE.md`
+  - Alterado: `.agents/project-memory/007-rbac-capacidades-nomeadas.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-07-03 — Checklist de qualidade da feature 007
+- **What was done**: Foi criado o checklist `specs/007-rbac-capacidades-nomeadas/checklists/rbac.md` para revisar a qualidade dos requisitos e contratos da feature de RBAC por capacidades nomeadas antes da geração de tarefas.
+- **Why it was done**: A feature altera a fronteira de autorização do sistema. O checklist funciona como validação dos requisitos escritos, cobrindo completude, clareza, consistência, mensurabilidade e rastreabilidade, sem testar implementação.
+- **Impact on the system**: Nenhum código funcional foi alterado. O checklist reduz risco de tarefas ambíguas para matriz de capacidades, RPCs, ownership, frontend, Visualizador, guardrails e documentação.
+- **Files affected**:
+  - Criado: `specs/007-rbac-capacidades-nomeadas/checklists/rbac.md`
+  - Alterado: `.agents/project-memory/007-rbac-capacidades-nomeadas.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-07-03 — Verificação do checklist da feature 007
+- **What was done**: O checklist `specs/007-rbac-capacidades-nomeadas/checklists/rbac.md` foi verificado contra spec, plano, data model, contratos e quickstart. Foram marcados 38 de 39 itens como atendidos.
+- **Why it was done**: Confirmar quais requisitos de RBAC por capacidades nomeadas já estão claros o bastante antes da geração de tarefas, sem mascarar ambiguidades restantes.
+- **Impact on the system**: Nenhum código funcional foi alterado. O item CHK019 permanece aberto porque a visibilidade de equipe do Técnico já define quais colegas são incluídos, mas ainda não fecha quais dados dos colegas permanecem limitados.
+- **Files affected**:
+  - Alterado: `specs/007-rbac-capacidades-nomeadas/checklists/rbac.md`
+  - Alterado: `.agents/project-memory/007-rbac-capacidades-nomeadas.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-07-03 — Fechamento da lacuna CHK019 da feature 007
+- **What was done**: A regra de visibilidade limitada de equipe para Técnico foi especificada em spec, research, data model e contratos. Técnico passa a ver o próprio membro e colegas com alocação ativa nos mesmos projetos em andamento. Para colegas, a leitura limitada pode expor somente `id`, `nome`, `funcao`, `habilidades`, `status`, `capacidade` e `projeto_atual` restrito ao projeto compartilhado; `perfil_id`, `custo_hora`, permissões, contatos sensíveis, histórico de apontamentos e alocações fora dos projetos compartilhados ficam ocultos ou nulos. O checklist foi atualizado para 39 de 39 itens atendidos.
+- **Why it was done**: Fechar a última ambiguidade antes da geração de tarefas, evitando que a implementação de `listar_membros_equipe` exponha equipe inteira, dados administrativos ou histórico fora do projeto compartilhado.
+- **Impact on the system**: Nenhum código funcional foi alterado. A próxima implementação passa a ter um contrato verificável para a leitura limitada de equipe do Técnico.
+- **Files affected**:
+  - Alterado: `specs/007-rbac-capacidades-nomeadas/spec.md`
+  - Alterado: `specs/007-rbac-capacidades-nomeadas/research.md`
+  - Alterado: `specs/007-rbac-capacidades-nomeadas/data-model.md`
+  - Alterado: `specs/007-rbac-capacidades-nomeadas/contracts/rpc-capability-contract.md`
+  - Alterado: `specs/007-rbac-capacidades-nomeadas/contracts/audit-and-tests.md`
+  - Alterado: `specs/007-rbac-capacidades-nomeadas/checklists/rbac.md`
+  - Alterado: `.agents/project-memory/007-rbac-capacidades-nomeadas.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-07-03 — Geração de tarefas da feature 007
+- **What was done**: Foi executado o fluxo `speckit-tasks` para `specs/007-rbac-capacidades-nomeadas/`, gerando `tasks.md` com 90 tarefas em formato checklist Spec Kit. As tarefas foram organizadas em Setup, Fundacional, sete user stories e validação final, com testes pgTAP/Vitest/auditoria antes das implementações que eles cobrem. O backlog definiu como migrations alvo `supabase/migrations/20260703000001_rbac_capacidades_foundation.sql` e `supabase/migrations/20260703000002_rbac_capacidades_rpc_guards.sql`.
+- **Why it was done**: Transformar a especificação, plano, contratos, quickstart e checklist 39/39 em backlog executável, preservando RPC-first, guardrails de `tem_capacidade`, separação entre leitura por módulo e ação por capacidade, e validação por cinco personas operacionais.
+- **Impact on the system**: Nenhum código funcional foi alterado. A próxima implementação passa a ter sequência definida: MVP com fundação de capacidades (US1), correção do Técnico (US2), remoção operacional do Visualizador (US3), gates frontend (US4), bugs funcionais (US5), auditoria/testes (US6) e documentação (US7).
+- **Files affected**:
+  - Criado: `specs/007-rbac-capacidades-nomeadas/tasks.md`
+  - Alterado: `.agents/project-memory/007-rbac-capacidades-nomeadas.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-07-03 — Correção pós-análise das tarefas da feature 007
+- **What was done**: Após `/speckit-analyze`, os artefatos da feature 007 foram ajustados para fechar cinco pontos: expansão explícita das tarefas de migração das RPCs por domínio, correção do ownership de tarefa própria para `membros_equipe.id`, definição da validação final como Playwright/E2E, alinhamento das tarefas de migration com arquivos alvo/renomeação do arquivo gerado e remoção da linguagem de "placeholder" nos testes. O `tasks.md` passou de 90 para 96 tarefas.
+- **Why it was done**: Evitar que a implementação siga um backlog incompleto para as ~35 RPCs de escrita/efeito, impedir uma checagem incorreta de ownership contra `auth.uid()` e remover ambiguidades que poderiam enfraquecer os gates de teste.
+- **Impact on the system**: Nenhum código funcional foi alterado. O backlog ficou mais preciso antes de `/speckit-implement`, com US6 cobrindo Clientes, Propostas/Contratos, Cobranças, Equipe gerencial, Financeiro e Configurações/Relatórios de forma explícita.
+- **Files affected**:
+  - Alterado: `specs/007-rbac-capacidades-nomeadas/plan.md`
+  - Alterado: `specs/007-rbac-capacidades-nomeadas/research.md`
+  - Alterado: `specs/007-rbac-capacidades-nomeadas/data-model.md`
+  - Alterado: `specs/007-rbac-capacidades-nomeadas/contracts/rpc-capability-contract.md`
+  - Alterado: `specs/007-rbac-capacidades-nomeadas/contracts/audit-and-tests.md`
+  - Alterado: `specs/007-rbac-capacidades-nomeadas/tasks.md`
+  - Alterado: `specs/007-rbac-capacidades-nomeadas/quickstart.md`
+  - Alterado: `.agents/project-memory/007-rbac-capacidades-nomeadas.md`
   - Alterado: `.sauron/wiki/knowledge/architecture.md`
 
 ## 5. Current State
