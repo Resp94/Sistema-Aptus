@@ -53,6 +53,18 @@ Não faz parte desta página:
   - *Prós*: Menor ambiguidade por perfil, autorização mais testável, UX alinhada ao backend, evolução auditável da matriz.
   - *Contras*: Exige migrar RPCs de escrita, atualizar gates do frontend e manter testes de matriz/ownership para impedir drift.
 
+### DA-004 — Exportação persistente de relatórios com re-download
+- **Problema**: A página Relatórios atualmente registra solicitações de exportação como pendentes/indisponíveis, sem gerar PDF/CSV real. A nova necessidade é gerar e baixar relatórios completos imediatamente, mantendo histórico que permita baixar arquivos anteriores.
+- **Options Considered**:
+  - Gerar arquivos localmente no navegador, sem persistência.
+  - Gerar arquivos de forma centralizada, persistir o artefato e registrar histórico baixável.
+  - Manter apenas solicitação assíncrona sem arquivo imediato.
+- **Choice**: Especificar exportação real de PDF e CSV por categoria selecionada, com período obrigatório, histórico persistente, re-download enquanto válido e expiração em 12 meses.
+- **Justification**: A persistência do arquivo torna o histórico útil, evita sucesso simulado e permite auditoria operacional. A separação entre leitura e exportação preserva a matriz de capacidades: Visualizador continua apenas lendo, enquanto Administrador, Financeiro e Projetos exportam somente quando possuem `relatorios.exportar`. O histórico segue escopo por persona: Administrador acessa todos os arquivos válidos; Financeiro e Projetos acessam apenas os próprios.
+- **Trade-offs**:
+  - *Prós*: Download imediato, histórico reutilizável, rastreabilidade, experiência consistente para PDF e CSV.
+  - *Contras*: Exige contrato de dados completos por categoria, armazenamento de arquivos, política de expiração, validações adicionais de autorização no download posterior e geração de pacote para CSV quando houver resumo e detalhes.
+
 ## 4. Change History
 
 ### 2026-06-26 — Implementação e ativação da nova stack tecnológica
@@ -266,6 +278,17 @@ Não faz parte desta página:
   - Alterado: `docs/personas.md`
   - Alterado: `docs/arquitetura-dados.md`
   - Alterado: `.agents/project-memory/007-rbac-capacidades-nomeadas.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-07-04 — Especificação de exportação real de relatórios
+- **What was done**: Foi criada a feature Spec Kit `008-exportar-relatorios`, definindo exportação completa de relatórios em PDF e CSV pela página Relatórios. A especificação exige categoria selecionada, data inicial, data final, download imediato, histórico com re-download, validade de 12 meses e respeito às personas/capacidades.
+- **Why it was done**: O fluxo atual registra exportações como indisponíveis e não entrega arquivo real. A nova regra transforma a exportação em artefato operacional reutilizável, mantendo a separação entre leitura de relatórios e extração de arquivos.
+- **Impact on the system**: Nenhum código funcional foi alterado nesta etapa. A próxima fase deve detalhar contratos, persistência, geração de arquivos, histórico, expiração e validação por persona.
+- **Files affected**:
+  - Criado: `specs/008-exportar-relatorios/spec.md`
+  - Criado: `specs/008-exportar-relatorios/checklists/requirements.md`
+  - Criado: `.agents/project-memory/008-exportar-relatorios.md`
+  - Alterado: `.specify/feature.json`
   - Alterado: `.sauron/wiki/knowledge/architecture.md`
 
 ## 5. Current State
