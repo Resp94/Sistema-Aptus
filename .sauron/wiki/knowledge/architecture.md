@@ -346,6 +346,38 @@ Não faz parte desta página:
   - Alterado: `.agents/project-memory/008-exportar-relatorios.md`
   - Alterado: `.sauron/wiki/knowledge/architecture.md`
 
+### 2026-07-04 — Geração de tarefas da feature 008
+- **What was done**: Foi executado o fluxo `speckit-tasks` para `specs/008-exportar-relatorios/`, gerando `tasks.md` com 80 tarefas em formato checklist Spec Kit. As tarefas foram organizadas em Setup, Fundacional, três user stories e Polish, com testes pgTAP/Vitest/Edge antes das implementações que eles cobrem.
+- **Why it was done**: Transformar a especificacao, plano, modelo de dados, contratos, quickstart e checklist 46/46 em backlog executavel para implementar exportacao real de relatorios em PDF/CSV com Edge Function, RPCs, Storage privado, historico e validacao por persona.
+- **Impact on the system**: Nenhum codigo funcional foi alterado nesta etapa. A proxima implementacao passa a ter sequencia definida: fundacao Supabase/Storage/RPCs; US1 para download imediato; US2 para historico e re-download; US3 para hardening de personas/categorias; polish com documentacao e gates finais.
+- **Files affected**:
+  - Criado: `specs/008-exportar-relatorios/tasks.md`
+  - Alterado: `.agents/project-memory/008-exportar-relatorios.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-07-04 — Correção pós-análise das tarefas da feature 008
+- **What was done**: Após `/speckit-analyze`, o backlog `specs/008-exportar-relatorios/tasks.md` foi refinado sem renumerar tarefas. As tarefas passaram a exigir testes explícitos de acessibilidade do modal/histórico, assertivas de policy do Storage privado, validação de `download_expires_in = 600` nos fluxos de gerar/download e campos mínimos de observabilidade para geração e download.
+- **Why it was done**: Reduzir risco de a implementação tratar requisitos não funcionais e de segurança como detalhes implícitos. A exportação de relatórios lida com arquivos sensíveis, então acessibilidade, bucket privado, URLs assinadas temporárias e rastreabilidade precisam entrar como critérios verificáveis no backlog.
+- **Impact on the system**: Nenhum código funcional foi alterado. A implementação da feature 008 agora possui critérios de teste mais objetivos para Storage privado, TTL de signed URL, ausência de URL pública permanente, teclado/foco/Escape/labels e logs/eventos com `exportacao_id`, usuário, categoria, formato, período, status, duração, tamanho e erro sanitizado.
+- **Files affected**:
+  - Alterado: `specs/008-exportar-relatorios/tasks.md`
+  - Alterado: `.agents/project-memory/008-exportar-relatorios.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-07-05 — Implementação da exportação real de relatórios (feature 008)
+- **What was done**: Foi implementada a feature `008-exportar-relatorios` de ponta a ponta. A migration `supabase/migrations/20260704235640_exportar_relatorios.sql` estendeu `public.exportacoes_relatorios` (período, metadados de arquivo, expiração, erro), criou o bucket privado `relatorios-exportados` (sem policy de escrita para `authenticated`/`anon`, `SELECT` autenticado como defesa em profundidade), o helper `categoria_relatorio_exportavel` (matriz canônica de categoria exportável por perfil), `validar_periodo_exportacao` (datas inclusivas, máximo 12 meses), quatro builders de payload completo por categoria (Financeiro, DRE, Clientes, Projetos), as RPCs `iniciar_exportacao_relatorio`, `concluir_exportacao_relatorio`, `falhar_exportacao_relatorio`, `autorizar_download_exportacao_relatorio`, `listar_exportacoes_relatorios` e a extensão de `public.audit_log` para observabilidade de exportação. A Edge Function `supabase/functions/relatorios-exportacao/` (ações `gerar`/`download`) orquestra autorização via RPC (client user-scoped por JWT), renderização de PDF (`pdf-lib`) ou ZIP CSV (`fflate`), upload em Storage privado (service role só nesse ponto) e signed URLs de 600 segundos, nunca URL pública/permanente. O frontend (`src/services/relatorios.service.ts`, `src/pages/RelatoriosPage.tsx`) passou a chamar essa Edge Function para geração imediata e re-download pelo histórico, com a RPC legada `solicitar_exportacao_relatorio` mantida apenas como compatibilidade (`@deprecated`). Dois bugs reais foram corrigidos durante a implementação: `listar_exportacoes_relatorios` lançava exceção para Comercial/Técnico em vez de retornar histórico vazio; e o service do frontend vazava a mensagem técnica genérica do client de Edge Functions do Supabase em vez da mensagem de negócio real do erro. A documentação foi sincronizada em `docs/arquitetura-dados.md` (seção de exportação de relatórios), `docs/personas.md` (matriz de exportação por persona) e `.agents/project-memory/008-exportar-relatorios.md` (seção "Implementação").
+- **Why it was done**: Fechar a fase Polish (T068-T071) da feature 008, substituindo o estado anterior de exportação simulada/indisponível por geração e download reais, com histórico auditável, retenção de 12 meses e autorização por capacidade nomeada e categoria por perfil.
+- **Impact on the system**: A página Relatórios passa a gerar arquivos reais em PDF/CSV e a manter histórico com re-download por 12 meses. Administrador exporta as quatro categorias e vê todo o histórico; Financeiro exporta Financeiro/DRE e vê apenas o próprio; Projetos exporta Projetos e vê apenas o próprio; Visualizador, Comercial e Técnico não exportam nem veem histórico. `Personalizado` permanece fora do escopo de exportação. Gates finais confirmados: 367 assertions pgTAP, 113 testes Vitest, `npm run build` OK.
+- **Files affected**:
+  - Criado: `supabase/migrations/20260704235640_exportar_relatorios.sql`
+  - Criado: `supabase/functions/relatorios-exportacao/index.ts`, `_shared.ts`, `payload.ts`, `renderers.ts` e respectivos testes
+  - Alterado: `src/services/relatorios.service.ts`
+  - Alterado: `src/pages/RelatoriosPage.tsx`
+  - Alterado: `docs/arquitetura-dados.md`
+  - Alterado: `docs/personas.md`
+  - Alterado: `.agents/project-memory/008-exportar-relatorios.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
 ## 5. Current State
 
 - **Frontend atual**: Aplicação SPA baseada em Vite + React + TypeScript instalada na raiz do repositório. As dependências (React 19, Supabase JS, ESLint, Prettier e Vitest) estão instaladas.

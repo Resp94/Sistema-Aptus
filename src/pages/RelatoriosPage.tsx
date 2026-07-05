@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AppShell } from '../components/AppShell'
 import { useAuth } from '../contexts/AuthContext'
@@ -6,9 +6,13 @@ import { relatoriosService } from '../services/relatorios.service'
 import { podeLer } from '../lib/permissoes'
 import { pode } from '../lib/capacidades'
 import { rotaInicialPorPerfil } from '../lib/usuario'
-import { LoadingState, ErrorState, IntegrationPendingState } from '../components/ui/States'
+import { LoadingState, ErrorState } from '../components/ui/States'
+import { obterPeriodoPadrao, validarPeriodoExportacao } from '../lib/relatorios-periodo'
+import { obterDadosDownload, dispararDownloadArquivo } from '../lib/download'
 import type { ExportacaoRelatorioItem } from '../types/relatorios'
 import './RelatoriosPage.css'
+
+const CATEGORIA_SEM_EXPORTACAO = 'Personalizado'
 
 export default function RelatoriosPage() {
   const { perfil, permissoes, capacidades } = useAuth()
@@ -26,7 +30,6 @@ export default function RelatoriosPage() {
   const [loadingPrevia, setLoadingPrevia] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [toastMsg, setToastMsg] = useState<string | null>(null)
-  const [integrationBanner, setIntegrationBanner] = useState<{ message: string; status: string } | null>(null)
 
   // Modais
   const [exportarModalOpen, setExportarModalOpen] = useState(false)
@@ -34,6 +37,15 @@ export default function RelatoriosPage() {
 
   // Form Exportar
   const [exportFormato, setExportFormato] = useState<'PDF' | 'CSV'>('PDF')
+  const [exportDataInicial, setExportDataInicial] = useState('')
+  const [exportDataFinal, setExportDataFinal] = useState('')
+  const [exportPeriodoErro, setExportPeriodoErro] = useState<string | null>(null)
+  const [exportErro, setExportErro] = useState<string | null>(null)
+  const [exportLoading, setExportLoading] = useState(false)
+  const dataInicialInputRef = useRef<HTMLInputElement>(null)
+
+  // Download de item do histórico
+  const [baixandoHistoricoId, setBaixandoHistoricoId] = useState<string | null>(null)
 
   // Form Agendar
   const [agendarFrequencia, setAgendarFrequencia] = useState<'Uma vez' | 'Diário' | 'Semanal' | 'Mensal'>('Semanal')
@@ -45,13 +57,6 @@ export default function RelatoriosPage() {
       setToastMsg(null)
     }, 3000)
   }, [])
-
-  const triggerIntegrationStatus = (status: string, message: string) => {
-    setIntegrationBanner({ status, message })
-    setTimeout(() => {
-      setIntegrationBanner(null)
-    }, 6000)
-  }
 
   // Carregar categorias e histórico
   const fetchCategoriasEHistorico = useCallback(async () => {
@@ -109,27 +114,121 @@ export default function RelatoriosPage() {
     loadPrevia()
   }, [categoriaAtiva, showToast])
 
-  const handleSolicitarExportacao = async (e: React.FormEvent) => {
+  const abrirModalExportar = () => {
+    if (!categoriaAtiva || categoriaAtiva === CATEGORIA_SEM_EXPORTACAO) return
+
+    const periodoPadrao = obterPeriodoPadrao()
+    setExportFormato('PDF')
+    setExportDataInicial(periodoPadrao.data_inicial)
+    setExportDataFinal(periodoPadrao.data_final)
+    setExportPeriodoErro(null)
+    setExportErro(null)
+    setExportarModalOpen(true)
+  }
+
+  const fecharModalExportar = useCallback(() => {
+    setExportarModalOpen(false)
+    setExportPeriodoErro(null)
+    setExportErro(null)
+  }, [])
+
+  // Foca automaticamente o primeiro campo editável (Data Inicial) ao abrir o modal
+  useEffect(() => {
+    if (exportarModalOpen) {
+      dataInicialInputRef.current?.focus()
+    }
+  }, [exportarModalOpen])
+
+  const revalidarPeriodo = (dataInicial: string, dataFinal: string) => {
+    const resultado = validarPeriodoExportacao(dataInicial, dataFinal)
+    setExportPeriodoErro(resultado.valido ? null : resultado.mensagem || null)
+    return resultado
+  }
+
+  const handleDataInicialChange = (valor: string) => {
+    setExportDataInicial(valor)
+    revalidarPeriodo(valor, exportDataFinal)
+  }
+
+  const handleDataFinalChange = (valor: string) => {
+    setExportDataFinal(valor)
+    revalidarPeriodo(exportDataInicial, valor)
+  }
+
+  const handleExportarModalKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Escape') {
+      e.stopPropagation()
+      fecharModalExportar()
+      return
+    }
+
+    if (e.key !== 'Tab') return
+
+    const container = e.currentTarget
+    const focusaveis = Array.from(
+      container.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )
+    )
+
+    if (focusaveis.length === 0) return
+
+    const primeiro = focusaveis[0]
+    const ultimo = focusaveis[focusaveis.length - 1]
+
+    if (e.shiftKey) {
+      if (document.activeElement === primeiro) {
+        e.preventDefault()
+        ultimo.focus()
+      }
+    } else if (document.activeElement === ultimo) {
+      e.preventDefault()
+      primeiro.focus()
+    }
+  }
+
+  const handleExportar = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!categoriaAtiva) return
+    if (!categoriaAtiva || categoriaAtiva === CATEGORIA_SEM_EXPORTACAO) return
+
+    const resultado = revalidarPeriodo(exportDataInicial, exportDataFinal)
+    if (!resultado.valido) return
+
+    setExportLoading(true)
+    setExportErro(null)
 
     try {
-      await relatoriosService.solicitarExportacaoRelatorio(categoriaAtiva, exportFormato)
-      showToast('Exportação solicitada com sucesso!')
+      const resposta = await relatoriosService.exportarRelatorio({
+        tipo: categoriaAtiva,
+        formato: exportFormato,
+        data_inicial: exportDataInicial,
+        data_final: exportDataFinal
+      })
+
+      const dadosDownload = obterDadosDownload(resposta)
+      dispararDownloadArquivo(dadosDownload.url, dadosDownload.nomeArquivo)
+
+      showToast('Exportação gerada com sucesso!')
       setExportarModalOpen(false)
-      
-      // Recarrega o histórico
+
+      // Recarrega o histórico para refletir a exportação recém-gerada
       const histList = await relatoriosService.listarExportacoesRelatorios()
       setHistorico(histList)
-
-      // Alerta amigavelmente que o arquivo_url ficará indisponível
-      triggerIntegrationStatus(
-        'Indisponível',
-        'O relatório foi registrado com sucesso, mas a geração de PDF/CSV depende de microsserviço de impressão externo não integrado.'
-      )
     } catch (err: any) {
       console.error(err)
-      showToast(err.message || 'Erro ao solicitar exportação.')
+      const mensagem = err.message || 'Erro ao exportar relatório.'
+      setExportErro(mensagem)
+      showToast(mensagem)
+
+      // Mesmo em falha, o backend pode ter registrado a tentativa no histórico
+      try {
+        const histList = await relatoriosService.listarExportacoesRelatorios()
+        setHistorico(histList)
+      } catch (histErr) {
+        console.error(histErr)
+      }
+    } finally {
+      setExportLoading(false)
     }
   }
 
@@ -155,11 +254,30 @@ export default function RelatoriosPage() {
     }
   }
 
+  // Aciona o download de um item já pronto do histórico (US2 - T057). Busca uma
+  // signed URL de curta duração via `baixarExportacaoRelatorio` e dispara o
+  // download local a partir dela — nunca reutiliza `arquivo_url` legado.
+  const handleBaixarHistorico = async (item: ExportacaoRelatorioItem) => {
+    if (!item.pode_baixar || baixandoHistoricoId) return
+
+    setBaixandoHistoricoId(item.id)
+    try {
+      const resposta = await relatoriosService.baixarExportacaoRelatorio({ exportacao_id: item.id })
+      const dadosDownload = obterDadosDownload(resposta)
+      dispararDownloadArquivo(dadosDownload.url, dadosDownload.nomeArquivo)
+    } catch (err: any) {
+      console.error(err)
+      showToast(err.message || 'Erro ao baixar exportação.')
+    } finally {
+      setBaixandoHistoricoId(null)
+    }
+  }
+
   const formatarMoeda = (val: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val)
   }
 
-  const formatarData = (dtStr: string) => {
+  const formatarData = (dtStr: string | null) => {
     if (!dtStr) return '-'
     const tIndex = dtStr.indexOf('T')
     const datePart = tIndex !== -1 ? dtStr.substring(0, tIndex) : dtStr
@@ -175,13 +293,6 @@ export default function RelatoriosPage() {
       <div className="relatorios-container">
         {toastMsg && <div className="toast-notification">{toastMsg}</div>}
 
-        {integrationBanner && (
-          <IntegrationPendingState 
-            status={integrationBanner.status} 
-            message={integrationBanner.message} 
-          />
-        )}
-
         <header className="page-header">
           <div>
             <h1 className="page-title">Relatórios Operacionais</h1>
@@ -192,14 +303,16 @@ export default function RelatoriosPage() {
               <button className="btn btn-outline" onClick={() => setAgendarModalOpen(true)}>
                 Agendar Envio
               </button>
-              <button className="btn btn-primary btn-icon" onClick={() => setExportarModalOpen(true)}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" y1="15" x2="12" y2="3" />
-                </svg>
-                Exportar Relatório
-              </button>
+              {categoriaAtiva !== CATEGORIA_SEM_EXPORTACAO && (
+                <button className="btn btn-primary btn-icon" onClick={abrirModalExportar}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                  </svg>
+                  Exportar Relatório
+                </button>
+              )}
             </div>
           )}
         </header>
@@ -342,38 +455,62 @@ export default function RelatoriosPage() {
                   <p className="no-records-msg">Nenhum relatório exportado anteriormente.</p>
                 ) : (
                   <div className="responsive-table-container">
-                    <table className="data-table">
+                    <table className="data-table historico-table">
                       <thead>
                         <tr>
                           <th>Relatório</th>
                           <th>Formato</th>
-                          <th>Data Solicitação</th>
+                          <th>Período</th>
                           <th>Status</th>
-                          <th>Arquivo / Link</th>
+                          <th className="col-solicitante">Solicitante</th>
+                          <th className="col-gerado-em">Gerado em</th>
+                          <th>Expira em</th>
+                          <th>Ação</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {historico.map(hist => (
-                          <tr key={hist.id}>
-                            <td><strong>{hist.tipo}</strong></td>
-                            <td>{hist.formato}</td>
-                            <td>{formatarData(hist.gerado_em)}</td>
-                            <td>
-                              <span className={`status-badge status-${hist.status.toLowerCase()}`}>
-                                {hist.status === 'Indisponível' ? 'Não Configurado' : hist.status}
-                              </span>
-                            </td>
-                            <td>
-                              {hist.arquivo_url ? (
-                                <a href={hist.arquivo_url} target="_blank" rel="noopener noreferrer" className="btn btn-xs">
-                                  Download
-                                </a>
-                              ) : (
-                                <span className="text-muted text-xs">Pendente de Integração</span>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
+                        {historico.map(hist => {
+                          const statusTexto = hist.status_exibicao === 'Indisponível' ? 'Não Configurado' : hist.status_exibicao
+                          const statusClasse = (hist.status_exibicao || '').toLowerCase()
+
+                          return (
+                            <tr key={hist.id}>
+                              <td><strong>{hist.tipo}</strong></td>
+                              <td>{hist.formato}</td>
+                              <td className="periodo-cell">
+                                {formatarData(hist.data_inicial)} - {formatarData(hist.data_final)}
+                              </td>
+                              <td>
+                                <span className={`status-badge status-${statusClasse}`}>
+                                  {statusTexto}
+                                </span>
+                                {hist.status_exibicao === 'Falhou' && hist.erro && (
+                                  <p className="historico-erro-msg">{hist.erro}</p>
+                                )}
+                              </td>
+                              <td className="col-solicitante">{hist.criado_por_nome || '-'}</td>
+                              <td className="col-gerado-em">{formatarData(hist.gerado_em)}</td>
+                              <td>{formatarData(hist.expira_em)}</td>
+                              <td>
+                                {hist.pode_baixar ? (
+                                  <a
+                                    href="#"
+                                    className="btn btn-xs historico-download-link"
+                                    aria-disabled={baixandoHistoricoId === hist.id}
+                                    onClick={(e) => {
+                                      e.preventDefault()
+                                      handleBaixarHistorico(hist)
+                                    }}
+                                  >
+                                    Baixar
+                                  </a>
+                                ) : (
+                                  <span className="text-muted text-xs">Indisponível</span>
+                                )}
+                              </td>
+                            </tr>
+                          )
+                        })}
                       </tbody>
                     </table>
                   </div>
@@ -385,21 +522,61 @@ export default function RelatoriosPage() {
 
         {/* Modal Exportar Relatório */}
         {exportarModalOpen && (
-          <div className="modal-backdrop">
-            <div className="modal-content modal-sm">
+          <div
+            className="modal-backdrop"
+            onMouseDown={(e) => {
+              if (e.target === e.currentTarget) fecharModalExportar()
+            }}
+          >
+            <div
+              className="modal-content modal-sm"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="exportar-modal-title"
+              onKeyDown={handleExportarModalKeyDown}
+            >
               <div className="modal-header">
-                <h3 className="modal-title">Exportar Dados</h3>
-                <button className="modal-close-btn" onClick={() => setExportarModalOpen(false)}>×</button>
+                <h3 className="modal-title" id="exportar-modal-title">Exportar Dados</h3>
+                <button type="button" className="modal-close-btn" aria-label="Fechar" onClick={fecharModalExportar}>×</button>
               </div>
-              <form onSubmit={handleSolicitarExportacao}>
+              <form onSubmit={handleExportar} noValidate>
                 <p className="baixa-info-msg">
-                  Solicitando arquivo consolidado para: <strong>{categoriaAtiva}</strong>.
+                  Gerando arquivo consolidado para: <strong>{categoriaAtiva}</strong>.
                 </p>
 
+                <div className="form-group form-group-row">
+                  <div className="form-field">
+                    <label htmlFor="exportar-data-inicial">Data Inicial</label>
+                    <input
+                      id="exportar-data-inicial"
+                      type="date"
+                      ref={dataInicialInputRef}
+                      value={exportDataInicial}
+                      onChange={(e) => handleDataInicialChange(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="form-field">
+                    <label htmlFor="exportar-data-final">Data Final</label>
+                    <input
+                      id="exportar-data-final"
+                      type="date"
+                      value={exportDataFinal}
+                      onChange={(e) => handleDataFinalChange(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                {exportPeriodoErro && (
+                  <p className="field-error" role="alert">{exportPeriodoErro}</p>
+                )}
+
                 <div className="form-group">
-                  <label>Formato de Exportação</label>
-                  <select 
-                    value={exportFormato} 
+                  <label htmlFor="exportar-formato">Formato de Exportação</label>
+                  <select
+                    id="exportar-formato"
+                    value={exportFormato}
                     onChange={(e) => setExportFormato(e.target.value as any)}
                   >
                     <option value="PDF">Documento PDF (.pdf)</option>
@@ -407,9 +584,15 @@ export default function RelatoriosPage() {
                   </select>
                 </div>
 
+                {exportErro && (
+                  <p className="field-error" role="alert">{exportErro}</p>
+                )}
+
                 <div className="modal-actions">
-                  <button type="button" className="btn btn-secondary" onClick={() => setExportarModalOpen(false)}>Cancelar</button>
-                  <button type="submit" className="btn btn-primary">Solicitar Arquivo</button>
+                  <button type="button" className="btn btn-secondary" onClick={fecharModalExportar}>Cancelar</button>
+                  <button type="submit" className="btn btn-primary" disabled={!!exportPeriodoErro || exportLoading}>
+                    {exportLoading ? 'Gerando...' : 'Gerar e baixar'}
+                  </button>
                 </div>
               </form>
             </div>

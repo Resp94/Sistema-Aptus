@@ -185,3 +185,105 @@
   background: color-mix(in oklab, var(--success), transparent 90%);
   color: var(--success);
 }
+
+.status-expirado {
+  background: color-mix(in oklab, var(--muted), transparent 85%);
+  color: var(--muted);
+}
+
+.status-falhou {
+  background: color-mix(in oklab, var(--danger), transparent 90%);
+  color: var(--danger);
+}
+
+.status-pendente {
+  background: color-mix(in oklab, var(--warn, var(--accent)), transparent 88%);
+  color: var(--warn, var(--accent));
+}
+
+/* Histórico de Exportações - Tabela (US2 - T055/T056) */
+.periodo-cell {
+  white-space: nowrap;
+}
+
+.historico-erro-msg {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-xs);
+  color: var(--danger);
+}
+
+.historico-download-link[aria-disabled='true'] {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* Modal de Exportação (T039/T040) */
+.form-group-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.field-error {
+  margin: calc(var(--space-3) * -1) 0 0;
+  font-size: var(--text-xs);
+  color: var(--danger);
+}
+
+/* Garante que os controles do modal permaneçam alcançáveis por teclado e com
+   foco visível mesmo dentro de .modal-content (herda estilos globais de
+   .form-group, mas reforça o outline em telas muito pequenas). */
+.modal-content input:focus-visible,
+.modal-content select:focus-visible,
+.modal-content button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Responsividade a partir de 320px (US1 - T040): empilha os campos de data,
+   reduz respiro do modal e garante que a área de toque dos botões continue
+   confortável em telas muito estreitas. */
+@media (max-width: 360px) {
+  .modal-content {
+    max-width: 100%;
+  }
+
+  .form-group-row {
+    grid-template-columns: 1fr;
+  }
+
+  .relatorios-workspace {
+    gap: var(--space-4);
+  }
+
+  .previa-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .modal-actions .btn {
+    width: 100%;
+  }
+
+  /* Colunas de histórico secundárias somem em telas muito estreitas; a linha
+     mantém categoria, formato, período, status e ação de download legíveis
+     dentro do container com rolagem horizontal (.responsive-table-container). */
+  .historico-table .col-solicitante,
+  .historico-table .col-gerado-em {
+    display: none;
+  }
+
+  .status-badge {
+    display: inline-block;
+    font-size: var(--text-xs);
+  }
+}

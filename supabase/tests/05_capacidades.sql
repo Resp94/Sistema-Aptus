@@ -11,7 +11,7 @@
 -- segunda migration ser implementada — isso é o comportamento desejado de um
 -- teste escrito antes da implementação.
 --
--- Convenções seguidas (ver supabase/tests/00_helpers.sql, 01_anon_rejeitado.sql,
+-- Convenções seguidas (ver supabase/tests/000_helpers.sql, 01_anon_rejeitado.sql,
 -- 02_rbac_por_perfil.sql, 03_auditoria.sql):
 --   - set_auth_by_email(email) autentica como a persona de teste.
 --   - set_anon() simula um chamador anônimo (role 'anon').
@@ -507,7 +507,7 @@ SELECT reset_auth();
 -- resolvido AQUI, enquanto o role ainda é o padrão (bypassa RLS/GRANT), e
 -- guardado em GUCs de sessão `test.id_*` via set_config(...), lidas depois com
 -- current_setting('test.id_*') em qualquer persona — o mesmo mecanismo que
--- request.jwt.claims já usa em 00_helpers.sql para atravessar trocas de role.
+-- request.jwt.claims já usa em 000_helpers.sql para atravessar trocas de role.
 
 -- Tarefa cujo responsavel_id NÃO é o Técnico (para provar isolamento de
 -- ownership). tarefas.responsavel_id referencia public.usuarios(id), que é o

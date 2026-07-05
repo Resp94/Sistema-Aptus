@@ -99,3 +99,20 @@ Desde a introdução do RBAC por capacidades nomeadas (feature `007-rbac-capacid
 | **Visualizador** | — (não é persona operacional) | Perfil técnico mínimo de signup. Zero capacidades nomeadas de ação. Leitura restrita a Relatórios e às próprias Configurações. Não pode criar, editar, exportar nem disparar nenhum efeito de negócio. |
 
 > **Nota sobre o Visualizador:** o perfil **Visualizador** não representa uma persona de negócio nem é um "modo restrito" atribuível a outras personas. É o valor padrão atribuído a toda conta recém-criada (signup), funcionando como estado anti-escalação até que um Administrador promova o usuário a um dos cinco perfis operacionais (Administrador, Financeiro, Projetos, Comercial ou Técnico). Enquanto estiver como Visualizador, o usuário tem zero capacidades nomeadas e leitura limitada a Relatórios e às suas próprias Configurações — nenhum outro módulo, dashboard ou dado de terceiros é acessível.
+
+## Exportação de relatórios por persona (feature 008)
+
+A exportação real de relatórios (PDF/CSV, geração imediata + histórico com re-download) exige a capacidade nomeada `relatorios.exportar` **e** que a categoria pedida esteja na matriz exportável do perfil. A leitura/prévia de Relatórios continua separada dessa capacidade: um perfil pode ler uma categoria na tela sem poder exportá-la ou baixar seu histórico.
+
+| Perfil técnico | Persona | Categorias exportáveis | Pode ver/baixar histórico |
+|-----------------|---------|-------------------------|----------------------------|
+| **Administrador** | Administrador | Financeiro, DRE, Clientes, Projetos (todas) | Vê e baixa exportações válidas de **todos** os usuários |
+| **Financeiro** | Analista Financeiro | Financeiro, DRE | Vê e baixa apenas as **próprias** exportações |
+| **Projetos** | Gerente de Projetos | Projetos | Vê e baixa apenas as **próprias** exportações |
+| **Visualizador** | — | Nenhuma | Não exporta nem vê histórico (lista sempre vazia) |
+| **Comercial** | Consultor Comercial | Nenhuma | Não exporta nem vê histórico (lista sempre vazia) |
+| **Técnico** | Profissional Técnico | Nenhuma | Não exporta nem vê histórico (lista sempre vazia) |
+
+- **`Personalizado`** nunca é exportável no escopo da feature 008, para nenhum perfil — inclusive Administrador —, por ainda não ter um contrato de conteúdo completo (resumo + detalhes) definido. A tela informa isso explicitamente quando essa categoria é selecionada.
+- Visualizador, Comercial e Técnico podem continuar **lendo** a prévia de Relatórios quando o módulo permitir, mas o botão/ação de exportar fica indisponível para eles, e uma tentativa direta de gerar ou baixar um arquivo é sempre bloqueada no backend (RPC), não apenas escondida na UI.
+- A autorização de categoria por perfil é derivada de uma única fonte (`categoria_relatorio_exportavel`, ver `docs/arquitetura-dados.md`), a mesma matriz usada por `listar_categorias_relatorios` para leitura/prévia — não há uma segunda tabela de regras a manter sincronizada.

@@ -123,7 +123,59 @@ A permissão por módulo (`permissao_modulo`/`obter_permissoes_usuario`) continu
 - A autorização **real** de qualquer ação sensível acontece sempre na RPC, via `tem_capacidade`, nunca no frontend.
 - A presença (ou ausência) de um botão no frontend **nunca substitui** o guard de `tem_capacidade` no backend. Uma chamada direta à RPC sem o botão correspondente deve ser bloqueada do mesmo jeito.
 
-## 8. Referências
+## 8. Exportação de relatórios (feature 008)
+
+A exportação real de relatórios (PDF/CSV) segue um desenho com três camadas: RPCs Postgres para autorização e dados, Storage privado para o arquivo, e uma Edge Function que orquestra as duas. O frontend nunca fala diretamente com o Storage nem gera o arquivo no navegador.
+
+### 8.1 Tabela `public.exportacoes_relatorios`
+
+Tabela pré-existente, estendida pela migration `20260704235640_exportar_relatorios.sql` com: `data_inicial`/`data_final` (period solicitado), `arquivo_path`/`arquivo_nome`/`mime_type`/`tamanho_bytes`/`hash_sha256` (metadados do arquivo persistido), `expira_em` (`gerado_em + 12 meses`), `erro` (mensagem sanitizada, até 500 caracteres, quando o status é `Falhou`), e `criado_em`/`atualizado_em`.
+
+- As novas colunas são `NULLABLE` para não quebrar as linhas legadas com status `Indisponível` (nunca tiveram período); todo registro novo criado por `iniciar_exportacao_relatorio` sempre preenche `data_inicial`/`data_final`, então na prática são obrigatórias para o fluxo novo.
+- `arquivo_url` permanece na tabela apenas por retrocompatibilidade; o fluxo novo nunca lê nem grava esse campo.
+- Constraints: `data_final >= data_inicial` (quando ambos não nulos) e `mime_type IN ('application/pdf', 'application/zip')` (quando não nulo).
+- Índices recomendados por `data-model.md`: `(criado_por, gerado_em desc nulls last, criado_em desc)`, `(tipo, gerado_em desc nulls last)`, `(status)`, `(expira_em)`.
+
+### 8.2 Bucket privado `relatorios-exportados`
+
+- Criado com `public = false`. Não existe nenhuma policy de leitura/escrita para o papel `anon`.
+- Única policy de `storage.objects`: `SELECT` para `authenticated` quando o usuário tem `relatorios.exportar`, a categoria do registro ainda é exportável para o perfil atual (via `categoria_relatorio_exportavel`) e o usuário é Administrador ou dono do registro (`criado_por`). Essa policy é defesa em profundidade — o fluxo principal de leitura usa signed URLs geradas pela Edge Function com service role, que ignora RLS.
+- Nenhuma policy de `INSERT`/`UPDATE`/`DELETE` é concedida a `authenticated`/`anon`: apenas a Edge Function, via service role, grava objetos nesse bucket.
+- Path do objeto: `<tipo-em-minúsculo>/<yyyy>/<exportacao_id>/<arquivo_nome>`, onde `<yyyy>` vem do timestamp de geração (`gerado_em`), não do período do relatório — mantém a retenção de 12 meses coerente com a data em que o objeto foi criado.
+- Nome do arquivo: `relatorio-<tipo>-<data_inicial>-<data_final>-<id-curto-6-chars>.<pdf|zip>`.
+
+### 8.3 RPCs principais
+
+- **`categoria_relatorio_exportavel(p_tipo text, p_perfil text) RETURNS boolean`**: matriz de categoria exportável por perfil (Administrador: Financeiro/DRE/Clientes/Projetos; Financeiro: Financeiro/DRE; Projetos: Projetos; demais perfis: nenhuma). É o helper canônico derivado da mesma fonte de `listar_categorias_relatorios`, usado tanto na geração quanto no download.
+- **`validar_periodo_exportacao(p_data_inicial date, p_data_final date)`**: valida datas obrigatórias, `data_final >= data_inicial` e período máximo de 12 meses corridos inclusivos (`2026-01-01`–`2026-12-31` permitido; `2026-01-01`–`2027-01-01` bloqueado).
+- **`iniciar_exportacao_relatorio(p_tipo, p_formato, p_data_inicial, p_data_final) RETURNS jsonb`**: `SECURITY DEFINER`. Valida `auth.uid()`, `tem_capacidade('relatorios.exportar')`, perfil ativo, categoria dentro do escopo (`Financeiro`/`DRE`/`Clientes`/`Projetos`, senão `INVALID_CATEGORY`), categoria exportável para o perfil (senão `PERMISSION_DENIED`), formato (`PDF`/`CSV`) e período. Insere a linha com status `Pendente`, monta o payload completo (resumo + detalhes) chamando o builder da categoria (`montar_payload_relatorio_financeiro/dre/clientes/projetos`) e retorna tudo em uma única chamada.
+- **`concluir_exportacao_relatorio(p_exportacao_id, p_arquivo_path, p_arquivo_nome, p_mime_type, p_tamanho_bytes, p_hash_sha256)`**: chamada pela Edge Function após o upload bem-sucedido. Valida ownership (`criado_por = auth.uid()`) e status `Pendente`, marca `Pronto`, define `expira_em = now() + 12 meses` e calcula `duracao_ms` a partir de `criado_em`.
+- **`falhar_exportacao_relatorio(p_exportacao_id, p_erro)`**: marca `Falhou`, sanitiza a mensagem de erro (trunca em 500 caracteres) e nunca simula sucesso.
+- **`autorizar_download_exportacao_relatorio(p_exportacao_id) RETURNS jsonb`**: valida capacidade, perfil ativo, categoria ainda exportável, escopo de acesso ao registro (Administrador vê/baixa tudo; Financeiro e Projetos apenas os próprios), status `Pronto` e não expirado. Retorna `arquivo_path`/`arquivo_nome`/`mime_type`/`expira_em` para a Edge Function assinar a URL — nunca retorna a URL em si.
+- **`listar_exportacoes_relatorios(p_tipo text DEFAULT NULL) RETURNS TABLE(...)`**: read model do histórico com `status_exibicao` computado (`Expirado` quando `status = 'Pronto'` e `expira_em < now()`) e `pode_baixar` computado por status, validade, capacidade e categoria exportável atual. Visualizador, Comercial e Técnico recebem lista vazia (sem lançar exceção) por não terem histórico de exportação no escopo 008.
+- A RPC legada `solicitar_exportacao_relatorio` permanece apenas por compatibilidade (comentário `DEPRECATED` na função); não participa do fluxo novo e continua sempre inserindo status `Indisponível` sem simular sucesso.
+
+### 8.4 Fluxo de geração e download (Edge Function `relatorios-exportacao`)
+
+A função roda em Deno, aceita `POST` com `{ action: 'gerar' | 'download', ... }` e autentica via `Authorization: Bearer <jwt do usuário>`.
+
+- **`gerar`**: valida os campos de entrada, chama `iniciar_exportacao_relatorio` com um client Supabase criado com o JWT do usuário (não service role), renderiza o arquivo (`pdf-lib` para PDF; `fflate` para ZIP com `resumo.csv` + `detalhes.csv` quando a categoria tem os dois conjuntos), faz upload no bucket privado com um client de **service role** (criado só nesse ponto, nunca reaproveitado para chamar RPCs de negócio), chama `concluir_exportacao_relatorio` ou `falhar_exportacao_relatorio`, gera uma signed URL de 600 segundos (10 minutos) e retorna `{ exportacao, download_url, download_expires_in: 600 }`. Antes de renderizar, aplica o limite de volume operacional comum (até 5.000 linhas detalhadas ou 10 MB antes de compressão); acima disso, falha com `EXPORT_TOO_LARGE` sem gerar arquivo parcial.
+- **`download`**: chama `autorizar_download_exportacao_relatorio` com o JWT do usuário e, se autorizado, usa o client de service role apenas para assinar uma nova URL de 600 segundos para o `arquivo_path` que a RPC retornou — nunca deriva o path por conta própria.
+- Nenhuma URL pública ou permanente é criada ou retornada em nenhum dos dois fluxos; o service role nunca é usado para chamar as RPCs de negócio (sempre client user-scoped, preservando os checks de `auth.uid()`/ownership).
+- Em caso de falha após o upload ter sido concluído mas a conclusão no banco falhar, a função tenta remover o objeto órfão do Storage (best-effort) antes de reportar a falha.
+
+### 8.5 Retenção e expiração
+
+- Validade de negócio: 12 meses a partir de `gerado_em`. `expira_em` é persistido no momento da conclusão.
+- `Expirado` é um status de exibição **computado** em `listar_exportacoes_relatorios` (não persistido como `status`), evitando a necessidade de um cron/job para atualizar registros.
+- Download de um registro `Expirado` é sempre negado por `autorizar_download_exportacao_relatorio`, com evento de auditoria `exportacao_download_negado`.
+- Signed URLs (`download_expires_in`) têm vida curta de 600 segundos, independente da validade de 12 meses do registro — a cada novo pedido de download (imediato ou pelo histórico) uma nova signed URL é gerada sob demanda.
+
+### 8.6 Observabilidade
+
+Cada evento de exportação/download é registrado em `public.audit_log` (tabela de auditoria reaproveitada, com coluna `detalhes jsonb` adicionada para os campos estruturados) via `registrar_evento_exportacao`, com os eventos `exportacao_relatorio_iniciada`, `exportacao_relatorio_concluida`, `exportacao_relatorio_falhou`, `exportacao_download_autorizado` e `exportacao_download_negado`. Cada registro traz `exportacao_id`, usuário, tipo, formato, período, status, `duracao_ms`, `tamanho_bytes` (quando houver arquivo) e erro sanitizado (quando aplicável). A Edge Function também emite logs estruturados equivalentes (JSON por linha, via `console.log`/`console.error`) como camada adicional grepável, sem substituir os eventos gravados pela RPC.
+
+## 9. Referências
 
 - [contracts/guardrail-standard.md](../specs/006-rpc-security-hardening/contracts/guardrail-standard.md)
 - [contracts/rpc-signatures.md](../specs/006-rpc-security-hardening/contracts/rpc-signatures.md)

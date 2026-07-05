@@ -17,12 +17,56 @@ const HELPERS = new Set([
   'existe_perfil_admin',
   'tem_capacidade',
   'obter_capacidades_usuario',
+  // Feature 008 (exportar-relatorios, T072): categoria_relatorio_exportavel
+  // e validar_periodo_exportacao são primitivas puras de
+  // autorização/validação (perfil x categoria; regras de período),
+  // chamadas internamente por iniciar_exportacao_relatorio/
+  // autorizar_download_exportacao_relatorio/listar_exportacoes_relatorios —
+  // mesmo papel de guard que permissao_modulo/tem_capacidade, não exigem
+  // checar a si mesmas. Continuam exigindo SECURITY DEFINER + guarda de
+  // identidade, que ambas possuem.
+  'categoria_relatorio_exportavel',
+  'validar_periodo_exportacao',
+  // Feature 008: registrar_evento_exportacao é uma função interna de
+  // observabilidade (grava em audit_log), mesma natureza de
+  // registrar_evento_auditoria, mas sempre exige usuário autenticado — por
+  // isso é HELPER (não precisa de tem_capacidade própria) em vez de entrar
+  // em AUDIT_EXCEPTIONS (que exigiria GRANT também para anon, sem sentido
+  // aqui pois a função sempre rejeita chamadas anônimas).
+  'registrar_evento_exportacao',
 ]);
 // Funções admin-only guardadas por existe_perfil_admin em vez de
 // permissao_modulo/tem_capacidade (gestão de perfis de terceiros não é uma
 // permissão de módulo nem uma capacidade nomeada comum). Ver FR-005 /
 // contracts/rpc-signatures.md.
 const ADMIN_GATED = new Set(['atualizar_usuario_perfil']);
+
+// Feature 008 (exportar-relatorios, T072): concluir_exportacao_relatorio e
+// falhar_exportacao_relatorio autorizam por posse do registro
+// (`criado_por = auth.uid()`) em vez de capacidade nomeada — decisão
+// documentada na migration 20260704235640_exportar_relatorios.sql (#7):
+// a Edge Function sempre chama estas RPCs com o JWT do usuário dono do
+// processo, e só quem já passou por tem_capacidade('relatorios.exportar')
+// em iniciar_exportacao_relatorio pode ser dono de uma linha 'Pendente'.
+const OWNERSHIP_GATED = new Set([
+  'concluir_exportacao_relatorio',
+  'falhar_exportacao_relatorio',
+]);
+
+// Feature 008 (exportar-relatorios, T072): os payload builders de relatório
+// são STABLE (logo, classificados como "read" pela heurística), mas a regra
+// de negócio que os autoriza é a capacidade nomeada
+// 'relatorios.exportar' (contracts/rpc-exportacao-relatorios.md), não uma
+// permissão de leitura do módulo 'relatorios' — usar permissao_modulo aqui
+// vazaria dados detalhados de exportação para perfis que só têm leitura de
+// preview (ex.: Visualizador), que não podem exportar. Por isso exigem
+// tem_capacidade(...) no corpo em vez de permissao_modulo(...).
+const CAPABILITY_GATED_READS = new Set([
+  'montar_payload_relatorio_financeiro',
+  'montar_payload_relatorio_dre',
+  'montar_payload_relatorio_clientes',
+  'montar_payload_relatorio_projetos',
+]);
 
 function normalizeArgs(args) {
   if (!args || !args.trim()) return '';
@@ -152,10 +196,12 @@ function checkFunction(fn, grants) {
 
   const isHelper = HELPERS.has(name) || ADMIN_GATED.has(name);
   const isAudit = AUDIT_EXCEPTIONS.has(name);
+  const isOwnershipGated = OWNERSHIP_GATED.has(name);
+  const isCapabilityGatedRead = CAPABILITY_GATED_READS.has(name);
 
-  if (!isHelper && !isAudit) {
+  if (!isHelper && !isAudit && !isOwnershipGated) {
     const kind = classifyFunction(header);
-    if (kind === 'read') {
+    if (kind === 'read' && !isCapabilityGatedRead) {
       if (!/permissao_modulo\s*\(/i.test(body)) {
         issues.push('missing permissao_modulo check');
       }
@@ -232,6 +278,8 @@ export {
   AUDIT_EXCEPTIONS,
   HELPERS,
   ADMIN_GATED,
+  OWNERSHIP_GATED,
+  CAPABILITY_GATED_READS,
   normalizeArgs,
   funcKey,
   parseMigrations,
