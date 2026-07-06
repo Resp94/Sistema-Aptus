@@ -1,0 +1,9 @@
+{
+  "workflow": "speckit",
+  "specName": "009-promover-producao-supabase",
+  "branch": "009-promover-producao-supabase",
+  "selectedAt": "2026-07-06T13:15:16.667Z",
+  "currentStep": "specify",
+  "status": "draft",
+  "history": []
+}
