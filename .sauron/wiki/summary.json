@@ -20,8 +20,8 @@
     "path": "knowledge/architecture.md",
     "id": "file-architecture",
     "domainId": "domain-knowledge",
-    "contentLength": 18531,
-    "contentHash": "383184a36cc7b594c1ea482f1771fffe0cd2b75cf2a837aae829dc5840551221"
+    "contentLength": 65291,
+    "contentHash": ""
   },
   {
     "type": "file",
@@ -50,8 +50,8 @@
     "path": "knowledge/module-data-schema.md",
     "id": "file-module-data-schema",
     "domainId": "domain-knowledge",
-    "contentLength": 2732,
-    "contentHash": "2e89a09d33d6074b10606752d28f121935841a1fc77ec46ae32f95051603f00f"
+    "contentLength": 5961,
+    "contentHash": ""
   },
   {
     "type": "folder",
@@ -74,7 +74,7 @@
     "path": "modules/modulo-clientes-fornecedores.md",
     "id": "file-module-clientes",
     "domainId": "domain-modules",
-    "contentLength": 2235,
+    "contentLength": 2495,
     "contentHash": ""
   },
   {
@@ -84,7 +84,7 @@
     "path": "modules/modulo-projetos-e-kanban.md",
     "id": "file-module-projetos",
     "domainId": "domain-modules",
-    "contentLength": 2378,
+    "contentLength": 2606,
     "contentHash": ""
   },
   {
@@ -94,7 +94,7 @@
     "path": "modules/feature-005-demais-telas-perfis.md",
     "id": "file-feature-005-demais-telas-perfis",
     "domainId": "domain-modules",
-    "contentLength": 4600,
+    "contentLength": 4706,
     "contentHash": ""
   },
   {

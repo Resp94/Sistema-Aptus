@@ -469,12 +469,51 @@ Não faz parte desta página:
   - Alterado: `.agents/project-memory/009-promover-producao-supabase.md`
   - Alterado: `.sauron/wiki/knowledge/architecture.md`
 
+### 2026-07-06 — Validações locais e backup para promoção Supabase (Fase 2)
+- **What was done**: Conclusão da Fase 2 (Fundacional / Pré-requisitos Bloqueantes) do plano de promoção Supabase. Validamos o CLI do Supabase (versão `2.109.0`) e rodamos localmente as validações e testes: testes de banco (`npm run db:test` - 369 testes bem-sucedidos em 7 arquivos), testes do frontend (`npm run test` - 113 testes em 12 arquivos), compilação (`npm run build` bem-sucedida em 1.50s) e auditoria de segurança (`npm run audit` - 93/93 RPC guardrails, sem from nos serviços e sem raw_user_meta_data). Adicionalmente, registramos a evidência do Backup de Produção manual recuperável no painel do Supabase.
+- **Why it was done**: Atender aos requisitos de qualidade e aos gates de segurança estabelecidos em `contracts/promotion-gates.md` e `contracts/documentation-and-recovery.md` antes de efetuar qualquer conexão ou mutação contra o banco de dados remoto de produção.
+- **Impact on the system**: O checkpoint local e a evidência de backup foram aprovados. O lote de promoção está validado e pronto para avançar para a Fase 3 (revisão de dry-run e migrations no Supabase Cloud de produção `lpwnaxlczwntylcmgotm`).
+- **Files affected**:
+  - Alterado: `.agents/project-memory/009-promover-producao-supabase.md`
+  - Alterado: `specs/009-promover-producao-supabase/tasks.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-07-06 — Promoção de schema Supabase para produção (Fase 3 / US1)
+- **What was done**: Execução e validação da Fase 3 (User Story 1 - Promoção de Schema com Revisão Prévia) do plano de promoção. Conectamos ao projeto de produção `lpwnaxlczwntylcmgotm` e confirmamos que o banco de dados remoto estava limpo e livre de conflitos de migração. Executamos o dry-run do schema (`npx supabase db push --dry-run`) e revisamos que apenas objetos planejados seriam criados (sem dados locais, seeds ou dumps). Solicitamos e registramos a aprovação manual de Jonathas e aplicamos com sucesso as 26 migrations locais do backend via `npx supabase db push`.
+- **Why it was done**: Garantir a promoção de schema sob total controle, documentando o consentimento explícito do usuário e validando previamente o banco remoto de destino para evitar drifts ou corrupções irreversíveis no ambiente de produção.
+- **Impact on the system**: O banco de dados remoto de produção agora possui o mesmo schema do banco local, incluindo tabelas, políticas de segurança (RLS), Storage privado e RPCs do backend de negócio, pronto para a publicação da Edge Function.
+- **Files affected**:
+  - Alterado: `.agents/project-memory/009-promover-producao-supabase.md`
+  - Alterado: `specs/009-promover-producao-supabase/tasks.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-07-06 — Deploy de Edge Function, secrets e Smoke Test em produção (Fase 4 / US2)
+- **What was done**: Conclusão da Fase 4 (User Story 2) do plano de promoção. Publicamos a Edge Function `relatorios-exportacao` no Supabase Cloud remoto de produção `lpwnaxlczwntylcmgotm` mantendo a verificação nativa de JWT. Verificamos a presença dos 7 secrets padrão no ambiente remoto e cadastramos dois usuários temporários de teste via query SQL (autorizado e bloqueado). Executamos com sucesso o Smoke Test remoto validando: exportação autorizada com download de URL privada assinado (ST-001/ST-003) em 1.67 segundos, bloqueio não autorizado (ST-002) com HTTP 403 Forbidden, e a remoção completa e verificada dos usuários temporários após os testes (ST-004).
+- **Why it was done**: Validar de forma independente a estabilidade e segurança da Edge Function e das regras de controle de acesso (RBAC + RLS) em ambiente de produção real antes de apontar o frontend local para a nuvem.
+- **Impact on the system**: A Edge Function `relatorios-exportacao` está implantada e 100% testada e estável em produção. O gate de Smoke Test foi aprovado com sucesso, autorizando a Fase 5 (alteração da configuração local no `.env.local`).
+- **Files affected**:
+  - Alterado: `.agents/project-memory/009-promover-producao-supabase.md`
+  - Alterado: `specs/009-promover-producao-supabase/tasks.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-07-06 — Apontamento da configuração local para produção (Fase 5 / US3)
+- **What was done**: Conclusão da Fase 5 do plano de promoção. Atualizamos o arquivo `.env.local` na raiz para apontar para a API de produção do Supabase (`lpwnaxlczwntylcmgotm.supabase.co`) usando a chave pública anônima de produção, com `VITE_APP_ENV=production`. Inspecionamos o `.env.local` e confirmamos a total ausência de chaves de serviço ou segredos privados. O build do frontend (`npm run build`) foi concluído com sucesso em 1.06s e a homologação operacional local atestou os fluxos de login, rota autorizada e download de relatórios privados apontando para a nuvem de produção.
+- **Why it was done**: Direcionar a aplicação local do desenvolvedor para se comunicar de forma segura e direta com o banco de dados remoto de produção (após a homologação completa da infraestrutura remota na Fase 4), viabilizando as validações e compilações finais do frontend.
+- **Impact on the system**: O frontend local está homologado e aponta para a produção. O gate final da US3 foi concluído com sucesso, validando a estabilidade da aplicação sem necessidade de rollback.
+- **Files affected**:
+  - Alterado: `.env.local`
+  - Alterado: `.agents/project-memory/009-promover-producao-supabase.md`
+  - Alterado: `specs/009-promover-producao-supabase/tasks.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+
+
 ## 5. Current State
 
 - **Frontend atual**: Aplicação SPA baseada em Vite + React + TypeScript instalada na raiz do repositório. As dependências (React 19, Supabase JS, ESLint, Prettier e Vitest) estão instaladas.
 - **Telas legadas**: Arquivos HTML legados (ex.: `clientes.html`, `dashboard.html`) foram preservados e o `index.html` original foi renomeado para `index.legacy.html` para servir de referência durante a migração para componentes React.
 - **Ambiente local de Banco/Backend**: Supabase CLI + Docker ativo e orquestrando o Postgres local, Auth, Storage e Studio.
-- **Integração Frontend-Backend**: Conectados por meio do arquivo `src/services/supabase.ts`, inicializado a partir do arquivo de configuração `.env.local` que contém a chave anônima local.
+- **Integração Frontend-Backend**: Conectados por meio do arquivo `src/services/supabase.ts`, inicializado a partir do arquivo de configuração `.env.local` que aponta para a API de produção do Supabase (URL e chave pública anônima) sob `VITE_APP_ENV=production`.
 - **Testes**: Vitest configurado para a pasta `src` com smoke test de integração REST passando.
 - **CI/CD / Hospedagem**: Cloudflare Pages definida e documentada em `docs/stack.md` como o destino do deploy do frontend compilado (`dist/`).
 
