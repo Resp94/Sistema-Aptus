@@ -65,3 +65,27 @@ Em 2026-07-06, por deliberacao do responsavel, foi adotada a abordagem estrita p
 - CHK015: fechado ao alinhar `Lote de Promocao` com a sequencia completa de gates: destino, backup, historico remoto, dry-run, aprovacao manual, schema, Edge Function, secrets, smoke test e `.env.local`.
 
 Resultado final: `plan-quality.md` ficou com 45/45 itens atendidos. Nenhum comando de Supabase Cloud, mutacao de producao ou alteracao de `.env.local` foi executado nesta deliberacao.
+
+## Geracao de tarefas
+
+Em 2026-07-06, foi executado o fluxo `/speckit-tasks` para `specs/009-promover-producao-supabase/plan.md`, gerando `specs/009-promover-producao-supabase/tasks.md`.
+
+O backlog possui 56 tarefas:
+- Setup: 7 tarefas.
+- Foundational: 8 tarefas.
+- US1 - Promover backend com revisao previa: 10 tarefas.
+- US2 - Validar exportacao remota antes de trocar configuracao local: 13 tarefas.
+- US3 - Apontar configuracao local para producao apos validacao: 11 tarefas.
+- Polish e cross-cutting: 7 tarefas.
+
+As tarefas preservam os gates deliberados: nenhuma mutacao de producao antes de backup/snapshot documentado, revisao remota, dry-run e aprovacao manual explicita; nenhum `.env.local` para producao antes de Edge Function, secrets, smoke test remoto e limpeza de usuarios temporarios. A geracao de tarefas foi documental; nenhum comando de Supabase Cloud, mutacao de producao ou alteracao de `.env.local` foi executado.
+
+## Clarificacao das tarefas em pt-BR
+
+Em 2026-07-06, o arquivo `specs/009-promover-producao-supabase/tasks.md` foi reescrito em pt-BR para reduzir ambiguidade operacional e alinhar a linguagem das tarefas ao restante da spec. A reescrita manteve os 56 IDs, labels de user story, caminhos de arquivos, gates de seguranca e pontos de parada. Nenhuma tarefa operacional foi executada nesta etapa.
+
+## Correcoes pos-analise das tarefas
+
+Em 2026-07-06, apos `/speckit-analyze`, o backlog `tasks.md` foi refinado sem alterar a contagem de 56 tarefas. Foram corrigidos cinco pontos: backup local seguro de `.env.local` para rollback, validacao do limite de 10 segundos no smoke de exportacao autorizada, evidencia aceitavel para JWT habilitado na Edge Function, personas/capacidades explicitas para usuarios temporarios autorizados e bloqueados, e revisao de segredos que inspeciona `.env.local` diretamente em vez de depender apenas de `git diff`.
+
+Nenhum comando de Supabase Cloud, mutacao de producao, criacao de usuario ou alteracao real de `.env.local` foi executado nesta etapa.

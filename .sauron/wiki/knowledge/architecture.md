@@ -442,6 +442,33 @@ Não faz parte desta página:
   - Alterado: `.agents/project-memory/009-promover-producao-supabase.md`
   - Alterado: `.sauron/wiki/knowledge/architecture.md`
 
+### 2026-07-06 — Geracao de tarefas da promocao Supabase
+- **What was done**: Foi executado o fluxo `speckit-tasks` para `specs/009-promover-producao-supabase/plan.md`, gerando `specs/009-promover-producao-supabase/tasks.md` com 56 tarefas. As tarefas foram organizadas em Setup, Foundational, tres user stories e Polish, preservando paradas explicitas antes de `db push`, deploy, smoke test e troca de `.env.local`.
+- **Why it was done**: Transformar a especificacao, plano, modelo operacional, contratos e quickstart em backlog executavel, mantendo rastreabilidade por user story e gates de seguranca para producao real.
+- **Impact on the system**: Nenhum comando de Supabase Cloud, mutacao de producao ou alteracao de `.env.local` foi executado. A proxima fase passa a ter tarefas operacionais com evidencia obrigatoria em `.agents` e `.sauron`, aprovacao manual apos dry-run e bloqueio da troca de `.env.local` ate smoke test remoto aprovado.
+- **Files affected**:
+  - Criado: `specs/009-promover-producao-supabase/tasks.md`
+  - Alterado: `.agents/project-memory/009-promover-producao-supabase.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-07-06 — Clarificacao das tarefas da promocao Supabase em pt-BR
+- **What was done**: O backlog `specs/009-promover-producao-supabase/tasks.md` foi reescrito em pt-BR, mantendo os 56 IDs, labels por user story, caminhos de arquivos, gates de aprovacao e pontos de parada.
+- **Why it was done**: Reduzir ambiguidade operacional e alinhar a linguagem das tarefas ao restante dos artefatos da feature antes de qualquer implementacao ou execucao de comandos de producao.
+- **Impact on the system**: Nenhum comando de Supabase Cloud, mutacao de producao ou alteracao de `.env.local` foi executado. O impacto e documental: o backlog ficou mais claro para execucao futura em portugues.
+- **Files affected**:
+  - Alterado: `specs/009-promover-producao-supabase/tasks.md`
+  - Alterado: `.agents/project-memory/009-promover-producao-supabase.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-07-06 — Correcoes pos-analise das tarefas da promocao Supabase
+- **What was done**: Apos `/speckit-analyze`, o backlog `specs/009-promover-producao-supabase/tasks.md` foi refinado sem alterar a contagem de 56 tarefas. Foram adicionados criterios para backup local seguro de `.env.local`, rollback a partir desse backup, medicao do limite de 10 segundos no smoke de exportacao autorizada, evidencia aceitavel de JWT habilitado na Edge Function, personas/capacidades explicitas para usuarios temporarios e revisao de segredos com inspecao direta de `.env.local`.
+- **Why it was done**: Fechar lacunas de execucao antes de `/speckit-implement`, especialmente rollback seguro de configuracao local, validacao de performance declarada no plano e reducao de ambiguidade em seguranca/autorizacao.
+- **Impact on the system**: Nenhum comando de Supabase Cloud, mutacao de producao, criacao de usuario ou alteracao real de `.env.local` foi executado. O impacto e documental e melhora a seguranca operacional da futura execucao.
+- **Files affected**:
+  - Alterado: `specs/009-promover-producao-supabase/tasks.md`
+  - Alterado: `.agents/project-memory/009-promover-producao-supabase.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
 ## 5. Current State
 
 - **Frontend atual**: Aplicação SPA baseada em Vite + React + TypeScript instalada na raiz do repositório. As dependências (React 19, Supabase JS, ESLint, Prettier e Vitest) estão instaladas.
