@@ -65,6 +65,18 @@ Não faz parte desta página:
   - *Prós*: Download imediato, histórico reutilizável, rastreabilidade, experiência consistente para PDF e CSV.
   - *Contras*: Exige contrato de dados completos por categoria, armazenamento de arquivos, política de expiração, validações adicionais de autorização no download posterior, geração de pacote para CSV quando houver resumo e detalhes e manutenção de uma Edge Function server-side.
 
+### DA-005 — Promocao controlada do backend Supabase para producao
+- **Problema**: A feature 008 foi validada localmente, mas a Edge Function precisa ser verificada contra o Supabase Cloud real. O projeto de destino `lpwnaxlczwntylcmgotm` foi confirmado como producao real, entao a subida nao pode ser tratada como sincronizacao simples de ambiente local.
+- **Options Considered**:
+  - Promover somente migrations versionadas, Edge Function e configuracao validada com gates manuais.
+  - Copiar dump completo do banco local para producao.
+  - Aplicar SQL manual no Dashboard.
+- **Choice**: Promover apenas backend versionado e validado, com confirmacao de destino, backup/snapshot recuperavel, dry-run, aprovacao manual explicita, `db push` sem seed/dados locais, deploy separado da Edge Function, smoke test remoto com usuarios temporarios e troca de `.env.local` somente apos validacao remota completa.
+- **Justification**: Producao real exige rastreabilidade e pontos de parada. Migrations preservam historico; dry-run e aprovacao manual reduzem risco de mudancas inesperadas; backup/snapshot protege contra falha irreversivel; smoke test com usuarios temporarios valida Auth/RPC/RLS/Storage/Edge Function sem depender de usuarios reais ainda inexistentes.
+- **Trade-offs**:
+  - *Prós*: Menor risco operacional, sem transporte de dados locais, validacao real de autorizacao e limpeza documentada dos usuarios temporarios.
+  - *Contras*: Processo mais lento, exige aprovacao manual e confirmacao externa de backup/snapshot antes da aplicacao.
+
 ## 4. Change History
 
 ### 2026-06-26 — Implementação e ativação da nova stack tecnológica
@@ -376,6 +388,58 @@ Não faz parte desta página:
   - Alterado: `docs/arquitetura-dados.md`
   - Alterado: `docs/personas.md`
   - Alterado: `.agents/project-memory/008-exportar-relatorios.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-07-06 — Especificacao e planejamento da promocao Supabase para producao
+- **What was done**: Foi criada e planejada a feature `009-promover-producao-supabase`, definindo o processo de promocao do backend validado para o projeto Supabase de producao `lpwnaxlczwntylcmgotm`. A especificacao e o plano exigem backup/snapshot recuperavel, dry-run, aprovacao manual explicita, exclusao de seed/dump/dados locais, deploy separado da Edge Function `relatorios-exportacao`, smoke test remoto com usuarios temporarios e troca de `.env.local` somente apos validacao completa.
+- **Why it was done**: Preparar a verificacao real das Edge Functions em producao sem transformar uma promocao sensivel em execucao direta de comandos. O objetivo e preservar rastreabilidade, seguranca de chaves, autorizacao por usuario e possibilidade de recuperacao.
+- **Impact on the system**: Nenhuma mutacao em producao foi executada nesta etapa. O contexto ativo do agente passa a apontar para o plano da feature 009, e a proxima etapa deve gerar tarefas operacionais antes de qualquer `link`, `db push`, deploy ou alteracao de `.env.local`.
+- **Files affected**:
+  - Criado: `specs/009-promover-producao-supabase/spec.md`
+  - Criado: `specs/009-promover-producao-supabase/checklists/requirements.md`
+  - Criado/Atualizado: `specs/009-promover-producao-supabase/plan.md`
+  - Criado: `specs/009-promover-producao-supabase/research.md`
+  - Criado: `specs/009-promover-producao-supabase/data-model.md`
+  - Criado: `specs/009-promover-producao-supabase/quickstart.md`
+  - Criado: `specs/009-promover-producao-supabase/contracts/promotion-gates.md`
+  - Criado: `specs/009-promover-producao-supabase/contracts/smoke-test.md`
+  - Criado: `specs/009-promover-producao-supabase/contracts/env-local-switch.md`
+  - Criado: `specs/009-promover-producao-supabase/contracts/documentation-and-recovery.md`
+  - Criado: `.agents/project-memory/009-promover-producao-supabase.md`
+  - Alterado: `.specify/feature.json`
+  - Alterado: `AGENTS.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-07-06 — Checklist de qualidade do plano de promocao Supabase
+- **What was done**: Foi executado o fluxo `speckit-checklist` sobre `specs/009-promover-producao-supabase/plan.md`, criando `specs/009-promover-producao-supabase/checklists/plan-quality.md` com 45 itens de revisao de qualidade.
+- **Why it was done**: Validar se o plano operacional de producao esta completo, claro, consistente, mensuravel e pronto para virar tarefas antes de qualquer comando de producao. O checklist cobre gates de dry-run/aprovacao, backup/snapshot, exclusao de seed/dados locais, Edge Function/secrets, smoke test com usuarios temporarios, troca de `.env.local`, rollback e documentacao obrigatoria.
+- **Impact on the system**: Nenhum codigo funcional ou ambiente de producao foi alterado. A feature 009 ganhou um gate documental adicional antes de `/speckit-tasks`.
+- **Files affected**:
+  - Criado: `specs/009-promover-producao-supabase/checklists/plan-quality.md`
+  - Alterado: `.agents/project-memory/009-promover-producao-supabase.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-07-06 — Verificacao dos checklists da promocao Supabase
+- **What was done**: Os checklists da feature 009 foram verificados contra spec, plano, research, data model, quickstart e contratos. `requirements.md` ficou com 18/18 itens atendidos e `plan-quality.md` ficou com 42/45 itens atendidos.
+- **Why it was done**: Confirmar a qualidade documental antes de transformar o plano em tarefas operacionais, mantendo pontos de risco abertos em vez de autorizar execucao prematura em producao.
+- **Impact on the system**: Nenhum comando de Supabase Cloud, mutacao de producao ou alteracao de `.env.local` foi executado. Permanecem abertos CHK008, CHK010 e CHK015 para detalhar evidencia minima de backup/snapshot, criterios de parada por drift/historico conflitante e alinhamento do estado `Lote de Promocao` com os gates de promocao.
+- **Files affected**:
+  - Verificado: `specs/009-promover-producao-supabase/checklists/requirements.md`
+  - Alterado: `specs/009-promover-producao-supabase/checklists/plan-quality.md`
+  - Alterado: `.agents/project-memory/009-promover-producao-supabase.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-07-06 — Fechamento dos gaps do checklist de promocao Supabase
+- **What was done**: Foi adotada a abordagem estrita para fechar CHK008, CHK010 e CHK015 da feature 009. A spec, o modelo operacional, o contrato de gates e o quickstart passaram a exigir evidencia minima de backup/snapshot recuperavel, stop conditions concretas para drift/historico remoto conflitante e transicao completa do `Lote de Promocao` por todos os gates. O checklist `plan-quality.md` foi atualizado para 45/45 itens atendidos.
+- **Why it was done**: Remover ambiguidades antes de `/speckit-tasks`, evitando que uma promocao para producao real avance com criterios vagos de backup, revisao remota ou estado operacional.
+- **Impact on the system**: Nenhum comando de Supabase Cloud, mutacao de producao ou alteracao de `.env.local` foi executado. O impacto e documental: a proxima etapa pode gerar tarefas com gates mais objetivos e pontos de parada verificaveis.
+- **Files affected**:
+  - Alterado: `specs/009-promover-producao-supabase/spec.md`
+  - Alterado: `specs/009-promover-producao-supabase/data-model.md`
+  - Alterado: `specs/009-promover-producao-supabase/quickstart.md`
+  - Alterado: `specs/009-promover-producao-supabase/contracts/promotion-gates.md`
+  - Alterado: `specs/009-promover-producao-supabase/checklists/plan-quality.md`
+  - Alterado: `.agents/project-memory/009-promover-producao-supabase.md`
   - Alterado: `.sauron/wiki/knowledge/architecture.md`
 
 ## 5. Current State

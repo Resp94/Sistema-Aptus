@@ -20,6 +20,8 @@
 - Q: Quando o arquivo `.env.local` deve ser atualizado para producao? -> A: Atualizar `.env.local` somente apos smoke test remoto aprovado.
 - Q: Como tratar falha no smoke test remoto? -> A: Falha no smoke test bloqueia a troca de `.env.local` e exige correcao seguida de novo smoke test aprovado.
 - Q: Qual salvaguarda deve existir antes de aplicar mudancas em producao? -> A: Exigir confirmacao de backup ou snapshot recuperavel antes do `db push`.
+- Q: Qual evidencia minima fecha a confirmacao de backup/snapshot recuperavel? -> A: Registrar tipo de backup/snapshot, timestamp, origem da confirmacao, responsavel pela aprovacao e declaracao de recuperabilidade antes de qualquer `db push`.
+- Q: Quais condicoes devem parar o fluxo por drift ou historico conflitante? -> A: Parar se houver target diferente, migration remota ausente localmente, migration local ja marcada de modo conflitante no remoto, dry-run com seed/dump/dado local, objeto fora do escopo aprovado, ou erro de autenticacao, permissao ou rede que impeça entender o estado remoto.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -71,8 +73,9 @@ Como desenvolvedor do projeto, quero atualizar a configuracao local da aplicacao
 
 ### Edge Cases
 
-- O ambiente remoto ja possui migracoes aplicadas parcialmente e a lista local nao bate com a historia remota.
+- O ambiente remoto ja possui migracoes aplicadas parcialmente e a lista local nao bate com a historia remota, incluindo migration remota ausente localmente ou migration local marcada de modo conflitante no remoto.
 - A revisao previa mostra aplicacao de seed, dados locais ou objetos fora do escopo aprovado.
+- A revisao previa nao consegue comprovar o destino por target diferente, erro de autenticacao, erro de permissao ou falha de rede.
 - O dry-run mostra apenas mudancas esperadas, mas a aprovacao manual explicita ainda nao foi dada.
 - A revisao previa esta aprovada, mas ainda nao ha confirmacao de backup ou snapshot recuperavel do ambiente de producao.
 - A promocao do schema conclui, mas a funcao remota de exportacao nao fica disponivel.
@@ -93,7 +96,7 @@ Como desenvolvedor do projeto, quero atualizar a configuracao local da aplicacao
 
 - **FR-001**: O processo MUST tratar `lpwnaxlczwntylcmgotm` como ambiente de producao real e exigir confirmacao explicita do destino antes de qualquer mutacao.
 - **FR-002**: O processo MUST apresentar o estado remoto de migracoes e a lista de mudancas pendentes antes da aplicacao em producao.
-- **FR-003**: O processo MUST parar antes de mutar producao se a revisao previa mostrar mudancas inesperadas, conflito de historico ou aplicacao de dados fora do escopo.
+- **FR-003**: O processo MUST parar antes de mutar producao se a revisao previa mostrar mudancas inesperadas, conflito de historico, drift remoto, target diferente, falha que impeça entender o estado remoto ou aplicacao de dados fora do escopo.
 - **FR-004**: A promocao MUST incluir apenas artefatos versionados e validados do backend: schema, regras de acesso, funcoes de negocio, armazenamento privado e funcoes server-side necessarias.
 - **FR-005**: A promocao MUST NOT copiar dados locais, seed de desenvolvimento ou dump completo para producao sem aprovacao explicita separada.
 - **FR-006**: A promocao MUST preservar as regras de autorizacao, privacidade de arquivos, ausencia de links publicos permanentes e separacao entre chaves publicas e privilegiadas.
@@ -109,7 +112,7 @@ Como desenvolvedor do projeto, quero atualizar a configuracao local da aplicacao
 - **FR-016**: O processo MUST parar apos a revisao previa/dry-run e exigir aprovacao manual explicita antes de aplicar qualquer mudanca em producao.
 - **FR-017**: O arquivo `.env.local` MUST permanecer apontando para o ambiente anterior ate que o smoke test remoto de producao esteja aprovado.
 - **FR-018**: Qualquer falha no smoke test remoto MUST bloquear a troca de `.env.local` ate que a causa seja corrigida e um novo smoke test completo seja aprovado.
-- **FR-019**: O processo MUST exigir confirmacao de backup ou snapshot recuperavel do ambiente de producao antes de aplicar mudancas de schema.
+- **FR-019**: O processo MUST exigir confirmacao de backup ou snapshot recuperavel do ambiente de producao antes de aplicar mudancas de schema, registrando tipo de backup/snapshot, timestamp, origem da confirmacao, responsavel pela aprovacao e declaracao de recuperabilidade.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -137,7 +140,7 @@ Como desenvolvedor do projeto, quero atualizar a configuracao local da aplicacao
 - **SC-011**: 0 mudancas sao aplicadas em producao antes de aprovacao manual explicita apos a revisao previa/dry-run.
 - **SC-012**: 0 alteracoes em `.env.local` para producao ocorrem antes do smoke test remoto aprovado.
 - **SC-013**: 100% das falhas de smoke test impedem a troca de `.env.local` ate uma nova validacao remota completa ser aprovada.
-- **SC-014**: 0 mudancas de schema sao aplicadas em producao antes da confirmacao de backup ou snapshot recuperavel.
+- **SC-014**: 0 mudancas de schema sao aplicadas em producao antes da confirmacao documentada de backup ou snapshot recuperavel com tipo, timestamp, origem, responsavel e declaracao de recuperabilidade.
 
 ## Assumptions
 
