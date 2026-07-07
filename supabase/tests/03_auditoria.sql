@@ -47,6 +47,10 @@ SELECT ok(
   'authenticated event author is auth.uid()'
 );
 
+-- Garante privilégio de execução legítimo para anon e PUBLIC na função de auditoria (T012)
+SELECT assert_function_execute_grant('anon', 'public.registrar_evento_auditoria(text, text, text)', true);
+SELECT assert_function_execute_grant('public', 'public.registrar_evento_auditoria(text, text, text)', true);
+
 SELECT reset_auth();
 
 SELECT * FROM finish();

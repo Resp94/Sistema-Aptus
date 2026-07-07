@@ -131,6 +131,63 @@ SELECT set_eq(
   'Técnico permissions match obter_permissoes_usuario'
 );
 
+-- =========================================================================
+-- Validação de RLS Policies Otimizadas (Fase 4 - User Story 2)
+-- =========================================================================
+
+-- Garantir que as políticas antigas de perfis foram removidas
+SELECT ok(
+  NOT EXISTS(
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'perfis' AND policyname = 'perfis_select_self'
+  ),
+  'A policy perfis_select_self nao deve mais existir'
+);
+
+SELECT ok(
+  NOT EXISTS(
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'perfis' AND policyname = 'perfis_select_admin'
+  ),
+  'A policy perfis_select_admin nao deve mais existir'
+);
+
+SELECT ok(
+  NOT EXISTS(
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'perfis' AND policyname = 'perfis_update_self'
+  ),
+  'A policy perfis_update_self nao deve mais existir'
+);
+
+SELECT ok(
+  NOT EXISTS(
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'perfis' AND policyname = 'perfis_update_admin'
+  ),
+  'A policy perfis_update_admin nao deve mais existir'
+);
+
+-- Garantir que as novas políticas consolidadas e otimizadas existem
+SELECT assert_has_policy('public', 'perfis', 'perfis_select');
+SELECT assert_has_policy('public', 'perfis', 'perfis_update');
+SELECT assert_has_policy('public', 'perfis', 'perfis_insert_admin');
+
+-- Garantir que as políticas otimizadas com (select auth.uid()) nas outras tabelas existem
+SELECT assert_has_policy('public', 'usuarios', 'usuarios_select_self');
+SELECT assert_has_policy('public', 'audit_log', 'audit_log_select_admin');
+SELECT assert_has_policy('public', 'membros_equipe', 'membros_equipe_select');
+SELECT assert_has_policy('public', 'membros_equipe', 'membros_equipe_update');
+SELECT assert_has_policy('public', 'alocacoes_equipe', 'alocacoes_equipe_select');
+SELECT assert_has_policy('public', 'apontamentos_horas', 'apontamentos_horas_select');
+SELECT assert_has_policy('public', 'apontamentos_horas', 'apontamentos_horas_insert');
+SELECT assert_has_policy('public', 'configuracoes_empresa', 'configuracoes_empresa_select');
+SELECT assert_has_policy('public', 'configuracoes_empresa', 'configuracoes_empresa_update');
+SELECT assert_has_policy('public', 'preferencias_notificacoes', 'preferencias_notificacoes_select');
+SELECT assert_has_policy('public', 'preferencias_notificacoes', 'preferencias_notificacoes_insert');
+SELECT assert_has_policy('public', 'preferencias_notificacoes', 'preferencias_notificacoes_update');
+
 SELECT reset_auth();
 
 SELECT * FROM finish();
+

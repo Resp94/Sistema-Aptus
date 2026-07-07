@@ -221,6 +221,68 @@ SELECT is(
   'Visualizador: contagem de capacidades = 0'
 );
 
+-- Asserts que tentam ler e gravar diretamente em public.capacidades_perfil usando 'anon' e 'authenticated'
+SELECT set_anon();
+
+SELECT throws_ok(
+  $$SELECT * FROM public.capacidades_perfil$$,
+  '42501',
+  'anon nao pode ler capacidades_perfil diretamente'
+);
+
+SELECT throws_ok(
+  $$INSERT INTO public.capacidades_perfil (perfil_acesso, capacidade) VALUES ('Financeiro', 'clientes.criar')$$,
+  '42501',
+  'anon nao pode gravar capacidades_perfil diretamente'
+);
+
+SELECT set_auth_by_email('tecnico@aptusflow.local');
+
+SELECT throws_ok(
+  $$SELECT * FROM public.capacidades_perfil$$,
+  '42501',
+  'authenticated nao pode ler capacidades_perfil diretamente'
+);
+
+SELECT throws_ok(
+  $$INSERT INTO public.capacidades_perfil (perfil_acesso, capacidade) VALUES ('Financeiro', 'clientes.criar')$$,
+  '42501',
+  'authenticated nao pode gravar capacidades_perfil diretamente'
+);
+
+SELECT reset_auth();
+
+-- T010 / T031: Validação de RLS, Policy e acesso pelo service_role para public.capacidades_perfil
+SELECT assert_rls_enabled('public', 'capacidades_perfil');
+SELECT assert_has_policy('public', 'capacidades_perfil', 'service_role_full_access');
+
+-- Simulação de acesso com a role service_role
+SELECT reset_auth();
+SET role = 'service_role';
+
+SELECT lives_ok(
+  $$SELECT * FROM public.capacidades_perfil LIMIT 1$$,
+  'service_role consegue ler capacidades_perfil'
+);
+
+SELECT lives_ok(
+  $$INSERT INTO public.capacidades_perfil (perfil_acesso, capacidade) VALUES ('Visualizador', 'relatorios.exportar')$$,
+  'service_role consegue inserir em capacidades_perfil'
+);
+
+SELECT lives_ok(
+  $$UPDATE public.capacidades_perfil SET capacidade = 'relatorios.exportar' WHERE perfil_acesso = 'Visualizador' AND capacidade = 'relatorios.exportar'$$,
+  'service_role consegue atualizar capacidades_perfil'
+);
+
+SELECT lives_ok(
+  $$DELETE FROM public.capacidades_perfil WHERE perfil_acesso = 'Visualizador' AND capacidade = 'relatorios.exportar'$$,
+  'service_role consegue deletar de capacidades_perfil'
+);
+
+RESET role;
+SELECT reset_auth();
+
 
 -- ============================================================
 -- 3. public.tem_capacidade(p_capacidade text) (T012)

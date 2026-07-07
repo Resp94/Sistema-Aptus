@@ -89,6 +89,17 @@ Não faz parte desta página:
   - *Prós*: Escopo controlado, correcoes auditaveis, rastreabilidade das excecoes e maior confianca na leitura do estado remoto real.
   - *Contras*: Processo mais detalhado, exige classificacao objeto a objeto e nao resolve tuning amplo fora do escopo.
 
+### DA-007 — Endurecimento de RLS/RPC e Remediacao de Performance de Policies
+- **Problema**: O linter/advisors do Supabase apontou ineficiencias de performance (warnings `auth_rls_initplan` devido ao uso direto de `auth.uid()` em predicates RLS e `multiple_permissive_policies` em `public.perfis`) e riscos de seguranca (falta de policy explicita em tabelas internas e RPCs `SECURITY DEFINER` expostas a `anon` e `PUBLIC`).
+- **Options Considered**:
+  - Manter predicates RLS originais e confiar em tuning de indices para compensar.
+  - Reescrever predicates RLS convertendo chamadas diretas de `auth.uid()` para subconsultas indexadas `(select auth.uid())` e unificar policies de SELECT/UPDATE em `public.perfis`. Revogar grants publicos das 48 RPCs de escrita e exportacao da namespace public, blindando execucoes `SECURITY DEFINER`.
+- **Choice**: Reescrever os predicates para a sintaxe de subconsulta `(select auth.uid())`, consolidar as policies de `public.perfis` e revogar os grants de `PUBLIC` e `anon` em todas as RPCs de escrita/exportacao do escopo, preservando apenas grants especificos condicionados a Whitelist e RBAC.
+- **Justification**: A subconsulta `(select auth.uid())` permite que o Postgres execute a subconsulta como um InitPlan de execucao unica por query, em vez de avaliar a funcao `auth.uid()` para cada linha da tabela (o que degradava performance linearmente). A consolidacao de RLS em `public.perfis` reduz o overhead de multiplos scans. O endurecimento de RPCs `SECURITY DEFINER` via `REVOKE EXECUTE ... FROM PUBLIC` garante que apenas papeis explicitamente autorizados (como `authenticated` ou `service_role`) executem operacoes privilegiadas na namespace `public`.
+- **Trade-offs**:
+  - *Prós*: Eliminacao de warnings do linter remoto, grande ganho de performance em scans de tabelas centrais, seguranca blindada contra execucao anonima de RPCs de escrita.
+  - *Contras*: Maior complexidade na escrita de migrations, necessidade de cobertura extensa pgTAP de grants para evitar regressao.
+
 ## 4. Change History
 
 ### 2026-06-26 — Implementação e ativação da nova stack tecnológica
@@ -293,7 +304,7 @@ Não faz parte desta página:
   - Alterado: `.sauron/wiki/knowledge/architecture.md`
 
 ### 2026-07-03 — Fundação do RBAC por capacidades nomeadas e documentação da feature 007
-- **What was done**: Foi implementada a migração `supabase/migrations/20260703000001_rbac_capacidades_foundation.sql`, criando a tabela `public.capacidades_perfil` (PK composta `perfil_acesso, capacidade`, RLS habilitado, sem grant a `authenticated`/`PUBLIC`), os helpers `public.tem_capacidade(p_capacidade text)` e `public.obter_capacidades_usuario()`, o seed da matriz inicial de 37 capacidades por perfil (Administrador com todas; Visualizador com zero linhas de propósito) e o ajuste de `public.obter_permissoes_usuario()` para que Visualizador passe a ter leitura mínima apenas em `relatorios`/`configuracoes` e `Projetos` continue sem Dashboard oficial. O arquivo `supabase/migrations/20260703000002_rbac_capacidades_rpc_guards.sql` foi criado como próximo passo (migração das ~35 RPCs de escrita/efeito de negócio para guardas `tem_capacidade`), ainda pendente de implementação. Em paralelo, a documentação da feature foi atualizada: `docs/personas.md` passou a deixar explícito que existem cinco personas operacionais (Administrador, Financeiro, Projetos, Comercial, Técnico) e que Visualizador não é mais persona operacional, e sim o perfil técnico mínimo de signup, com zero capacidades e leitura restrita a Relatórios/Configurações próprias; também documentou que o Dashboard é acesso oficial exclusivo de Administrador e Financeiro. `docs/arquitetura-dados.md` ganhou uma seção descrevendo `capacidades_perfil`, os helpers `tem_capacidade`/`obter_capacidades_usuario`, a regra central de autorização (`permissao_modulo` para leitura/rota, `tem_capacidade` para ações sensíveis) e a regra de consumo frontend/backend (capacidades só para UX; autorização real sempre na RPC).
+- **What was done**: Foi implementada a migração `supabase/migrations/20260703000001_rbac_capacidades_foundation.sql`, criando a tabela `public.capacidades_perfil` (PK composta `perfil_acesso, capacidade`, RLS habilitado, sem grant a `authenticated`/`PUBLIC`), os helpers `public.tem_capacidade(p_capacidade text)` e `public.obter_capacidades_usuario()`, o seed da matriz inicial de 37 capacidades por perfil (Administrador com todas; Visualizador com zero linhas de propósito) e o ajuste de `public.obter_permissoes_usuario()` para que Visualizador passe a ter leitura mínima apenas em `relatorios`/`configurações` e `Projetos` continue sem Dashboard oficial. O arquivo `supabase/migrations/20260703000002_rbac_capacidades_rpc_guards.sql` foi criado como próximo passo (migração das ~35 RPCs de escrita/efeito de negócio para guardas `tem_capacidade`), ainda pendente de implementação. Em paralelo, a documentação da feature foi atualizada: `docs/personas.md` passou a deixar explícito que existem cinco personas operacionais (Administrador, Financeiro, Projetos, Comercial, Técnico) e que Visualizador não é mais persona operacional, e sim o perfil técnico mínimo de signup, com zero capacidades e leitura restrita a Relatórios/Configurações próprias; também documentou que o Dashboard é acesso oficial exclusivo de Administrador e Financeiro. `docs/arquitetura-dados.md` ganhou uma seção descrevendo `capacidades_perfil`, os helpers `tem_capacidade`/`obter_capacidades_usuario`, a regra central de autorização (`permissao_modulo` para leitura/rota, `tem_capacidade` para ações sensíveis) e a regra de consumo frontend/backend (capacidades só para UX; autorização real sempre na RPC).
 - **Why it was done**: Fechar a fundação de banco definida no plano da feature 007 (tabela auditável + helpers canônicos + matriz inicial) e manter a documentação de personas/arquitetura sincronizada com a nova regra de autorização antes de migrar as RPCs de escrita/efeito e remover o Visualizador do fluxo operacional no frontend.
 - **Impact on the system**: O banco já possui a fonte canônica de capacidades nomeadas e a leitura por módulo já reflete o Visualizador mínimo; nenhuma RPC de escrita/efeito foi migrada para `tem_capacidade` ainda (arquivo de guardas é placeholder), então a autorização de ações sensíveis continua, por ora, dependente das guardas antigas até a próxima migração. A documentação de personas e arquitetura de dados já reflete o estado-alvo (cinco personas operacionais, Visualizador mínimo, Dashboard oficial de Administrador/Financeiro, regra de capacidade nomeada).
 - **Files affected**:
@@ -579,21 +590,16 @@ Não faz parte desta página:
   - Criado: `.agents/mcp_config.json`
   - Alterado: `.sauron/wiki/knowledge/architecture.md`
 
-
+### 2026-07-07 — Correção dos Advisors do Supabase e Conformidade (Fases 5 e 6)
+- **What was done**: Executamos as correções estruturais de segurança e performance nos Advisors do Supabase remoto e concluímos a validação via MCP. Foram criadas duas migrations: `20260707000001_010_advisors_security.sql` (que adicionou a policy explícita em `capacidades_perfil`, revogou grants de `PUBLIC` nas 48 RPCs de escrita/exportação e endureceu guardrails internos) e `20260707000002_010_advisors_performance.sql` (que converteu predicates RLS com `auth.uid()` direto para `(select auth.uid())` e consolidou as políticas permissivas de `public.perfis`). Os lints do linter remoto sumiram completamente.
+- **Why it was done**: Mitigar falhas graves de segurança expostas pelos Advisors do Supabase no ambiente de produção (`lpwnaxlczwntylcmgotm`) e resolver lentidões/overhead de RLS causados por InitPlans ineficientes e múltiplas policies.
+- **Impact on the system**: Banco remoto está 100% limpo dos lints de segurança e performance no escopo. Testes locais pgTAP foram expandidos. A arquitetura de segurança de RPCs e RLS foi unificada e endurecida.
+- **Files affected**:
+  - Criado: `supabase/migrations/20260707000001_010_advisors_security.sql`
+  - Criado: `supabase/migrations/20260707000002_010_advisors_performance.sql`
+  - Alterado: `specs/010-corrigir-advisors-supabase/triagem.md`, `runbook-validacao.md`, `quickstart.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
 
 ## 5. Current State
-
-- **Frontend atual**: Aplicação SPA baseada em Vite + React + TypeScript instalada na raiz do repositório. As dependências (React 19, Supabase JS, ESLint, Prettier e Vitest) estão instaladas.
-- **Telas legadas**: Arquivos HTML legados (ex.: `clientes.html`, `dashboard.html`) foram preservados e o `index.html` original foi renomeado para `index.legacy.html` para servir de referência durante a migração para componentes React.
-- **Ambiente local de Banco/Backend**: Supabase CLI + Docker ativo e orquestrando o Postgres local, Auth, Storage e Studio.
-- **Integração Frontend-Backend**: Conectados por meio do arquivo `src/services/supabase.ts`, inicializado a partir do arquivo de configuração `.env.local` que aponta para a API de produção do Supabase (URL e chave pública anônima) sob `VITE_APP_ENV=production`.
-- **Testes**: Vitest configurado para a pasta `src` com smoke test de integração REST passando.
-- **CI/CD / Hospedagem**: Cloudflare Pages definida e documentada em `docs/stack.md` como o destino do deploy do frontend compilado (`dist/`).
-
-## 6. Next Steps (Optional)
-
-- Iniciar a migração das telas HTML legadas para componentes React e rotas internas.
-- Criar a primeira migração de schema com as tabelas de negócio do ERP (`clientes`, `contas`, `projetos`, etc.) com base no `docs/banco-de-dados.md`.
-- Conectar o repositório GitHub ao projeto do Cloudflare Pages para deploy automático.
 - Vincular o projeto local ao Supabase Cloud e documentar o processo de `db push`.
 - Atualizar esta página quando novas decisões arquiteturais forem tomadas.
