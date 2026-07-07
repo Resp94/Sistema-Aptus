@@ -59,10 +59,14 @@ Como responsavel pela operacao, quero um runbook para validar os advisors no pro
 ### Edge Cases
 
 - O advisor continua acusando funcao `SECURITY DEFINER` mesmo apos restricao correta de grants, exigindo classificacao como possivel falso positivo ou estado remoto residual.
+- Uma migration aplica com sucesso, mas o estado remoto continua divergente por overload antigo, grant residual ou assinatura nao coberta pela correcao versionada.
 - Uma tabela protegida por RLS nao pode receber policy ampla sem violar o modelo de acesso, exigindo alternativa que preserve o comportamento esperado.
+- Uma funcao `SECURITY DEFINER` possui dependencia viva, mas sua implementacao atual nao valida identidade, papel, capacidade, ownership ou outra guarda de negocio obrigatoria.
 - A consolidacao de policies reduz warnings de performance, mas muda a legibilidade ou a auditabilidade do modelo de autorizacao.
+- A consolidacao de policies permissivas altera de forma nao intencional o comportamento RBAC de um papel previamente valido.
 - O estado remoto diverge do SQL versionado, fazendo com que a validacao pos-aplicacao mostre grants diferentes do que o repositório descreve.
 - A correcao de um warning de performance em policy altera o comportamento de leitura ou escrita de um papel valido.
+- Uma funcao possui multiplos overloads e apenas parte deles esta exposta indevidamente, exigindo correcao por assinatura exata.
 - Um achado remanescente nao representa risco real, mas tambem nao pode ser descartado sem criterio de excecao documentado.
 - O conjunto de correcao melhora os advisors, mas revela outra dependencia de conformidade em RPC ou RLS que precisa ser explicitamente fora de escopo desta feature.
 
@@ -85,6 +89,40 @@ Como responsavel pela operacao, quero um runbook para validar os advisors no pro
 - **FR-013**: A feature MUST impedir que a conclusao declare conformidade se um risco real de seguranca continuar sem correcao ou sem excecao aprovada.
 - **FR-014**: A feature MUST manter separadas a correcao estrutural do backend e a promocao operacional ampla tratada em outras features.
 - **FR-015**: A feature MUST registrar a decisao operacional e os resultados da validacao remota na documentacao obrigatoria do projeto na mesma sessao de trabalho em que a mudanca for concluida.
+- **FR-016**: A feature MUST mapear explicitamente os lints `rls_enabled_no_policy`, `anon_security_definer_function_executable`, `authenticated_security_definer_function_executable`, `auth_rls_initplan` e `multiple_permissive_policies` para os requisitos e criterios de triagem correspondentes.
+- **FR-017**: O estado-alvo por papel MUST ser explicito: `anon` nao pode executar RPCs de negocio privilegiadas no escopo; `authenticated` so pode executar assinaturas explicitamente concedidas e validadas por dependencia viva e guardas internas; `service_role` pode manter acesso a objetos service-owned e rotinas internas que nao devem ficar expostas aos papeis de cliente.
+- **FR-018**: Toda excecao de conformidade MUST registrar, no minimo, justificativa, impacto residual, gatilho de revisao e aprovador nomeado, em formato alinhado ao modelo de dados e a triagem da feature.
+- **FR-019**: A reavaliacao de uma excecao MUST ser disparada por qualquer mudanca de grant, policy, assinatura de funcao, dependencia viva, regra de RBAC/Auth ou novo achado de advisor relacionado, e MUST ser executada pelo responsavel pela rodada de validacao remota ou pelo autor da mudanca subsequente.
+- **FR-020**: O criterio de dependencia viva MUST vasculhar, no minimo, `src/services`, `src/lib`, `supabase/functions`, triggers, views e outras funcoes SQL relacionadas ao objeto analisado.
+- **FR-021**: Toda funcao `SECURITY DEFINER` preservada MUST ter guardas internas explicitas de identidade e de acesso esperado, incluindo validacao de usuario autenticado quando aplicavel, verificacao de papel/capacidade/ownership/regra de negocio e grant por assinatura exata ao conjunto minimo de papeis permitido.
+- **FR-022**: A reescrita de policies para performance MUST aplicar regras de transformacao concretas: chamadas diretas de contexto de autenticacao em predicates de policy devem ser substituidas por avaliacao equivalente de escopo por consulta, incluindo o padrao `(select auth.uid())` para os casos atuais de `auth.uid()` direto.
+- **FR-023**: A taxonomia de triagem MUST ser mutuamente exclusiva: `risco_real` para falha material ainda sem mitigacao; `drift_remoto` para diferenca observavel entre remoto e estado versionado esperado; `concessao_residual` para grant ou exposicao remanescente ainda nao classificado como intencional; `excecao_intencional` para comportamento preservado com aprovacao formal; `fora_escopo` para item explicitamente excluido da feature; `resolvido` para caso fechado pela rodada corrente.
+- **FR-024**: Quando uma funcao for simultaneamente privilegiada, necessaria e exposta a papel nao previsto, a precedencia MUST ser corrigir exposicao e guardas primeiro; a preservacao do comportamento legitimo so pode ocorrer apos revogar o acesso indevido e revalidar os chamadores esperados.
+- **FR-025**: A feature MUST capturar um snapshot baseline remoto antes de iniciar as correcoes, incluindo `get_project_url`, `get_advisors(type=security)`, `get_advisors(type=performance)` e `list_migrations`, e usar esse baseline como referencia objetiva para medir resolucao, drift e regressao.
+- **FR-026**: A feature MUST tratar como regressao de comportamento autorizado qualquer ampliacao de acesso antes bloqueado, bloqueio de acesso antes permitido, ou alteracao indevida de ownership/regra de negocio em fluxos que dependem das funcoes ou policies preservadas.
+
+### Advisor Mapping
+
+- `rls_enabled_no_policy` -> FR-003, FR-016, FR-017, FR-025
+- `anon_security_definer_function_executable` -> FR-002, FR-017, FR-021, FR-024, FR-025
+- `authenticated_security_definer_function_executable` -> FR-004, FR-017, FR-020, FR-021, FR-024, FR-025
+- `auth_rls_initplan` -> FR-005, FR-006, FR-022, FR-026
+- `multiple_permissive_policies` -> FR-005, FR-007, FR-022, FR-026
+
+### Role Matrix
+
+- **`anon`**: nao pode executar RPCs privilegiadas de negocio no escopo da feature; qualquer exposicao remanescente a `anon` e tratada como risco real ou concessao residual ate classificacao final.
+- **`authenticated`**: so pode executar assinaturas explicitamente concedidas, com dependencia viva confirmada e guardas internas coerentes com papel, capacidade, ownership ou regra de negocio.
+- **`service_role`**: pode manter acesso a objetos service-owned e rotinas internas necessarias ao backend, desde que esses acessos nao sejam usados para justificar exposicao desnecessaria a `anon` ou `authenticated`.
+
+### Validation Rules
+
+- O baseline remoto capturado por `FR-025` e o mecanismo objetivo de verificacao para `SC-001`, `SC-003`, `SC-004` e `SC-005`.
+- O gate de `FR-013` e satisfeito apenas quando a rodada final de validacao remota marcar todos os itens no escopo como `resolvido`, `excecao_intencional`, `drift_remoto` ou `fora_escopo`, sem nenhum `risco_real` restante.
+- A validacao de nao-regressao exigida por `FR-026` deve provar que:
+  - nenhum papel anteriormente bloqueado ganhou acesso indevido;
+  - nenhum papel anteriormente permitido perdeu acesso legitimo;
+  - nenhuma regra de ownership, capacidade ou negocio foi afrouxada por consolidacao de policies ou ajuste de grants.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -97,11 +135,11 @@ Como responsavel pela operacao, quero um runbook para validar os advisors no pro
 
 ### Measurable Outcomes
 
-- **SC-001**: 100% dos achados classificados como risco real de seguranca no escopo da feature deixam de permanecer sem correcao ou sem excecao aprovada.
+- **SC-001**: 100% dos achados classificados como risco real de seguranca no escopo da feature deixam de permanecer sem correcao ou sem excecao aprovada, medidos contra o snapshot baseline e o snapshot pos-aplicacao registrados pela feature.
 - **SC-002**: 100% das tabelas no escopo com RLS habilitado possuem politica coerente com o modelo de acesso esperado ao final da feature.
 - **SC-003**: 100% das funcoes privilegiadas no escopo possuem classificacao explicita como acesso corrigido ou excecao intencional documentada.
-- **SC-004**: Os warnings de performance ligados a RLS ou RPC no escopo da feature sao reduzidos sem regressao validada de comportamento autorizado.
-- **SC-005**: 100% dos achados remanescentes apos a validacao remota recebem classificacao final registrada como excecao, drift remoto ou pendencia bloqueadora.
+- **SC-004**: Os warnings de performance ligados a RLS ou RPC no escopo da feature sao reduzidos sem regressao validada de comportamento autorizado, onde regressao significa ampliar acesso indevido, bloquear acesso legitimo ou alterar ownership/regra de negocio em fluxos preservados.
+- **SC-005**: 100% dos achados remanescentes apos a validacao remota recebem classificacao final registrada como `resolvido`, `drift_remoto`, `concessao_residual`, `excecao_intencional`, `fora_escopo` ou `pendencia_bloqueadora`, sem categoria ambigua ou sobreposta.
 - **SC-006**: O `runbook-validacao.md` permite repetir a validação remota completa em uma única sessão de trabalho usando o MCP do Supabase conectado ao ambiente de produção, sem depender de conhecimento tácito fora do repositório.
 - **SC-007**: 0 itens fora do escopo declarado da feature sao tratados como concluidos por engano dentro desta entrega.
 

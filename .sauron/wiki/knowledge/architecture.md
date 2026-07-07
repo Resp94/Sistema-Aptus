@@ -77,6 +77,18 @@ Não faz parte desta página:
   - *Prós*: Menor risco operacional, sem transporte de dados locais, validacao real de autorizacao e limpeza documentada dos usuarios temporarios.
   - *Contras*: Processo mais lento, exige aprovacao manual e confirmacao externa de backup/snapshot antes da aplicacao.
 
+### DA-006 — Conformidade Supabase guiada por advisors, triagem versionada e validacao remota
+- **Problema**: O projeto de producao `lpwnaxlczwntylcmgotm` passou a apresentar um conjunto misto de achados do Supabase Advisors: um caso direto de RLS sem policy (`public.capacidades_perfil`), varios warnings de `SECURITY DEFINER` ainda expostos e warnings de performance ligados a policies antigas de RLS. Parte do SQL versionado ja parece endurecer grants, mas o advisor remoto continua acusando exposicao, indicando possivel drift remoto ou assinaturas/grants residuais.
+- **Options Considered**:
+  - Corrigir apenas os casos obvios e tratar o restante como excecao manual fora do repositório.
+  - Abrir uma feature dedicada para triagem, remediacao versionada e validacao remota dos advisors no escopo de RLS/RPC.
+  - Fazer uma faxina ampla de todos os advisors, incluindo tuning geral de indices e foreign keys.
+- **Choice**: Criar uma feature dedicada de conformidade (`010-corrigir-advisors-supabase`) focada em risco real de seguranca e warnings de performance ligados a RLS/RPC, com triagem versionada (`triagem.md`), artefatos SQL em `supabase/migrations/`, criterio de dependencia viva para preservar funcoes `SECURITY DEFINER` e validacao remota via MCP do Supabase antes da conclusao.
+- **Justification**: Separar a promocao operacional da correcao estrutural deixa a auditoria mais clara. A triagem versionada evita conhecimento tacito, o criterio de dependencia viva reduz superficie de ataque por inercia, e a validacao remota fecha a lacuna entre o estado esperado do repositório e o estado efetivo do projeto de producao.
+- **Trade-offs**:
+  - *Prós*: Escopo controlado, correcoes auditaveis, rastreabilidade das excecoes e maior confianca na leitura do estado remoto real.
+  - *Contras*: Processo mais detalhado, exige classificacao objeto a objeto e nao resolve tuning amplo fora do escopo.
+
 ## 4. Change History
 
 ### 2026-06-26 — Implementação e ativação da nova stack tecnológica
@@ -512,6 +524,42 @@ Não faz parte desta página:
 - **Impact on the system**: O ambiente local do Codex passou a ter um servidor MCP global autenticado para o projeto Supabase `lpwnaxlczwntylcmgotm`. A mutação ocorreu na configuração global do agente, não no código-fonte da aplicação.
 - **Files affected**:
   - Alterado: `.agents/project-memory/009-promover-producao-supabase.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-07-06 — Especificacao e planejamento da conformidade dos Supabase Advisors
+- **What was done**: Foi criada e planejada a feature `010-corrigir-advisors-supabase`, separada da promocao operacional da feature 009. O baseline remoto do projeto `lpwnaxlczwntylcmgotm` foi consultado via MCP e mostrou tres grupos centrais de trabalho: `public.capacidades_perfil` com RLS sem policy, funcoes `SECURITY DEFINER` ainda sinalizadas como executaveis por `anon`/`authenticated`, e warnings de performance ligados a `auth_rls_initplan` e `multiple_permissive_policies`. A feature ganhou `plan.md`, `research.md`, `data-model.md`, contratos, `triagem.md`, `runbook-validacao.md` e `quickstart.md`.
+- **Why it was done**: Corrigir risco real e diferenciar estado versionado de estado remoto efetivo sem misturar essa atividade com a promocao ampla de backend para producao. O objetivo arquitetural e tornar a conformidade repetivel, auditavel e guiada por triagem versionada.
+- **Impact on the system**: Nenhuma mutacao de producao foi executada nesta etapa. O contexto ativo do agente foi redirecionado para `specs/010-corrigir-advisors-supabase/plan.md`, e a proxima etapa passa a ser a geracao de tarefas implementaveis para grants, policies, excecoes e validacao remota.
+- **Files affected**:
+  - Criado: `specs/010-corrigir-advisors-supabase/spec.md`
+  - Criado: `specs/010-corrigir-advisors-supabase/checklists/requirements.md`
+  - Criado/Atualizado: `specs/010-corrigir-advisors-supabase/plan.md`
+  - Criado: `specs/010-corrigir-advisors-supabase/research.md`
+  - Criado: `specs/010-corrigir-advisors-supabase/data-model.md`
+  - Criado: `specs/010-corrigir-advisors-supabase/triagem.md`
+  - Criado: `specs/010-corrigir-advisors-supabase/runbook-validacao.md`
+  - Criado: `specs/010-corrigir-advisors-supabase/quickstart.md`
+  - Criado: `specs/010-corrigir-advisors-supabase/contracts/security-remediation.md`
+  - Criado: `specs/010-corrigir-advisors-supabase/contracts/performance-remediation.md`
+  - Criado: `specs/010-corrigir-advisors-supabase/contracts/remote-validation.md`
+  - Criado: `specs/010-corrigir-advisors-supabase/contracts/triage-governance.md`
+  - Criado: `.agents/project-memory/010-corrigir-advisors-supabase.md`
+  - Alterado: `AGENTS.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-07-06 — Fechamento dos gaps do checklist de seguranca dos Supabase Advisors
+- **What was done**: Os gaps abertos do checklist `specs/010-corrigir-advisors-supabase/checklists/security.md` foram fechados com reforco documental da feature 010. A spec passou a mapear lints do advisor para requisitos, explicitar o estado-alvo por papel, exigir excecoes com campos obrigatorios e endurecer a triagem de funcoes `SECURITY DEFINER` por assinatura exata, dependencia viva e guardas internas. O runbook e os contratos tambem passaram a exigir baseline remoto objetivo, taxonomia mutuamente exclusiva e definicao formal de regressao autorizada. O checklist foi atualizado para 19/19 itens atendidos.
+- **Why it was done**: A rodada anterior ainda permitia ambiguidade na classificacao de achados, na preservacao de funcoes privilegiadas e na forma de medir drift versus risco real. Fechar esses gaps antes de gerar tarefas reduz o risco de uma implementacao que apenas silencie o advisor sem preservar corretamente RBAC, ownership e comportamento autorizado.
+- **Impact on the system**: Nenhuma mutacao de producao foi executada. O impacto e arquitetural/documental: a feature 010 agora tem governanca mais objetiva para grants, policies, excecoes e validacao remota, com criterios que podem ser auditados e repetidos por outra sessao de trabalho.
+- **Files affected**:
+  - Alterado: `specs/010-corrigir-advisors-supabase/spec.md`
+  - Alterado: `specs/010-corrigir-advisors-supabase/data-model.md`
+  - Alterado: `specs/010-corrigir-advisors-supabase/triagem.md`
+  - Alterado: `specs/010-corrigir-advisors-supabase/runbook-validacao.md`
+  - Alterado: `specs/010-corrigir-advisors-supabase/contracts/triage-governance.md`
+  - Alterado: `specs/010-corrigir-advisors-supabase/contracts/remote-validation.md`
+  - Alterado: `specs/010-corrigir-advisors-supabase/checklists/security.md`
+  - Alterado: `.agents/project-memory/010-corrigir-advisors-supabase.md`
   - Alterado: `.sauron/wiki/knowledge/architecture.md`
 
 
