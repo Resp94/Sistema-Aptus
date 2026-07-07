@@ -350,3 +350,22 @@ Em conformidade com `contracts/documentation-and-recovery.md`:
 ### Ações Pendentes, Rollbacks e Checkpoints Restantes (T056)
 - **Status**: **PASS**
 - **Detalhes**: Nenhum rollback foi necessário. Não há pendências funcionais, checkpoints bloqueados ou ações corretivas restantes. A promoção de schema, o deploy da Edge Function, o smoke test E2E e a troca da configuração local foram executados em total conformidade e com 100% de sucesso.
+
+## Registro Operacional - MCP Supabase no Codex
+
+**Data/Hora da Execução**: 2026-07-06T15:20:00-04:00 (Local Time)
+**Responsável**: Codex
+
+### Configuração global do MCP
+- **Comando executado**: `codex mcp add supabase --url "https://mcp.supabase.com/mcp?project_ref=lpwnaxlczwntylcmgotm"`
+- **Resultado**: **PASS**
+- **Detalhes**: O servidor MCP global `supabase` foi adicionado ao Codex com transporte HTTP apontando para o projeto de produção `lpwnaxlczwntylcmgotm`.
+
+### Autenticação OAuth
+- **Status**: **PASS**
+- **Detalhes**: O fluxo OAuth do Supabase MCP foi iniciado pelo CLI e concluído com sucesso na mesma execução, liberando o uso do servidor no ambiente local do Codex.
+
+### Verificação pós-configuração
+- **Comando executado**: `codex mcp get supabase`
+- **Resultado**: **PASS**
+- **Detalhes**: A configuração salva retornou `enabled: true`, `transport: streamable_http` e a URL `https://mcp.supabase.com/mcp?project_ref=lpwnaxlczwntylcmgotm`.

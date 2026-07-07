@@ -506,6 +506,14 @@ Não faz parte desta página:
   - Alterado: `specs/009-promover-producao-supabase/tasks.md`
   - Alterado: `.sauron/wiki/knowledge/architecture.md`
 
+### 2026-07-06 — Configuração do MCP global do Supabase no Codex
+- **What was done**: Foi adicionado o servidor MCP global `supabase` ao Codex com o comando `codex mcp add supabase --url "https://mcp.supabase.com/mcp?project_ref=lpwnaxlczwntylcmgotm"`. O CLI detectou suporte a OAuth, iniciou o fluxo de autorização e concluiu o login com sucesso na mesma execução. Em seguida, a configuração foi verificada com `codex mcp get supabase`, retornando `enabled: true`, `transport: streamable_http` e a URL do projeto `lpwnaxlczwntylcmgotm`.
+- **Why it was done**: Habilitar o acesso do Codex ao Supabase MCP já escopado ao projeto de produção confirmado, permitindo inspeção e operações futuras via MCP sem repetir a configuração inicial do servidor.
+- **Impact on the system**: O ambiente local do Codex passou a ter um servidor MCP global autenticado para o projeto Supabase `lpwnaxlczwntylcmgotm`. A mutação ocorreu na configuração global do agente, não no código-fonte da aplicação.
+- **Files affected**:
+  - Alterado: `.agents/project-memory/009-promover-producao-supabase.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
 
 
 ## 5. Current State
