@@ -562,6 +562,23 @@ Não faz parte desta página:
   - Alterado: `.agents/project-memory/010-corrigir-advisors-supabase.md`
   - Alterado: `.sauron/wiki/knowledge/architecture.md`
 
+### 2026-07-07 — Geracao do backlog executavel da conformidade Supabase
+- **What was done**: Foi executado `/speckit-tasks` para `specs/010-corrigir-advisors-supabase/plan.md`, gerando `specs/010-corrigir-advisors-supabase/tasks.md` com 30 tarefas. O backlog foi organizado em Setup, Foundational, tres user stories e Polish. A decomposicao separa duas migrations dedicadas (`20260707000001_010_advisors_security.sql` e `20260707000002_010_advisors_performance.sql`), expande o harness pgTAP para grants/RLS e deixa a validacao remota como uma fase propria, dependente das correcoes estruturais.
+- **Why it was done**: Transformar a spec, o plano, os contratos e a triagem endurecida em tarefas imediatamente executaveis, com ordem de dependencia clara entre baseline, remediacao de seguranca, remediacao de performance e rodada final de validacao remota.
+- **Impact on the system**: Nenhuma mutacao de producao foi executada. O impacto e documental/operacional: a feature 010 agora possui backlog versionado, com caminho explicito para correcoes SQL, ampliacao de testes e registro obrigatorio em `.agents` e `.sauron`.
+- **Files affected**:
+  - Criado: `specs/010-corrigir-advisors-supabase/tasks.md`
+  - Alterado: `.agents/project-memory/010-corrigir-advisors-supabase.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-07-07 — Configuração do MCP do Supabase no Workspace
+- **What was done**: Foi criado o arquivo de configuração local do MCP `.agents/mcp_config.json` definindo o servidor `supabase` com a URL apontando para o projeto de produção `lpwnaxlczwntylcmgotm` (`https://mcp.supabase.com/mcp?project_ref=lpwnaxlczwntylcmgotm`).
+- **Why it was done**: Configurar o MCP do Supabase especificamente para o workspace local do projeto, permitindo que qualquer agente trabalhando neste diretório use o servidor MCP do Supabase apontado para o projeto correto sem depender de configurações globais do sistema.
+- **Impact on the system**: O projeto passou a contar com uma configuração explícita de MCP para o workspace local. A mudança é puramente de configuração das ferramentas de desenvolvimento.
+- **Files affected**:
+  - Criado: `.agents/mcp_config.json`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
 
 
 ## 5. Current State

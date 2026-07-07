@@ -75,3 +75,16 @@ Nenhuma mutacao de producao foi executada nesta etapa de planejamento.
 - `specs/010-corrigir-advisors-supabase/contracts/triage-governance.md`
 - `specs/010-corrigir-advisors-supabase/contracts/remote-validation.md`
 - `specs/010-corrigir-advisors-supabase/checklists/security.md`
+
+## Geracao do backlog executavel
+
+- Em 2026-07-07 foi executado o fluxo `/speckit-tasks` para a feature 010.
+- O arquivo `specs/010-corrigir-advisors-supabase/tasks.md` foi gerado com 30 tarefas.
+- O backlog foi separado em:
+  - Setup e baseline remoto
+  - Foundational para matriz por assinatura e harness pgTAP
+  - US1 para exposicoes indevidas e `public.capacidades_perfil`
+  - US2 para warnings `auth_rls_initplan` e `multiple_permissive_policies`
+  - US3 para validacao remota e classificacao residual
+  - Polish para evidencias finais e reconciliacao documental
+- Dependencia importante registrada: US3 depende da conclusao de US1 e US2 porque a validacao remota compara o estado final das migrations de seguranca e performance.

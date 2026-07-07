@@ -53,7 +53,7 @@ Como responsavel pela operacao, quero um runbook para validar os advisors no pro
 **Acceptance Scenarios**:
 
 1. **Given** as correcoes versionadas aplicadas, **When** o runbook de validacao remota e executado, **Then** ele registra o resultado dos advisors antes e depois da mudanca.
-2. **Given** um achado que persiste apos a aplicacao, **When** o runbook e seguido, **Then** o resultado identifica se a causa provavel e drift remoto, concessao residual ou excecao aceita.
+2. **Given** um achado que persiste apos a aplicacao, **When** o runbook e seguido, **Then** o resultado identifica se a causa provavel e drift remoto, concessao residual ou excecao intencional.
 3. **Given** uma excecao intencional aprovada, **When** a validacao termina, **Then** a excecao fica documentada com criterio claro para reavaliacao futura.
 
 ### Edge Cases
@@ -158,5 +158,5 @@ Como responsavel pela operacao, quero um runbook para validar os advisors no pro
 - Os achados atuais de advisors no projeto remoto sao um ponto de partida valido para a feature, mas podem incluir drift ou diferencas de grants em relacao ao SQL versionado.
 - Funcoes privilegiadas podem continuar existindo no sistema desde que seu acesso permitido seja intencional, restrito e auditavelmente justificado.
 - Ajustes amplos de indices, chaves estrangeiras sem indice e indices nao usados permanecem fora desta feature, salvo se uma dependencia direta com RLS ou RPC surgir durante a triagem.
-- A validacao remota sera executada via MCP do Supabase contra o mesmo projeto de producao ja tratado pela feature de promocao, mas esta feature nao substitui o workflow completo de promocao operacional.
+- A validacao remota sera executada exclusivamente via MCP do Supabase contra o mesmo projeto de producao ja tratado pela feature de promocao; nenhuma operacao remota usara Supabase CLI ou linha de comando local para acessar o banco, garantindo que o runbook seja reproduzivel apenas com o ambiente MCP ja conectado. Esta feature nao substitui o workflow completo de promocao operacional.
 - A documentacao em `.agents` e `.sauron` continuara obrigatoria quando a execucao operacional da correcao ocorrer.
