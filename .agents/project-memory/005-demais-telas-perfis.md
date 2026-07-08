@@ -55,3 +55,31 @@ As features anteriores entregaram autenticacao, redirecionamento por persona e a
 - `.specify/feature.json`
 - `.agents/project-memory/005-demais-telas-perfis.md`
 - `.sauron/wiki/knowledge/architecture.md`
+
+## 2026-07-07 - Correcao do primeiro acesso em Configuracoes
+
+### O que foi feito
+
+Foi corrigido o fluxo de primeiro acesso da aba `Dados da Empresa`. O problema ocorria quando `obter_configuracoes_empresa()` era chamada antes de existir a linha singleton `config_unica` em `public.configuracoes_empresa`. O backend agora garante esse bootstrap ja na leitura por meio da migration `supabase/migrations/20260708020859_bootstrap_configuracoes_empresa_read.sql`.
+
+No frontend, `configuracoesService.obterConfiguracoesEmpresa()` passou a normalizar retorno nulo, indefinido ou vazio para uma estrutura inicial segura. Isso impede que a tela dependa de casts otimistas quando a RPC ainda nao entregou um objeto completo.
+
+Tambem foi adicionado um teste de regressao em `src/services/configuracoes.service.test.ts` para fixar o comportamento esperado no primeiro acesso.
+
+### Por que foi feito
+
+A aba administrativa precisa abrir utilizavel no onboarding inicial. O comportamento antigo exigia que a primeira escrita criasse a linha base, mas a primeira interacao do usuario e justamente a leitura da tela. Isso gerava estado inconsistente e erro de comportamento antes do primeiro salvamento.
+
+### Regras registradas
+
+- `public.configuracoes_empresa` continua sendo um singleton identificado por `config_unica`.
+- O bootstrap desse singleton deve acontecer antes da primeira leitura administrativa, nao apenas na primeira escrita.
+- O service do frontend deve devolver um objeto utilizavel para a UI mesmo quando a RPC vier sem linha util, preservando defaults do dominio.
+
+### Arquivos afetados
+
+- `supabase/migrations/20260708020859_bootstrap_configuracoes_empresa_read.sql`
+- `src/services/configuracoes.service.ts`
+- `src/services/configuracoes.service.test.ts`
+- `.sauron/wiki/modules/feature-005-demais-telas-perfis.md`
+- `.sauron/wiki/knowledge/module-data-schema.md`

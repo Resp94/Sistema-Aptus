@@ -131,10 +131,13 @@ input, select, textarea { font: inherit; }
   z-index: 20;
   position: sticky;
   top: 0;
+  align-self: stretch;
   height: 100vh;
+  min-height: 100%;
 }
 .app-sidebar .nav-scroll {
-  flex: 1;
+  flex: 0 1 auto;
+  min-height: 0;
   overflow-y: auto;
   padding-bottom: var(--space-2);
 }

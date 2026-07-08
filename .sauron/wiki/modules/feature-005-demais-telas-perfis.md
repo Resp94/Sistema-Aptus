@@ -79,3 +79,15 @@ Para ações que demandam serviços externos reais de terceiros (envio de e-mail
 - **Build do Vite**: Compilação sem nenhum aviso ou falha (`tsc -b && vite build` concluído com sucesso).
 - **Testes Unitários (Vitest)**: Todos os 42 testes passando com sucesso, incluindo os novos testes do service financeiro e permissões de rotas.
 - **Reset do Banco**: Executado com sucesso via Docker local sementes atualizados.
+
+---
+
+## 7. Correção de Primeiro Acesso em Configurações
+- **Problema**: no primeiro acesso de um administrador à aba `Dados da Empresa`, a RPC `obter_configuracoes_empresa()` podia retornar nenhuma linha porque `public.configuracoes_empresa` ainda não havia sido semeada. O frontend então assumia retorno válido e acabava propagando um estado incompatível com a renderização da tela.
+- **Decisão**: o bootstrap da linha única `config_unica` passou a acontecer já na leitura, não apenas na escrita.
+- **Justificativa**: a tela de configurações precisa abrir utilizável no primeiro acesso, com defaults coerentes, sem depender de um primeiro salvamento para criar a linha base.
+- **Defesa adicional no frontend**: `configuracoesService.obterConfiguracoesEmpresa()` agora normaliza retornos `null`, `undefined` ou arrays vazios para uma estrutura inicial segura, preservando defaults do domínio (`pt-BR`, `dd/MM/yyyy`, `BRL`, dia 5, multa 2, cobrança automática desativada).
+- **Arquivos afetados**:
+  - `supabase/migrations/20260708020859_bootstrap_configuracoes_empresa_read.sql`
+  - `src/services/configuracoes.service.ts`
+  - `src/services/configuracoes.service.test.ts`

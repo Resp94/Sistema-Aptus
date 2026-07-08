@@ -109,6 +109,18 @@ Movimentações financeiras que alimentam a agregação do Dashboard.
 * `data_vencimento` (date)
 * `status` (text, NOT NULL, default 'Pendente'): 'Pendente' ou 'Pago' (o estado 'Vencido' é derivado dinamicamente).
 
+### `configuracoes_empresa`
+Registro singleton das configurações globais da empresa usado pela aba administrativa de Configurações.
+* `id` (text, PK): valor único `config_unica`.
+* `razao_social`, `documento`, `email`, `telefone`, `endereco` (text): dados cadastrais preenchidos no onboarding administrativo.
+* `idioma` (text, NOT NULL, default `pt-BR`): idioma operacional inicial.
+* `formato_data` (text, NOT NULL, default `dd/MM/yyyy`): padrão de exibição de datas.
+* `moeda` (text, NOT NULL, default `BRL`): moeda operacional padrão.
+* `inicio_ano_fiscal` (date): data opcional para fechamento fiscal.
+* `dia_vencimento_padrao` (integer, NOT NULL, default `5`): dia sugerido para vencimentos.
+* `percentual_multa_atraso` (numeric(5,2), NOT NULL, default `2.00`): multa padrão.
+* `cobranca_automatica_ativa` (boolean, NOT NULL, default `false`): flag global de cobrança automática.
+
 ---
 
 ## 4. Triggers, Funções e Segurança
@@ -116,9 +128,10 @@ Movimentações financeiras que alimentam a agregação do Dashboard.
 * `permissao_modulo(p_modulo)`: Função `SECURITY DEFINER` e `SET row_security = off` que atua como fonte única de RBAC, retornando `(pode_ler, pode_escrever)` para o `auth.uid()` corrente de acordo com as permissões do módulo.
 * **RLS Policies**: Aplicado RLS nas 6 novas tabelas. A leitura é restrita a usuários authenticated com `pode_ler = true` no módulo correspondente; inserções, atualizações e exclusões exigem `pode_escrever = true` no módulo. Apenas `clientes` não permite exclusão física (soft delete via status 'Inativo').
 * **Trilha de Auditoria**: O enum de `audit_log.evento` foi expandido para suportar `'projeto_excluido'`, `'tarefa_excluida'` e `'cliente_inativado'`. Cada RPC destrutiva chama `registrar_evento_auditoria` internamente.
+* **Bootstrap de Configurações**: a RPC `public.obter_configuracoes_empresa()` agora garante a existência prévia da linha singleton `config_unica` antes do `SELECT`. Isso remove o acoplamento entre “primeira leitura” e “primeira escrita” no onboarding administrativo.
 
 ---
 
 ## 5. Data da Alteração
 * 2026-06-28
-
+* 2026-07-07

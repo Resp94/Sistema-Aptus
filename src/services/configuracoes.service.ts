@@ -6,6 +6,28 @@ import type {
   AuditoriaEventoItem
 } from '../types/configuracoes'
 
+function normalizarConfiguracaoEmpresa(
+  data: Partial<ConfiguracaoEmpresa> | Partial<ConfiguracaoEmpresa>[] | null | undefined
+): ConfiguracaoEmpresa {
+  const item = (Array.isArray(data) ? data[0] : data) ?? {}
+
+  return {
+    id: item.id || 'config_unica',
+    razao_social: item.razao_social || '',
+    documento: item.documento || '',
+    email: item.email || '',
+    telefone: item.telefone || '',
+    endereco: item.endereco || '',
+    idioma: item.idioma || 'pt-BR',
+    formato_data: item.formato_data || 'dd/MM/yyyy',
+    moeda: item.moeda || 'BRL',
+    inicio_ano_fiscal: item.inicio_ano_fiscal || '',
+    dia_vencimento_padrao: item.dia_vencimento_padrao ?? 5,
+    percentual_multa_atraso: item.percentual_multa_atraso ?? 2,
+    cobranca_automatica_ativa: item.cobranca_automatica_ativa ?? false
+  }
+}
+
 export const configuracoesService = {
   // --- CONFIGURAÇÕES DA EMPRESA (Restrito a Admin) ---
   async obterConfiguracoesEmpresa(): Promise<ConfiguracaoEmpresa> {
@@ -16,8 +38,7 @@ export const configuracoesService = {
       throw new Error(error.message || 'Erro ao carregar configurações globais.')
     }
 
-    // Retorna a linha única
-    return (Array.isArray(data) ? data[0] : data) as ConfiguracaoEmpresa
+    return normalizarConfiguracaoEmpresa(data as Partial<ConfiguracaoEmpresa> | Partial<ConfiguracaoEmpresa>[] | null | undefined)
   },
 
   async atualizarConfiguracoesEmpresa(payload: Partial<ConfiguracaoEmpresa>): Promise<boolean> {
