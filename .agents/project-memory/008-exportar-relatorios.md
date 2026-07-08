@@ -149,3 +149,38 @@ Executado `/speckit-implement` sobre `specs/008-exportar-relatorios/tasks.md` (8
 - pgTAP (`npm run db:test`): 367 assertions.
 - Vitest (`npm run test`): 113 testes.
 - `npm run build`: OK.
+
+## Deliberacao 011 - Padrao enterprise para relatorios exportados
+
+**Data**: 2026-07-08
+
+### Motivo
+
+A feature 008 entregou exportacao real, mas a validacao exploratoria mostrou dois desvios de produto:
+
+- o PDF ainda aparece com serializacao tecnica e copy inadequada para uso executivo;
+- o fluxo de download pode abrir preview no navegador, o que conflita com a expectativa aprovada de entrega direta do documento.
+
+### Decisao
+
+Foi aberta a feature Spec Kit `011-padrao-enterprise-relatorios` para padronizar a experiencia sem reabrir a arquitetura inteira da exportacao.
+
+### Regras aprovadas
+
+- `PDF` passa a ser o documento executivo oficial.
+- Nao deve haver preview no fluxo normal de download de PDF.
+- O PDF deve usar linguagem PT-BR correta, hierarquia visual consistente e zero vazamento de chaves tecnicas.
+- Exportacoes tabulares permanecem operacionais, mas recebem correcoes de encoding e nomenclatura.
+- Itens expirados permanecem no historico, sem download.
+
+### Artefatos criados
+
+- `specs/011-padrao-enterprise-relatorios/spec.md`
+- `specs/011-padrao-enterprise-relatorios/plan.md`
+- `specs/011-padrao-enterprise-relatorios/research.md`
+- `specs/011-padrao-enterprise-relatorios/data-model.md`
+- `specs/011-padrao-enterprise-relatorios/quickstart.md`
+- `specs/011-padrao-enterprise-relatorios/contracts/pdf-executivo.md`
+- `specs/011-padrao-enterprise-relatorios/contracts/download-sem-preview.md`
+- `specs/011-padrao-enterprise-relatorios/contracts/exportacao-tabular.md`
+- `specs/011-padrao-enterprise-relatorios/contracts/historico-e-validade.md`
