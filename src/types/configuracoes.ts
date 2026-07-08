@@ -1,3 +1,5 @@
+import type { PerfilAcesso } from './auth'
+
 export interface ConfiguracaoEmpresa {
   id: string
   razao_social: string
@@ -18,9 +20,18 @@ export interface UsuarioConfigItem {
   usuario_id: string
   nome: string
   email: string
-  perfil_acesso: string
+  perfil_acesso: PerfilAcesso
   status: 'Ativo' | 'Inativo'
   departamento: string | null
+}
+
+export interface CriarUsuarioConfiguracoesPayload {
+  nome: string
+  email: string
+  senha_temporaria: string
+  perfil_acesso: PerfilAcesso
+  departamento?: string | null
+  status: 'Ativo' | 'Inativo'
 }
 
 export interface PreferenciaNotificacaoItem {

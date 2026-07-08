@@ -13,11 +13,13 @@ O fluxo é totalmente baseado na arquitetura **RPC-first**:
    - `Comercial` -> `/clientes.html`
 4. **Recuperação de Senha**: No modal da tela de login, o usuário solicita recuperação. Um e-mail com link de redefinição é gerado via GoTrue (capturado pelo Inbucket no local dev). O link redireciona para a rota com hash de recovery, que é capturada pelo `ResetPassword.tsx` para alteração segura e posterior reautenticação forçada.
 5. **Auditoria**: Logins de sucesso e falha, além de mudanças de senha e criação de usuários, são gravados na tabela `audit_log` via RPC `registrar_evento_auditoria()`.
+6. **Criação Direta por Admin**: Na aba `Configurações > Contas e Acessos`, um administrador pode criar uma conta operacional sem convite por e-mail. O fluxo envia `nome`, `e-mail`, `senha temporária`, `perfil de acesso`, `status` e `departamento` para a RPC `criar_usuario_configuracoes`, que grava em `auth.users` e `auth.identities` e deixa a trigger padrão sincronizar `public.usuarios` e `public.perfis`.
 
 ## 3. Segurança e RLS
 * **Isolamento de Tabelas**: RLS habilitado em todas as tabelas (`usuarios`, `perfis`, `audit_log`).
 * **Trigger Sincronizada**: Qualquer alteração no schema `auth.users` é replicada em tempo real para `public.usuarios` e `public.perfis` via trigger pós-INSERT/UPDATE.
 * **Bypass de Recursão**: As funções auxiliares e triggers utilizam `SET row_security = off` para evitar loops de recursão no RLS.
+* **Provisionamento Controlado**: A criação administrativa de contas evita `signUp` no cliente e não depende de e-mail transacional. O controle de quem pode provisionar novos acessos fica centralizado na RPC protegida por RBAC.
 
 ## 4. Arquivos Afetados
 * `src/pages/Login.tsx` (Componente de Login React)
@@ -27,8 +29,10 @@ O fluxo é totalmente baseado na arquitetura **RPC-first**:
 * `src/types/auth.ts` (Tipos TypeScript de RBAC)
 * `src/App.tsx` (Roteamento SPA)
 * `supabase/migrations/00000000000000_usuarios_perfis.sql` (Migration do banco)
+* `supabase/migrations/20260708025456_create_usuario_configuracoes.sql` (RPC de cadastro direto por administrador)
 * `supabase/seed.sql` (Seed das personas)
 * `supabase/config.toml` (Configuração do Supabase)
 
 ## 5. Data da Alteração
 * 2026-06-27
+* 2026-07-07

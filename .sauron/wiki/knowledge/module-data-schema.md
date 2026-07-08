@@ -129,6 +129,7 @@ Registro singleton das configurações globais da empresa usado pela aba adminis
 * **RLS Policies**: Aplicado RLS nas 6 novas tabelas. A leitura é restrita a usuários authenticated com `pode_ler = true` no módulo correspondente; inserções, atualizações e exclusões exigem `pode_escrever = true` no módulo. Apenas `clientes` não permite exclusão física (soft delete via status 'Inativo').
 * **Trilha de Auditoria**: O enum de `audit_log.evento` foi expandido para suportar `'projeto_excluido'`, `'tarefa_excluida'` e `'cliente_inativado'`. Cada RPC destrutiva chama `registrar_evento_auditoria` internamente.
 * **Bootstrap de Configurações**: a RPC `public.obter_configuracoes_empresa()` agora garante a existência prévia da linha singleton `config_unica` antes do `SELECT`. Isso remove o acoplamento entre “primeira leitura” e “primeira escrita” no onboarding administrativo.
+* **Cadastro Administrativo de Usuários**: a RPC `public.criar_usuario_configuracoes(payload jsonb)` cria contas diretamente em `auth.users` e `auth.identities`, sem fluxo de convite. O uso é restrito a sessão autenticada com a capacidade `configuracoes.gerenciar_usuarios` e validação explícita de perfil `Administrador`. Após a trigger de sincronização materializar `public.usuarios` e `public.perfis`, a própria RPC ajusta `nome`, `perfil_acesso`, `status` e `departamento` finais no perfil e registra auditoria de `usuario_criado`.
 
 ---
 

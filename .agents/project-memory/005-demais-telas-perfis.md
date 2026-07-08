@@ -83,3 +83,38 @@ A aba administrativa precisa abrir utilizavel no onboarding inicial. O comportam
 - `src/services/configuracoes.service.test.ts`
 - `.sauron/wiki/modules/feature-005-demais-telas-perfis.md`
 - `.sauron/wiki/knowledge/module-data-schema.md`
+
+## 2026-07-07 - Cadastro direto de usuario por admin em Configuracoes
+
+### O que foi feito
+
+Foi implementado o fluxo ausente de criacao de usuario na aba `Contas e Acessos`. Em vez de depender de convite, o administrador agora pode abrir um modal na propria pagina `Configuracoes`, informar nome, e-mail, senha temporaria, perfil de acesso, status e departamento, e concluir o cadastro imediatamente.
+
+No frontend, a pagina ganhou estado e formulario dedicados ao novo modal, alem do service `configuracoesService.criarUsuarioConfiguracoes()`. No banco, a migration `supabase/migrations/20260708025456_create_usuario_configuracoes.sql` adiciona a RPC `public.criar_usuario_configuracoes(payload jsonb)` para provisionar a conta diretamente em `auth.users` e `auth.identities`.
+
+### Por que foi feito
+
+O comportamento esperado do onboarding administrativo e que o primeiro administrador consiga estruturar a empresa e criar os demais acessos sem depender de convite externo ou fluxo fora da tela. O erro relatado nao era um problema de permissao do admin, e sim ausencia do fluxo real de criacao.
+
+### Regras registradas
+
+- O fluxo administrativo de criacao de usuarios em `Configuracoes` nao usa link de convite.
+- Apenas administradores com a capacidade `configuracoes.gerenciar_usuarios` podem cadastrar contas.
+- O payload minimo obrigatorio e `nome`, `email` e `senha_temporaria`.
+- A senha temporaria deve ter no minimo 8 caracteres.
+- O perfil deve ser um valor valido do RBAC oficial: `Administrador`, `Financeiro`, `Projetos`, `Comercial`, `Tecnico` ou `Visualizador`.
+- O e-mail deve ser unico no `auth.users`.
+- A trigger de sincronizacao de `auth.users` continua sendo a responsavel por materializar `public.usuarios` e `public.perfis`; a RPC apenas complementa os dados finais de perfil depois da criacao.
+
+### Arquivos afetados
+
+- `supabase/migrations/20260708025456_create_usuario_configuracoes.sql`
+- `src/pages/ConfiguracoesPage.tsx`
+- `src/pages/ConfiguracoesPage.css`
+- `src/services/configuracoes.service.ts`
+- `src/services/configuracoes.service.test.ts`
+- `src/pages/ConfiguracoesPage.test.tsx`
+- `src/types/configuracoes.ts`
+- `.sauron/wiki/modules/feature-005-demais-telas-perfis.md`
+- `.sauron/wiki/knowledge/module-data-schema.md`
+- `.sauron/wiki/knowledge/login-e-autenticacao.md`

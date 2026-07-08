@@ -91,3 +91,27 @@ Para ações que demandam serviços externos reais de terceiros (envio de e-mail
   - `supabase/migrations/20260708020859_bootstrap_configuracoes_empresa_read.sql`
   - `src/services/configuracoes.service.ts`
   - `src/services/configuracoes.service.test.ts`
+
+---
+
+## 8. Cadastro Direto de Usuários em Configurações
+- **Problema**: a aba `Contas e Acessos` permitia apenas listar contas existentes e ajustar perfil/status. Não existia fluxo real para um administrador criar um novo usuário no primeiro acesso operacional da empresa.
+- **Decisão**: o cadastro de usuário passou a ser direto na própria tela de configurações, sem link de convite. O administrador informa `nome`, `e-mail`, `senha temporária`, `perfil de acesso`, `status` e `departamento`.
+- **Implementação**:
+  - O frontend ganhou modal de cadastro e integração com `configuracoesService.criarUsuarioConfiguracoes(...)`.
+  - O backend ganhou a RPC `public.criar_usuario_configuracoes(payload jsonb)`, protegida por `configuracoes.gerenciar_usuarios` e validação adicional de perfil administrador.
+  - A RPC cria a conta em `auth.users`, registra a identidade em `auth.identities`, aproveita a trigger de sincronização já existente para materializar `public.usuarios` e `public.perfis`, e então ajusta perfil/status/departamento finais.
+- **Regras de negócio**:
+  - Não usar convite por e-mail para esse fluxo administrativo.
+  - Apenas administradores com a capacidade `configuracoes.gerenciar_usuarios` podem cadastrar novas contas.
+  - A senha temporária deve ter pelo menos 8 caracteres.
+  - O e-mail deve ser único e o perfil informado deve pertencer ao conjunto RBAC oficial do sistema.
+  - Contas podem ser criadas já como `Inativo`, bloqueando login até ativação posterior.
+- **Arquivos afetados**:
+  - `supabase/migrations/20260708025456_create_usuario_configuracoes.sql`
+  - `src/pages/ConfiguracoesPage.tsx`
+  - `src/pages/ConfiguracoesPage.css`
+  - `src/services/configuracoes.service.ts`
+  - `src/services/configuracoes.service.test.ts`
+  - `src/pages/ConfiguracoesPage.test.tsx`
+  - `src/types/configuracoes.ts`

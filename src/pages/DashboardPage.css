@@ -16,11 +16,9 @@
 .project-progress-item .pp-percent { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
 .greeting { font-family: var(--font-display); font-size: var(--text-2xl); letter-spacing: -0.01em; margin: 0 0 var(--space-1); }
 .greeting-sub { font-family: var(--font-body); font-size: var(--text-sm); color: var(--muted); margin: 0 0 var(--space-5); }
-.metric-card[data-clickable] { cursor: pointer; transition: var(--motion-fast) var(--ease-standard); }
-.metric-card[data-clickable]:hover { box-shadow: var(--elev-raised); transform: translateY(-1px); }
+/* Regra de hover data-clickable movida para aptus.css (compartilhada com .card e .card-item) */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-  .metric-card[data-clickable]:hover { transform: none; }
 }
 @media (max-width: 1024px) { .metric-grid { grid-template-columns: repeat(2, 1fr); } .dashboard-grid { grid-template-columns: 1fr; } }
 @media (max-width: 480px) { .metric-grid { grid-template-columns: 1fr; } }

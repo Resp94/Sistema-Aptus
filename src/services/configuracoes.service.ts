@@ -2,6 +2,7 @@ import { supabase } from './supabase'
 import type {
   ConfiguracaoEmpresa,
   UsuarioConfigItem,
+  CriarUsuarioConfiguracoesPayload,
   PreferenciaNotificacaoItem,
   AuditoriaEventoItem
 } from '../types/configuracoes'
@@ -82,6 +83,19 @@ export const configuracoesService = {
     if (error) {
       console.error('Erro ao gerenciar conta do usuário:', error)
       throw new Error(error.message || 'Erro ao atualizar dados do usuário.')
+    }
+
+    return !!data
+  },
+
+  async criarUsuarioConfiguracoes(payload: CriarUsuarioConfiguracoesPayload): Promise<boolean> {
+    const { data, error } = await supabase.rpc('criar_usuario_configuracoes', {
+      payload
+    })
+
+    if (error) {
+      console.error('Erro ao criar usuário do sistema:', error)
+      throw new Error(error.message || 'Erro ao cadastrar novo usuário.')
     }
 
     return !!data

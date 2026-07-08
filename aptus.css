@@ -463,6 +463,39 @@ input, select, textarea { font: inherit; }
   gap: var(--space-2);
 }
 
+/* ─── Cards interativos (hover compartilhado) ──────────────── */
+.metric-card[data-clickable],
+.card[data-clickable],
+.card-item[data-clickable] {
+  cursor: pointer;
+  transition: var(--motion-fast) var(--ease-standard);
+}
+.metric-card[data-clickable]:hover,
+.card[data-clickable]:hover,
+.card-item[data-clickable]:hover {
+  box-shadow: var(--elev-raised);
+  transform: translateY(-1px);
+}
+/* Hover visual padrão em todos os cards (não clicáveis também se elevam) */
+.card,
+.card-item {
+  transition: var(--motion-fast) var(--ease-standard);
+}
+.card:hover,
+.card-item:hover {
+  box-shadow: var(--elev-raised);
+  transform: translateY(-1px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .metric-card[data-clickable]:hover,
+  .card[data-clickable]:hover,
+  .card-item[data-clickable]:hover,
+  .card:hover,
+  .card-item:hover {
+    transform: none;
+  }
+}
+
 /* ─── Metric Card ──────────────────────────────────────────── */
 .metric-card {
   background: var(--surface);

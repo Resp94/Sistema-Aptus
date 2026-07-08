@@ -7,7 +7,13 @@ import { podeLer } from '../lib/permissoes'
 import { pode } from '../lib/capacidades'
 import { rotaInicialPorPerfil } from '../lib/usuario'
 import { LoadingState, ErrorState } from '../components/ui/States'
-import type { ConfiguracaoEmpresa, UsuarioConfigItem, PreferenciaNotificacaoItem, AuditoriaEventoItem } from '../types/configuracoes'
+import type {
+  ConfiguracaoEmpresa,
+  UsuarioConfigItem,
+  PreferenciaNotificacaoItem,
+  AuditoriaEventoItem,
+  CriarUsuarioConfiguracoesPayload,
+} from '../types/configuracoes'
 import './ConfiguracoesPage.css'
 
 type TabConfig = 'minha-conta' | 'empresa' | 'usuarios' | 'auditoria'
@@ -50,6 +56,15 @@ export default function ConfiguracoesPage() {
   const [empMulta, setEmpMulta] = useState('2')
   const [empCobrancaAuto, setEmpCobrancaAuto] = useState(true)
 
+  // Modal cadastrar usuário
+  const [novoUsuarioModalOpen, setNovoUsuarioModalOpen] = useState(false)
+  const [formNovoUsuarioNome, setFormNovoUsuarioNome] = useState('')
+  const [formNovoUsuarioEmail, setFormNovoUsuarioEmail] = useState('')
+  const [formNovoUsuarioSenha, setFormNovoUsuarioSenha] = useState('')
+  const [formNovoUsuarioPerfil, setFormNovoUsuarioPerfil] = useState<CriarUsuarioConfiguracoesPayload['perfil_acesso']>('Visualizador')
+  const [formNovoUsuarioStatus, setFormNovoUsuarioStatus] = useState<'Ativo' | 'Inativo'>('Ativo')
+  const [formNovoUsuarioDepto, setFormNovoUsuarioDepto] = useState('')
+
   // Modal gerenciar usuário
   const [selectedUser, setSelectedUser] = useState<UsuarioConfigItem | null>(null)
   const [userModalOpen, setUserModalOpen] = useState(false)
@@ -62,6 +77,15 @@ export default function ConfiguracoesPage() {
     setTimeout(() => {
       setToastMsg(null)
     }, 3000)
+  }, [])
+
+  const resetNovoUsuarioForm = useCallback(() => {
+    setFormNovoUsuarioNome('')
+    setFormNovoUsuarioEmail('')
+    setFormNovoUsuarioSenha('')
+    setFormNovoUsuarioPerfil('Visualizador')
+    setFormNovoUsuarioStatus('Ativo')
+    setFormNovoUsuarioDepto('')
   }, [])
 
   // Carregar dados da aba ativa
@@ -174,6 +198,45 @@ export default function ConfiguracoesPage() {
     } catch (err: any) {
       console.error(err)
       showToast(err.message || 'Erro ao atualizar dados da empresa.')
+    }
+  }
+
+  const handleOpenNovoUsuario = () => {
+    resetNovoUsuarioForm()
+    setNovoUsuarioModalOpen(true)
+  }
+
+  const handleCadastrarUsuario = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    const payload: CriarUsuarioConfiguracoesPayload = {
+      nome: formNovoUsuarioNome.trim(),
+      email: formNovoUsuarioEmail.trim().toLowerCase(),
+      senha_temporaria: formNovoUsuarioSenha,
+      perfil_acesso: formNovoUsuarioPerfil,
+      departamento: formNovoUsuarioDepto.trim() || null,
+      status: formNovoUsuarioStatus,
+    }
+
+    if (!payload.nome || !payload.email || !payload.senha_temporaria) {
+      showToast('Nome, e-mail e senha são obrigatórios.')
+      return
+    }
+
+    if (payload.senha_temporaria.length < 8) {
+      showToast('A senha precisa ter pelo menos 8 caracteres.')
+      return
+    }
+
+    try {
+      await configuracoesService.criarUsuarioConfiguracoes(payload)
+      showToast('Novo usuário cadastrado com sucesso!')
+      setNovoUsuarioModalOpen(false)
+      resetNovoUsuarioForm()
+      fetchDados()
+    } catch (err: any) {
+      console.error(err)
+      showToast(err.message || 'Erro ao cadastrar novo usuário.')
     }
   }
 
@@ -457,7 +520,14 @@ export default function ConfiguracoesPage() {
             {/* 3. ABA USUÁRIOS */}
             {activeTab === 'usuarios' && isAdmin && (
               <div className="responsive-table-container card-box">
-                <h2 className="section-title margin-bottom-4">Gerenciamento de Contas e Perfis</h2>
+                <div className="row-between margin-bottom-4">
+                  <h2 className="section-title margin-bottom-0">Gerenciamento de Contas e Perfis</h2>
+                  {podeGerenciarUsuarios && (
+                    <button className="btn btn-primary" onClick={handleOpenNovoUsuario}>
+                      Cadastrar Usuário
+                    </button>
+                  )}
+                </div>
                 <table className="data-table">
                   <thead>
                     <tr>
@@ -528,6 +598,102 @@ export default function ConfiguracoesPage() {
               </div>
             )}
 
+          </div>
+        )}
+
+        {/* Modal Cadastrar Usuário (Admin) */}
+        {novoUsuarioModalOpen && (
+          <div className="modal-backdrop">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h3 className="modal-title">Cadastrar Novo Usuário</h3>
+                <button className="modal-close-btn" onClick={() => setNovoUsuarioModalOpen(false)}>×</button>
+              </div>
+              <form onSubmit={handleCadastrarUsuario}>
+                <div className="form-group">
+                  <label htmlFor="novo-usuario-nome">Nome Completo</label>
+                  <input
+                    id="novo-usuario-nome"
+                    type="text"
+                    required
+                    value={formNovoUsuarioNome}
+                    onChange={(e) => setFormNovoUsuarioNome(e.target.value)}
+                    placeholder="Ex: Maria Oliveira"
+                  />
+                </div>
+
+                <div className="form-group row-2">
+                  <div>
+                    <label htmlFor="novo-usuario-email">E-mail</label>
+                    <input
+                      id="novo-usuario-email"
+                      type="email"
+                      required
+                      value={formNovoUsuarioEmail}
+                      onChange={(e) => setFormNovoUsuarioEmail(e.target.value)}
+                      placeholder="usuario@empresa.com"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="novo-usuario-senha">Senha Temporária</label>
+                    <input
+                      id="novo-usuario-senha"
+                      type="password"
+                      required
+                      minLength={8}
+                      value={formNovoUsuarioSenha}
+                      onChange={(e) => setFormNovoUsuarioSenha(e.target.value)}
+                      placeholder="Mínimo de 8 caracteres"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group row-2">
+                  <div>
+                    <label htmlFor="novo-usuario-perfil">Perfil de Acesso</label>
+                    <select
+                      id="novo-usuario-perfil"
+                      value={formNovoUsuarioPerfil}
+                      onChange={(e) => setFormNovoUsuarioPerfil(e.target.value as CriarUsuarioConfiguracoesPayload['perfil_acesso'])}
+                    >
+                      <option value="Visualizador">Visualizador</option>
+                      <option value="Administrador">Administrador</option>
+                      <option value="Financeiro">Financeiro</option>
+                      <option value="Projetos">Projetos</option>
+                      <option value="Comercial">Comercial</option>
+                      <option value="Técnico">Técnico</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="novo-usuario-status">Status</label>
+                    <select
+                      id="novo-usuario-status"
+                      value={formNovoUsuarioStatus}
+                      onChange={(e) => setFormNovoUsuarioStatus(e.target.value as 'Ativo' | 'Inativo')}
+                    >
+                      <option value="Ativo">Ativo</option>
+                      <option value="Inativo">Inativo</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="novo-usuario-departamento">Departamento</label>
+                  <input
+                    id="novo-usuario-departamento"
+                    type="text"
+                    value={formNovoUsuarioDepto}
+                    onChange={(e) => setFormNovoUsuarioDepto(e.target.value)}
+                    placeholder="Ex: Financeiro / Comercial"
+                  />
+                </div>
+
+                <div className="modal-actions">
+                  <button type="button" className="btn btn-secondary" onClick={() => setNovoUsuarioModalOpen(false)}>Cancelar</button>
+                  <button type="submit" className="btn btn-primary">Cadastrar</button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
 
