@@ -118,3 +118,32 @@ O comportamento esperado do onboarding administrativo e que o primeiro administr
 - `.sauron/wiki/modules/feature-005-demais-telas-perfis.md`
 - `.sauron/wiki/knowledge/module-data-schema.md`
 - `.sauron/wiki/knowledge/login-e-autenticacao.md`
+
+## 2026-07-08 - Descontinuacao do avatar/foto de perfil em Configuracoes
+
+### O que foi feito
+
+Foi registrada a descontinuacao definitiva do contrato de avatar/foto de perfil associado a `Configuracoes` e ao perfil do usuario. A feature nao sera migrada para Supabase Storage nem para outro mecanismo de upload. O estado-alvo passa a remover `avatar_url` da documentacao funcional e do modelo atual de dados, preservando apenas o historico da decisao.
+
+Tambem foi consolidado que o shell continua representando o usuario apenas pelas iniciais do nome, sem fallback de imagem, sem upload manual e sem dependencia de URL externa de avatar.
+
+### Por que foi feito
+
+O campo `avatar_url` permaneceu como contrato vivo na documentacao apesar de nao sustentar uma experiencia real de produto e nao ter plano aprovado de persistencia/entrega. Manter esse campo como se estivesse ativo aumentava o risco de drift entre frontend, backend e memoria do projeto.
+
+### Regras registradas
+
+- A feature de avatar/foto de perfil foi descontinuada por decisao de produto e arquitetura.
+- Nao deve haver migracao dessa feature para Supabase Storage.
+- O contrato atual de perfil/configuracoes nao inclui `avatar_url`.
+- O shell de autenticacao e navegacao continua exibindo apenas as iniciais do nome do usuario.
+- O historico da decisao deve ser preservado em `.agents` e `.sauron`, sem reescrever entradas antigas.
+
+### Arquivos afetados
+
+- `.agents/project-memory/005-demais-telas-perfis.md`
+- `.sauron/wiki/knowledge/architecture.md`
+- `.sauron/wiki/knowledge/module-data-schema.md`
+- `.sauron/wiki/modules/feature-005-demais-telas-perfis.md`
+- `docs/banco-de-dados.md`
+- `docs/telas.md`

@@ -23,7 +23,6 @@ Dados aplicacionais e de acessibilidade (RBAC) de cada usuário.
 * `id` (uuid, PK): Identificador do perfil.
 * `usuario_id` (uuid, UNIQUE, FK -> `usuarios.id`): Relacionamento 1:1 com a conta do usuário.
 * `nome` (text, NOT NULL, PII): Nome exibido do usuário.
-* `avatar_url` (text): Link do avatar do perfil.
 * `perfil_acesso` (text, NOT NULL): RBAC ('Administrador', 'Financeiro', 'Projetos', 'Comercial', 'Técnico', 'Visualizador').
 * `status` (text, NOT NULL, default 'Ativo'): Controle de ativação ('Ativo', 'Inativo').
 * `departamento` (text): Setor de alocação.
@@ -130,9 +129,11 @@ Registro singleton das configurações globais da empresa usado pela aba adminis
 * **Trilha de Auditoria**: O enum de `audit_log.evento` foi expandido para suportar `'projeto_excluido'`, `'tarefa_excluida'` e `'cliente_inativado'`. Cada RPC destrutiva chama `registrar_evento_auditoria` internamente.
 * **Bootstrap de Configurações**: a RPC `public.obter_configuracoes_empresa()` agora garante a existência prévia da linha singleton `config_unica` antes do `SELECT`. Isso remove o acoplamento entre “primeira leitura” e “primeira escrita” no onboarding administrativo.
 * **Cadastro Administrativo de Usuários**: a RPC `public.criar_usuario_configuracoes(payload jsonb)` cria contas diretamente em `auth.users` e `auth.identities`, sem fluxo de convite. O uso é restrito a sessão autenticada com a capacidade `configuracoes.gerenciar_usuarios` e validação explícita de perfil `Administrador`. Após a trigger de sincronização materializar `public.usuarios` e `public.perfis`, a própria RPC ajusta `nome`, `perfil_acesso`, `status` e `departamento` finais no perfil e registra auditoria de `usuario_criado`.
+* **Avatar Descontinuado**: em 2026-07-08, a decisão de produto/arquitetura removeu `avatar_url` do contrato vivo de `public.perfis` e das configurações do usuário. Não haverá migração para Supabase Storage; a identificação visual do shell permanece restrita às iniciais do nome.
 
 ---
 
 ## 5. Data da Alteração
 * 2026-06-28
 * 2026-07-07
+* 2026-07-08

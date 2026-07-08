@@ -600,6 +600,18 @@ Não faz parte desta página:
   - Alterado: `specs/010-corrigir-advisors-supabase/triagem.md`, `runbook-validacao.md`, `quickstart.md`
   - Alterado: `.sauron/wiki/knowledge/architecture.md`
 
+### 2026-07-08 — Descontinuação arquitetural do avatar de perfil
+- **What was done**: Foi registrada a descontinuação da feature de avatar/foto de perfil como decisão arquitetural e de produto. A documentação corrente passou a tratar `avatar_url` como contrato removido, sem migração para Supabase Storage e sem roadmap ativo de upload de imagem para `Configurações`.
+- **Why it was done**: O campo existia como contrato vivo na documentação, mas não sustentava uma capacidade aprovada do sistema. Mantê-lo ativo aumentava o risco de drift entre UI, schema e memória de projeto.
+- **Impact on the system**: O estado-alvo documentado do sistema elimina `avatar_url` do contrato atual de `perfis` e de `Configurações`. A representação visual no shell permanece baseada apenas nas iniciais do nome do usuário.
+- **Files affected**:
+  - Alterado: `.agents/project-memory/005-demais-telas-perfis.md`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+  - Alterado: `.sauron/wiki/knowledge/module-data-schema.md`
+  - Alterado: `.sauron/wiki/modules/feature-005-demais-telas-perfis.md`
+  - Alterado: `docs/banco-de-dados.md`
+  - Alterado: `docs/telas.md`
+
 ## 5. Current State
 - Vincular o projeto local ao Supabase Cloud e documentar o processo de `db push`.
 - Atualizar esta página quando novas decisões arquiteturais forem tomadas.

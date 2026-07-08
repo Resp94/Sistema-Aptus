@@ -48,7 +48,6 @@ describe('ConfiguracoesPage - gestão de usuários', () => {
         nome: 'Admin',
         perfil_acesso: 'Administrador',
         status: 'Ativo',
-        avatar_url: null,
         departamento: null,
       },
       permissoes: [{ modulo: 'configuracoes', pode_ler: true, pode_escrever: true }],
@@ -57,7 +56,7 @@ describe('ConfiguracoesPage - gestão de usuários', () => {
     })
 
     mockObterMinhasConfiguracoes.mockResolvedValue({
-      perfil: { nome: 'Admin', avatar_url: null, perfil_acesso: 'Administrador', departamento: null },
+      perfil: { nome: 'Admin', perfil_acesso: 'Administrador', departamento: null },
       usuario: { email: 'admin@aptusflow.local' },
     })
     mockListarPreferenciasNotificacoes.mockResolvedValue([])
@@ -72,6 +71,18 @@ describe('ConfiguracoesPage - gestão de usuários', () => {
       },
     ])
     mockCriarUsuarioConfiguracoes.mockResolvedValue(true)
+  })
+
+  it('não renderiza o campo Avatar URL na aba Minha Conta', async () => {
+    render(
+      <MemoryRouter>
+        <ConfiguracoesPage />
+      </MemoryRouter>,
+    )
+
+    await screen.findByDisplayValue('admin@aptusflow.local')
+
+    expect(screen.queryByText('Avatar URL')).not.toBeInTheDocument()
   })
 
   it('permite que administrador cadastre um novo usuário pela aba Contas e Acessos', async () => {

@@ -264,7 +264,7 @@ A maioria das telas compartilha a estrutura base:
 **Componentes:**
 
 - **Cards de métricas**: Total de membros, Projetos ativos, Em projeto ativo, Ausentes
-- **Tabela de equipe** (avatar, função, status, situação, projeto atual)
+- **Tabela de equipe** (identificação textual, função, status, situação, projeto atual)
 - **Alocação por projeto**
 - **Visão de capacidade**
 - **Modais**: Novo membro, Editar membro, Alocar membro
@@ -307,7 +307,7 @@ A maioria das telas compartilha a estrutura base:
 
 **Rota:** `/configuracoes`
 
-**Objetivo:** Configurar preferências do sistema, usuários e integrações.
+**Objetivo:** Configurar preferências do sistema, usuários e integrações. A tela não mantém avatar/foto de perfil como capacidade ativa.
 **Acesso:** Administrador (geral), Profissional Técnico (apenas dados próprios)
 
 **Componentes (abas verticais):**
@@ -326,6 +326,11 @@ A maioria das telas compartilha a estrutura base:
 - Configurar dados da empresa
 - Gerenciar usuários e permissões
 - Ajustar notificações e tema
+
+**Notas de estado atual:**
+
+- O shell continua identificando o usuário apenas pelas iniciais do nome.
+- A feature de avatar/foto de perfil foi descontinuada e não será migrada para storage.
 
 ---
 

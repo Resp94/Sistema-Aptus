@@ -53,7 +53,6 @@ const PERFIL_ADMIN: PerfilUsuario = {
   nome: 'Ana Admin',
   perfil_acesso: 'Administrador',
   status: 'Ativo',
-  avatar_url: null,
   departamento: null,
 }
 

@@ -25,7 +25,7 @@ Espelho dos dados do provedor de autenticação. Não contém regras de negócio
 | email_confirmed_at | timestamp | Data de confirmação do email |
 | phone | text | Telefone vinculado à conta |
 | phone_confirmed_at | timestamp | Data de confirmação do telefone |
-| raw_user_meta_data | jsonb | Metadados públicos do usuário (ex.: nome, avatar) |
+| raw_user_meta_data | jsonb | Metadados públicos do usuário (ex.: nome, departamento) |
 | raw_app_meta_data | jsonb | Metadados internos do app controlados pelo backend |
 | aud | text | Audience do token de autenticação |
 | created_at | timestamp | Data de criação da conta no auth |
@@ -41,12 +41,13 @@ Dados aplicacionais de cada usuário autenticado.
 | id | uuid pk | - |
 | usuario_id | uuid fk | Referência a `usuarios.id` (1:1) |
 | nome | text | Nome completo exibido no sistema |
-| avatar_url | text | URL do avatar |
 | perfil_acesso | text | Perfil RBAC: Administrador, Financeiro, Operacional, Visualizador |
 | status | text | Ativo ou Inativo |
 | departamento | text | Departamento/setor |
 | created_at | timestamp | - |
 | updated_at | timestamp | - |
+
+Observação atual: a feature de avatar/foto de perfil foi descontinuada em 2026-07-08. O contrato vivo de `perfis` não inclui `avatar_url`, e o shell do sistema usa apenas as iniciais do nome do usuário.
 
 ## clientes
 

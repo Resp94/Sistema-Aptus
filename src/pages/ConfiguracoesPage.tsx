@@ -43,7 +43,6 @@ export default function ConfiguracoesPage() {
 
   // Forms
   const [formNome, setFormNome] = useState('')
-  const [formAvatar, setFormAvatar] = useState('')
   const [formDepto, setFormDepto] = useState('')
 
   // Form Empresa
@@ -101,7 +100,6 @@ export default function ConfiguracoesPage() {
         setMinhaConta(me)
         setPreferencias(prefs)
         setFormNome(me.perfil?.nome || '')
-        setFormAvatar(me.perfil?.avatar_url || '')
         setFormDepto(me.perfil?.departamento || '')
       } else if (activeTab === 'empresa' && isAdmin) {
         const data = await configuracoesService.obterConfiguracoesEmpresa()
@@ -150,7 +148,6 @@ export default function ConfiguracoesPage() {
     try {
       await configuracoesService.atualizarMinhasConfiguracoes({
         nome: formNome.trim(),
-        avatar_url: formAvatar.trim() || null,
         departamento: formDepto.trim() || null
       })
       showToast('Seus dados cadastrais foram atualizados!')
@@ -342,17 +339,6 @@ export default function ConfiguracoesPage() {
                       required 
                       value={formNome} 
                       onChange={(e) => setFormNome(e.target.value)} 
-                      disabled={!podeEditarProprioPerfil}
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Avatar URL</label>
-                    <input 
-                      type="text" 
-                      value={formAvatar} 
-                      onChange={(e) => setFormAvatar(e.target.value)} 
-                      placeholder="https://..."
                       disabled={!podeEditarProprioPerfil}
                     />
                   </div>

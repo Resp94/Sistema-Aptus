@@ -112,6 +112,28 @@ Para ações que demandam serviços externos reais de terceiros (envio de e-mail
   - `src/pages/ConfiguracoesPage.tsx`
   - `src/pages/ConfiguracoesPage.css`
   - `src/services/configuracoes.service.ts`
-  - `src/services/configuracoes.service.test.ts`
-  - `src/pages/ConfiguracoesPage.test.tsx`
-  - `src/types/configuracoes.ts`
+- `src/services/configuracoes.service.test.ts`
+- `src/pages/ConfiguracoesPage.test.tsx`
+- `src/types/configuracoes.ts`
+
+---
+
+## 9. Descontinuação do Avatar/Foto de Perfil
+- **Problema**: a documentação e parte do contrato funcional de `Configurações` ainda carregavam a noção de avatar/foto de perfil via `avatar_url`, embora a interface ativa não dependesse dessa feature como experiência de produto consolidada.
+- **Decisão**: a feature foi descontinuada. Não haverá migração para Supabase Storage, upload de imagem nem manutenção de um contrato vivo para avatar.
+- **Estado atual aprovado**:
+  - o shell continua mostrando apenas as iniciais do nome do usuário;
+  - `Configurações` deixa de tratar avatar/foto de perfil como dado ativo;
+  - a documentação atual de schema e telas não deve listar `avatar_url` como campo vigente.
+- **Justificativa**: manter um contrato morto criava drift entre backend, frontend e memória arquitetural, além de sugerir um roadmap de mídia que não foi aprovado.
+- **Impacto documentado**:
+  - remoção de `avatar_url` da documentação corrente de `perfis`;
+  - alinhamento da narrativa funcional da tela `Configurações`;
+  - preservação do histórico da decisão em `.agents` e `.sauron`.
+- **Arquivos afetados**:
+  - `.agents/project-memory/005-demais-telas-perfis.md`
+  - `.sauron/wiki/knowledge/architecture.md`
+  - `.sauron/wiki/knowledge/module-data-schema.md`
+  - `.sauron/wiki/modules/feature-005-demais-telas-perfis.md`
+  - `docs/banco-de-dados.md`
+  - `docs/telas.md`

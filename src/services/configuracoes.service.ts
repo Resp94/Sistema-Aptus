@@ -115,7 +115,6 @@ export const configuracoesService = {
 
   async atualizarMinhasConfiguracoes(payload: {
     nome?: string
-    avatar_url?: string | null
     departamento?: string | null
   }): Promise<boolean> {
     const { data, error } = await supabase.rpc('atualizar_minhas_configuracoes', {
