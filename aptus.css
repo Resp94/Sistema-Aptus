@@ -33,14 +33,14 @@
   --font-body: "jjannon", "Iowan Old Style", "Palatino Linotype", "URW Palladio L", P052, ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   --font-mono: "berkeleyMono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --font-ui: system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  --text-xs: 11px;
-  --text-sm: 14px;
-  --text-base: 15px;
-  --text-lg: 17px;
-  --text-xl: 22px;
-  --text-2xl: 26px;
-  --text-3xl: 36px;
-  --text-4xl: 72px;
+  --text-xs: clamp(10px, 0.6vw + 8px, 11px);
+  --text-sm: clamp(13px, 0.6vw + 11px, 14px);
+  --text-base: clamp(14px, 0.4vw + 13px, 15px);
+  --text-lg: clamp(15px, 0.6vw + 13px, 17px);
+  --text-xl: clamp(18px, 1vw + 14px, 22px);
+  --text-2xl: clamp(20px, 1.2vw + 16px, 26px);
+  --text-3xl: clamp(24px, 2vw + 18px, 36px);
+  --text-4xl: clamp(32px, 4vw + 20px, 72px);
   --leading-body: 1.5;
   --leading-tight: 1.15;
   --tracking-display: -0.03em;
@@ -145,7 +145,7 @@ input, select, textarea { font: inherit; }
 .app-sidebar .nav-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 .app-sidebar .logo {
   font-family: var(--font-display);
-  font-size: 20px;
+  font-size: var(--text-xl);
   letter-spacing: var(--tracking-display);
   padding: 0 var(--space-5);
   margin-bottom: var(--space-2);
@@ -356,7 +356,81 @@ input, select, textarea { font: inherit; }
   box-shadow: var(--elev-raised);
 }
 
+/* ─── Mobile: backdrop + overlay + hamburger ──────────────── */
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 90;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.app-shell.sidebar-mobile-open .sidebar-backdrop {
+  display: block;
+  opacity: 1;
+}
 
+.hamburger-btn {
+  display: none;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-md);
+  color: var(--muted);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: var(--motion-fast) var(--ease-standard);
+  flex-shrink: 0;
+}
+.hamburger-btn:hover {
+  background: var(--border-soft);
+  color: var(--fg);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.hide-mobile { display: initial; }
+
+@media (max-width: 768px) {
+  .sidebar-backdrop {
+    display: none !important;
+  }
+  .app-shell.sidebar-mobile-open .sidebar-backdrop {
+    display: block !important;
+  }
+  .hamburger-btn { display: flex; z-index: 110; }
+  .hide-mobile { display: none; }
+  .app-sidebar {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: -280px;
+    width: 280px;
+    height: 100vh;
+    z-index: 100;
+    grid-row: auto;
+    grid-column: auto;
+    transition: left 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: var(--elev-raised);
+  }
+  .app-shell.sidebar-mobile-open .app-sidebar {
+    left: 0;
+  }
+  /* Garante que nav links fechem a sidebar ao serem clicados */
+  .app-shell.sidebar-mobile-open .app-sidebar nav a {
+    cursor: pointer;
+  }
+  .app-shell.sidebar-mobile-open .app-header {
+    z-index: 105;
+  }
+}
 
 .app-header {
   grid-column: 2;
@@ -514,7 +588,7 @@ input, select, textarea { font: inherit; }
 }
 .metric-card .metric-value {
   font-family: var(--font-display);
-  font-size: 28px;
+  font-size: var(--text-3xl);
   letter-spacing: var(--tracking-display);
   line-height: 1;
   color: var(--fg);
@@ -923,14 +997,39 @@ input, select, textarea { font: inherit; }
 }
 @media (max-width: 768px) {
   .app-shell { grid-template-columns: 1fr; }
-  .app-sidebar { display: none; }
   .app-header { grid-column: 1; }
   .app-content { grid-column: 1; }
   .grid-2, .grid-3, .grid-4, .grid-2-1, .grid-1-2 { grid-template-columns: 1fr; }
   .form-row { grid-template-columns: 1fr; }
+  /* Touch targets maiores em mobile (mantém padding original p/ não cortar) */
+  .app-sidebar nav a {
+    padding: 12px var(--space-3);
+    min-height: 48px;
+  }
+  .app-sidebar .user-info {
+    padding: var(--space-4) var(--space-4);
+    min-height: 52px;
+  }
+  .btn { min-height: 44px; }
+  .btn-sm { min-height: 36px; padding: 6px 14px; }
+  .btn-ghost { padding-inline: 10px; }
+  .input, .textarea, .select { min-height: 44px; font-size: 16px; }
+  .app-header .header-actions .btn-icon { width: 44px; height: 44px; }
+  .hamburger-btn { width: 44px; height: 44px; }
 }
 @media (max-width: 480px) {
   .app-content { padding: var(--space-4); }
   .filter-bar { flex-direction: column; align-items: stretch; }
   .filter-bar .search-input { min-width: 0; }
+  /* Inputs maiores para evitar zoom no iOS */
+  .input, .textarea, .select { font-size: 16px; }
+  /* Page header: empilha e botão fica 100% */
+  .page-header { flex-direction: column; align-items: stretch; }
+  .page-header .header-buttons,
+  .page-header .btn,
+  .page-header .btn-primary { width: 100%; justify-content: center; }
+}
+/* Evita zoom automático no iOS ao focar inputs */
+@media screen and (max-width: 480px) {
+  input, textarea, select { font-size: 16px !important; }
 }

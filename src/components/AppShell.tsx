@@ -23,6 +23,7 @@ export function AppShell({ titulo, headerActions, children }: AppShellProps) {
     () => localStorage.getItem('aptus-sidebar') === 'collapsed',
   )
   const [popoverAberto, setPopoverAberto] = useState(false)
+  const [mobileAberto, setMobileAberto] = useState(false)
 
   const itens = filtrarNavPorPermissoes(ITENS_NAV, permissoes)
 
@@ -31,6 +32,14 @@ export function AppShell({ titulo, headerActions, children }: AppShellProps) {
     document.addEventListener('click', fechar)
     return () => document.removeEventListener('click', fechar)
   }, [])
+
+  function alternarMobileNav() {
+    setMobileAberto((v) => !v)
+  }
+
+  function fecharMobileNav() {
+    setMobileAberto(false)
+  }
 
   function alternarSidebar() {
     setColapsada((c) => {
@@ -54,10 +63,11 @@ export function AppShell({ titulo, headerActions, children }: AppShellProps) {
   }
 
   return (
-    <div className={`app-shell${colapsada ? ' sidebar-collapsed' : ''}`}>
+    <div className={`app-shell${colapsada ? ' sidebar-collapsed' : ''}${mobileAberto ? ' sidebar-mobile-open' : ''}`}>
+      <div className="sidebar-backdrop" onClick={fecharMobileNav}></div>
       <aside className="app-sidebar">
         <div className="logo"><span className="logo-dot"></span><span>Aptus Flow</span></div>
-        <button className="sidebar-toggle" onClick={alternarSidebar} aria-label="Recolher sidebar">
+        <button className="sidebar-toggle hide-mobile" onClick={alternarSidebar} aria-label="Recolher sidebar">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
         </button>
         <div className="nav-scroll">
@@ -74,6 +84,7 @@ export function AppShell({ titulo, headerActions, children }: AppShellProps) {
                       to={item.rota}
                       className={location.pathname === item.rota ? 'active' : undefined}
                       data-tooltip={item.rotulo}
+                      onClick={fecharMobileNav}
                     >
                       {NAV_ICONS[item.icone]}
                       <span className="nav-label">{item.rotulo}</span>
@@ -104,7 +115,12 @@ export function AppShell({ titulo, headerActions, children }: AppShellProps) {
       </aside>
 
       <header className="app-header">
-        <div className="page-title">{titulo}</div>
+        <div className="header-left">
+          <button className="hamburger-btn" onClick={alternarMobileNav} aria-label="Abrir menu">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <div className="page-title">{titulo}</div>
+        </div>
         <div className="header-actions">{headerActions}</div>
       </header>
 
