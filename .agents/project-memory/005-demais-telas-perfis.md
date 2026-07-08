@@ -147,3 +147,81 @@ O campo `avatar_url` permaneceu como contrato vivo na documentacao apesar de nao
 - `.sauron/wiki/modules/feature-005-demais-telas-perfis.md`
 - `docs/banco-de-dados.md`
 - `docs/telas.md`
+
+## 2026-07-08 - Spec para estado "Em breve" em Preferencias de Notificacoes
+
+### O que foi feito
+
+Foi escrita a spec `docs/superpowers/specs/2026-07-08-notificacoes-em-breve-design.md` para redefinir a seção `Preferências de Notificações` da aba `Minha Conta` como um placeholder honesto de produto, em vez de uma configuração ativa.
+
+A spec formaliza que a UI deve manter o card, remover os toggles e substituí-los por um estado estático `Em breve`, com mensagem curta explicando que notificações personalizadas por canal ainda não estão disponíveis.
+
+### Por que foi feito
+
+O comportamento atual sugere uma funcionalidade pronta, mas hoje nenhuma preferência salva entrega notificações reais no sistema. Isso transforma a seção em promessa falsa de produto e gera ruído adicional quando a lista aparece vazia por depender de seed.
+
+### Regras registradas
+
+- Enquanto não houver entrega real de notificações, a seção não deve exibir controles interativos.
+- O card de notificações deve permanecer visível para preservar a intenção futura da funcionalidade.
+- O estado aprovado para esta etapa e `Em breve`, sem data prometida.
+- A experiência da tela não deve depender da existência de linhas em `public.preferencias_notificacoes`.
+- A reativação futura dos toggles exige fluxo real de entrega e defaults explícitos para todos os perfis.
+
+### Arquivos afetados
+
+- `docs/superpowers/specs/2026-07-08-notificacoes-em-breve-design.md`
+- `.agents/project-memory/005-demais-telas-perfis.md`
+- `.sauron/wiki/modules/feature-005-demais-telas-perfis.md`
+
+## 2026-07-08 - Plano de implementacao para "Em breve" em Preferencias de Notificacoes
+
+### O que foi feito
+
+Foi escrito o plano `docs/superpowers/plans/2026-07-08-notificacoes-em-breve.md` para implementar a decisao aprovada na spec de notificacoes. O plano divide o trabalho em testes de regressao da pagina, troca da UI por placeholder estatico, limpeza da superficie morta do frontend e atualizacao da documentacao funcional.
+
+### Por que foi feito
+
+A spec aprovada ja fixou a direcao de produto. Faltava o desdobramento operacional em passos executaveis, pequenos e verificaveis, sem expandir o escopo para backend/schema que permanecem fora desta etapa.
+
+### Regras registradas
+
+- A implementacao desta iteracao fica restrita ao frontend e a documentacao.
+- `public.preferencias_notificacoes` e suas RPCs permanecem intactas no backend nesta etapa.
+- O frontend deve deixar de depender de leitura/escrita de preferencias para renderizar `Minha Conta`.
+- A verificacao obrigatoria inclui teste direcionado da pagina, teste do service e build completo.
+
+### Arquivos afetados
+
+- `docs/superpowers/plans/2026-07-08-notificacoes-em-breve.md`
+- `.agents/project-memory/005-demais-telas-perfis.md`
+- `.sauron/wiki/modules/feature-005-demais-telas-perfis.md`
+
+## 2026-07-08 - Implementacao do placeholder "Em breve" em Preferencias de Notificacoes
+
+### O que foi feito
+
+Foi implementada a troca dos toggles interativos de `Preferências de Notificações` por um placeholder estático `Em breve` na aba `Minha Conta` de `Configurações`. Os métodos `listarPreferenciasNotificacoes` e `atualizarPreferenciasNotificacoes` foram removidos do service e do types do frontend, junto com o tipo `PreferenciaNotificacaoItem`. A interface agora exibe apenas o card informativo sem toggles e sem depender de RPCs/seed para essa seção.
+
+### Por que foi feito
+
+A seção anterior exibia controles interativos que sugeriam uma funcionalidade pronta, mas nenhuma preferência salva entrega notificações reais no sistema. O placeholder honesto evita promessa falsa de produto.
+
+### Regras registradas
+
+- A UI de notificacoes nao deve exibir toggles enquanto nao houver entrega real.
+- O card permanece visivel para preservar a intencao futura da funcionalidade.
+- O backend e schema de `public.preferencias_notificacoes` nao foram modificados.
+- A reativacao futura exige fluxo real de entrega.
+
+### Arquivos afetados
+
+- `src/pages/ConfiguracoesPage.tsx`
+- `src/pages/ConfiguracoesPage.css`
+- `src/services/configuracoes.service.ts`
+- `src/types/configuracoes.ts`
+- `src/pages/ConfiguracoesPage.test.tsx`
+- `docs/telas.md`
+- `docs/banco-de-dados.md`
+- `.agents/project-memory/005-demais-telas-perfis.md`
+- `.sauron/wiki/modules/feature-005-demais-telas-perfis.md`

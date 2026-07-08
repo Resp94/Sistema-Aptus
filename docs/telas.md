@@ -314,7 +314,7 @@ A maioria das telas compartilha a estrutura base:
 
 - **Geral**: dados da empresa, idioma, formato de data, moeda
 - **Financeiro**: dia de fechamento, ano fiscal, vencimento padrão, multa, cobrança automática
-- **Notificações**: lembretes, alertas por email, notificações no sistema, relatório semanal
+- **Notificações**: card informativo com status `Em breve`, sem toggles ativos nesta etapa
 - **Usuários**: tabela com perfis (Administrador, Financeiro, Operacional, Visualizador) e status Ativo/Inativo
 - **Integrações**: API pública, webhook, exportação automática
 - **Aparência**: tema claro/escuro
@@ -325,7 +325,7 @@ A maioria das telas compartilha a estrutura base:
 
 - Configurar dados da empresa
 - Gerenciar usuários e permissões
-- Ajustar notificações e tema
+- Ajustar tema (notificações em breve)
 
 **Notas de estado atual:**
 

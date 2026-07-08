@@ -387,6 +387,8 @@ Preferências de notificações por usuário.
 | ativo | boolean | Ativo ou inativo |
 | updated_at | timestamp | - |
 
+Observação (2026-07-08): a UI de `Configurações > Minha Conta` passou a tratar essa funcionalidade como `Em breve`. A tabela e as RPCs permanecem disponíveis no backend, mas não sustentam uma configuração ativa no frontend nesta etapa.
+
 ---
 
 ## Relacionamentos principais

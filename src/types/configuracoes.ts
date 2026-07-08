@@ -34,14 +34,6 @@ export interface CriarUsuarioConfiguracoesPayload {
   status: 'Ativo' | 'Inativo'
 }
 
-export interface PreferenciaNotificacaoItem {
-  id: string
-  perfil_id: string
-  canal: 'Email' | 'Sistema'
-  tipo: 'Lembretes' | 'Alertas' | 'Relatorio semanal' | 'Cobrancas'
-  ativo: boolean
-}
-
 export interface AuditoriaEventoItem {
   id: string
   evento: string

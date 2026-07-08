@@ -121,4 +121,22 @@ describe('ConfiguracoesPage - gestão de usuários', () => {
       })
     })
   })
+
+  it('exibe placeholder de notificações em breve sem toggles e sem carregar preferências', async () => {
+    render(
+      <MemoryRouter>
+        <ConfiguracoesPage />
+      </MemoryRouter>,
+    )
+
+    await screen.findByDisplayValue('admin@aptusflow.local')
+
+    expect(screen.getByText('Preferências de Notificações')).toBeInTheDocument()
+    expect(screen.getByText(/em breve/i)).toBeInTheDocument()
+    expect(
+      screen.getByText(/notificações personalizadas por canal/i),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
+    expect(mockListarPreferenciasNotificacoes).not.toHaveBeenCalled()
+  })
 })

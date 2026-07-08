@@ -3,7 +3,6 @@ import type {
   ConfiguracaoEmpresa,
   UsuarioConfigItem,
   CriarUsuarioConfiguracoesPayload,
-  PreferenciaNotificacaoItem,
   AuditoriaEventoItem
 } from '../types/configuracoes'
 
@@ -124,33 +123,6 @@ export const configuracoesService = {
     if (error) {
       console.error('Erro ao atualizar minhas configurações:', error)
       throw new Error(error.message || 'Erro ao salvar seus dados cadastrais.')
-    }
-
-    return !!data
-  },
-
-  // --- PREFERÊNCIAS DE NOTIFICAÇÕES (Todos os usuários logados) ---
-  async listarPreferenciasNotificacoes(): Promise<PreferenciaNotificacaoItem[]> {
-    const { data, error } = await supabase.rpc('listar_preferencias_notificacoes')
-
-    if (error) {
-      console.error('Erro ao listar preferências de notificações:', error)
-      throw new Error(error.message || 'Erro ao obter preferências de notificação.')
-    }
-
-    return (data || []) as PreferenciaNotificacaoItem[]
-  },
-
-  async atualizarPreferenciasNotificacoes(
-    payload: Array<{ canal: string; tipo: string; ativo: boolean }> | { canal: string; tipo: string; ativo: boolean }
-  ): Promise<boolean> {
-    const { data, error } = await supabase.rpc('atualizar_preferencias_notificacoes', {
-      payload
-    })
-
-    if (error) {
-      console.error('Erro ao atualizar preferências de notificações:', error)
-      throw new Error(error.message || 'Erro ao salvar preferências.')
     }
 
     return !!data

@@ -137,3 +137,67 @@ Para ações que demandam serviços externos reais de terceiros (envio de e-mail
   - `.sauron/wiki/modules/feature-005-demais-telas-perfis.md`
   - `docs/banco-de-dados.md`
   - `docs/telas.md`
+
+---
+
+## 10. Spec aprovada para "Em breve" em Preferências de Notificações
+- **Problema**: a seção `Preferências de Notificações` em `Configurações > Minha Conta` renderiza controles reais e conversa com RPCs/seed, mas hoje nenhuma dessas preferências dirige entrega efetiva de notificações no produto.
+- **Opções consideradas**:
+  - manter placeholder honesto na própria seção;
+  - manter toggles desabilitados com rótulo `Em breve`;
+  - remover a seção inteira até existir a feature completa.
+- **Escolha**: manter a seção visível e substituir os toggles por um estado estático `Em breve`.
+- **Justificativa**:
+  - preserva a intenção futura do produto;
+  - evita promessa falsa de funcionalidade pronta;
+  - elimina a dependência perceptível de seed para a experiência do usuário;
+  - reduz o risco de o card vazio ser interpretado como bug de permissão ou dados.
+- **Trade-offs**:
+  - a área continua ocupando espaço na tela sem entrega ativa;
+  - backend e seeds permanecem temporariamente como infraestrutura dormente.
+
+### Estado documentado
+- O card `Preferências de Notificações` deve continuar visível na aba `Minha Conta`.
+- O conteúdo aprovado para a próxima implementação é um placeholder com status `Em breve` e texto curto, sem toggles interativos.
+- A tela não deve comunicar que notificações personalizadas já funcionam hoje.
+- A reativação futura dos toggles depende de haver pelo menos um fluxo real de entrega e uma estratégia explícita de defaults para todos os perfis.
+
+### Arquivos afetados
+- `docs/superpowers/specs/2026-07-08-notificacoes-em-breve-design.md`
+- `.agents/project-memory/005-demais-telas-perfis.md`
+- `.sauron/wiki/modules/feature-005-demais-telas-perfis.md`
+
+---
+
+## 11. Plano de implementação para "Em breve" em Preferências de Notificações
+- **Problema**: a decisão de produto já estava documentada na spec, mas ainda não havia decomposição operacional para remover o fluxo interativo do frontend sem abrir escopo desnecessário em backend e schema.
+- **Escolha**: criar um plano enxuto focado em frontend, testes e documentação funcional.
+- **Justificativa**:
+  - a feature ativa é apenas a experiência da tela, não a persistência backend;
+  - o maior risco de regressão está em `ConfiguracoesPage` e no contrato TypeScript do frontend;
+  - manter o banco fora desta etapa reduz custo e evita churn em RPCs que podem voltar a ser usadas no futuro.
+- **Estrutura do plano**:
+  - testes de regressão primeiro;
+  - implementação do placeholder `Em breve`;
+  - remoção da superfície morta do frontend;
+  - atualização de docs e memória;
+  - verificação final com testes e build.
+
+### Arquivos afetados
+- `docs/superpowers/plans/2026-07-08-notificacoes-em-breve.md`
+- `.agents/project-memory/005-demais-telas-perfis.md`
+- `.sauron/wiki/modules/feature-005-demais-telas-perfis.md`
+
+---
+
+## 12. Implementacao do placeholder "Em breve" em Preferencias de Notificacoes
+- **Problema resolvido**: a seção `Preferências de Notificações` em `Configurações > Minha Conta` exibia toggles interativos que dependiam de RPCs e seed, mas não entregavam notificações reais.
+- **Decisão**: substituir os toggles por um card estático `Em breve` e remover do frontend toda a superfície morta de leitura/escrita de preferências.
+- **Implementação**:
+  - `ConfiguracoesPage.tsx`: removeu `preferencias` state, `handleTogglePreferencia`, chamada a `listarPreferenciasNotificacoes` no fetch, e o JSX de toggles; substituiu pelo placeholder `Em breve` com `coming-soon-header`, `coming-soon-badge` e `coming-soon-panel`.
+  - `ConfiguracoesPage.css`: removeu estilos `.notification-list`, `.notification-item`, `.switch`, `.slider`; adicionou `.coming-soon-header`, `.coming-soon-badge`, `.coming-soon-panel`.
+  - `configuracoes.service.ts`: removeu métodos `listarPreferenciasNotificacoes` e `atualizarPreferenciasNotificacoes`.
+  - `types/configuracoes.ts`: removeu interface `PreferenciaNotificacaoItem`.
+  - `ConfiguracoesPage.test.tsx`: adicionou teste de regressão que valida placeholder `Em breve`, ausência de checkboxes, e que a RPC de preferências não é chamada.
+- **Fora de escopo**: backend, schema `public.preferencias_notificacoes`, RPCs e seed permanecem intactos.
+- **Data**: 2026-07-08

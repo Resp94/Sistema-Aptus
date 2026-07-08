@@ -10,7 +10,6 @@ import { LoadingState, ErrorState } from '../components/ui/States'
 import type {
   ConfiguracaoEmpresa,
   UsuarioConfigItem,
-  PreferenciaNotificacaoItem,
   AuditoriaEventoItem,
   CriarUsuarioConfiguracoesPayload,
 } from '../types/configuracoes'
@@ -29,7 +28,6 @@ export default function ConfiguracoesPage() {
   // Estados
   const [activeTab, setActiveTab] = useState<TabConfig>('minha-conta')
   const [minhaConta, setMinhaConta] = useState<{ perfil: any; usuario: any } | null>(null)
-  const [preferencias, setPreferencias] = useState<PreferenciaNotificacaoItem[]>([])
   
   // Dados de Admin
   const [, setEmpresa] = useState<ConfiguracaoEmpresa | null>(null)
@@ -93,12 +91,8 @@ export default function ConfiguracoesPage() {
     setError(null)
     try {
       if (activeTab === 'minha-conta') {
-        const [me, prefs] = await Promise.all([
-          configuracoesService.obterMinhasConfiguracoes(),
-          configuracoesService.listarPreferenciasNotificacoes()
-        ])
+        const me = await configuracoesService.obterMinhasConfiguracoes()
         setMinhaConta(me)
-        setPreferencias(prefs)
         setFormNome(me.perfil?.nome || '')
         setFormDepto(me.perfil?.departamento || '')
       } else if (activeTab === 'empresa' && isAdmin) {
@@ -155,23 +149,6 @@ export default function ConfiguracoesPage() {
     } catch (err: any) {
       console.error(err)
       showToast(err.message || 'Erro ao atualizar dados pessoais.')
-    }
-  }
-
-  const handleTogglePreferencia = async (pref: PreferenciaNotificacaoItem) => {
-    try {
-      await configuracoesService.atualizarPreferenciasNotificacoes({
-        canal: pref.canal,
-        tipo: pref.tipo,
-        ativo: !pref.ativo
-      })
-      showToast('Preferência de notificação salva!')
-      // Recarrega apenas preferências
-      const prefs = await configuracoesService.listarPreferenciasNotificacoes()
-      setPreferencias(prefs)
-    } catch (err: any) {
-      console.error(err)
-      showToast(err.message || 'Erro ao salvar preferências.')
     }
   }
 
@@ -367,29 +344,20 @@ export default function ConfiguracoesPage() {
                   )}
                 </form>
 
-                {/* Preferências de Notificações */}
+                {/* Preferências de Notificações - Em breve */}
                 <div className="card-box flex-col gap-4">
-                  <h2 className="section-title">Preferências de Notificações</h2>
-                  <p className="text-sm text-muted">Defina como e quais alertas você deseja receber.</p>
-                  
-                  <div className="notification-list">
-                    {preferencias.map(pref => (
-                      <div key={pref.id} className="notification-item">
-                        <div>
-                          <div className="font-semibold text-sm">{pref.tipo}</div>
-                          <div className="text-xs text-muted">Via canal {pref.canal}</div>
-                        </div>
-                        <label className="switch">
-                          <input 
-                            type="checkbox" 
-                            checked={pref.ativo}
-                            onChange={() => handleTogglePreferencia(pref)}
-                            disabled={!podeEditarProprioPerfil}
-                          />
-                          <span className="slider round"></span>
-                        </label>
-                      </div>
-                    ))}
+                  <div className="coming-soon-header">
+                    <h2 className="section-title">Preferências de Notificações</h2>
+                    <span className="coming-soon-badge">Em breve</span>
+                  </div>
+                  <p className="text-sm text-muted">
+                    As notificações personalizadas por canal serão disponibilizadas em uma próxima versão.
+                  </p>
+                  <div className="coming-soon-panel">
+                    <p className="coming-soon-title">Personalização de alertas ainda não disponível</p>
+                    <p className="coming-soon-copy">
+                      Quando essa funcionalidade for lançada, você poderá definir como deseja receber alertas e lembretes do sistema.
+                    </p>
                   </div>
                 </div>
               </div>
