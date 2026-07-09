@@ -22,6 +22,15 @@ Foi aprovada a feature 011 para evoluir a entrega da 008 sem reescrever a arquit
 - `specs/011-padrao-enterprise-relatorios/data-model.md`
 - `specs/011-padrao-enterprise-relatorios/quickstart.md`
 
+## Backlog de implementacao da feature 011
+
+Foi gerado `specs/011-padrao-enterprise-relatorios/tasks.md` com backlog dependency-ordered para:
+
+- corrigir o download de PDF sem preview;
+- transformar o PDF em documento executivo category-aware;
+- separar semanticamente PDF executivo de CSV/ZIP operacional;
+- fechar memoria e validacao final antes de uma futura execucao.
+
 ## Impacto arquitetural
 
 - Reaproveita frontend e Edge Function da feature 008.

@@ -23,7 +23,7 @@ Esta feature nao introduz novas tabelas obrigatorias. Ela redefine o comportamen
 - `formato` deve distinguir documento executivo (`PDF`) de exportacao operacional tabular.
 - `data_inicial` e `data_final` seguem a regra vigente de periodo.
 
-### 2. Artefato Executivo
+### 2. Documento Executivo (Artefato Executivo)
 
 **Purpose**: Documento PDF voltado a leitura institucional e executiva.
 
@@ -41,6 +41,7 @@ Esta feature nao introduz novas tabelas obrigatorias. Ela redefine o comportamen
 **Relationships**:
 - Deriva de uma `Solicitacao de Exportacao`.
 - Usa os mesmos metadados de historico do registro de exportacao.
+- Tambem referenciado como "documento executivo" nos contratos e na spec.
 
 **Validation rules**:
 - Nao pode expor chaves internas do payload.

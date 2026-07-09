@@ -184,3 +184,20 @@ Foi aberta a feature Spec Kit `011-padrao-enterprise-relatorios` para padronizar
 - `specs/011-padrao-enterprise-relatorios/contracts/download-sem-preview.md`
 - `specs/011-padrao-enterprise-relatorios/contracts/exportacao-tabular.md`
 - `specs/011-padrao-enterprise-relatorios/contracts/historico-e-validade.md`
+
+## Backlog 011 gerado
+
+Executado `/speckit-tasks` em 2026-07-08 para `specs/011-padrao-enterprise-relatorios/tasks.md`.
+
+### Estrutura
+
+- Setup: 4 tarefas
+- Fundacional: 6 tarefas
+- US1 download sem preview: 10 tarefas
+- US2 PDF executivo: 11 tarefas
+- US3 diferenciacao PDF vs CSV/ZIP: 10 tarefas
+- Polish: 8 tarefas
+
+### MVP sugerido
+
+Implementar primeiro a US1 para corrigir o comportamento de download sem preview antes de mexer na qualidade visual do PDF e na diferenciacao de formatos.

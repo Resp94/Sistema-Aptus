@@ -3,7 +3,15 @@
   "specName": "011-padrao-enterprise-relatorios",
   "branch": "011-padrao-enterprise-relatorios",
   "selectedAt": "2026-07-08T17:26:20.122Z",
-  "currentStep": "specify",
-  "status": "draft",
-  "history": []
+  "currentStep": "analyze",
+  "status": "tasking",
+  "history": [
+    {
+      "step": "analyze",
+      "substep": null,
+      "kind": "start",
+      "by": "extension",
+      "at": "2026-07-08T23:36:46.142Z"
+    }
+  ]
 }

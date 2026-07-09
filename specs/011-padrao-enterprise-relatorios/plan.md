@@ -24,7 +24,7 @@ Elevar a exportacao de relatorios para um padrao enterprise sem abrir escopo de 
 
 **Performance Goals**: Download de PDF e CSV iniciado sem troca de contexto e com resposta percebida como imediata para volumes operacionais comuns ja aceitos pela feature 008; renderizacao do PDF permanece dentro do envelope atual de exportacao. Meta quantificada: download deve iniciar em ate 5 segundos apos clique para volumes de ate 500 linhas de detalhes.
 
-**Font Bundle Tradeoff**: O embed da fonte Noto Sans (subset PT-BR, ~200KB) adiciona overhead ao bundle da edge function. Tradeoff aceito para garantir renderizacao com acentuacao PT-BR completa. O impacto no cold-start sera monitorado; se exceder limites aceitaveis, a estrategia de subset pode ser refinada.
+**Font Bundle Tradeoff**: O embed da fonte Noto Sans (subset PT-BR, ~200KB) adiciona overhead ao bundle da edge function. Tradeoff aceito para garantir renderizacao com acentuacao PT-BR completa. Threshold de cold-start: se o tempo de cold-start da edge function exceder 3 segundos em medicao via Supabase Dashboard ou `deno bench`, a estrategia de subset deve ser refinada (ex: subset apenas dos caracteres usados nas 4 categorias). A medicao deve ser registrada em `quickstart.md` durante a validacao manual (T048).
 
 **Constraints**: Nao introduzir preview de PDF no fluxo normal; nao rebaixar seguranca de bucket privado; preservar historico e validade ja definidos; manter `Personalizado` fora do escopo; diferenciar explicitamente documento executivo de exportacao tabular.
 

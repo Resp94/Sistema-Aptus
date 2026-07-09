@@ -1,50 +1,55 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# Sistema Aptus Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Spec-Driven Delivery
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+Toda feature MUST ter uma especificação ativa (`spec.md`) com requisitos funcionais (FR-###), critérios de sucesso mensuráveis (SC-###) e user stories com cenários de aceitação antes do início da implementação. O plano de implementação (`plan.md`) MUST ser derivado da spec, e as tarefas (`tasks.md`) MUST cobrir todos os FRs e SCs buildáveis. Features sem spec ativa não entram em fase de implementação.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### II. RPC-First / Backend Authorization
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+Toda lógica de negócio e autorização MUST residir no backend (Supabase RPC + Edge Functions). O frontend React NEVER toma decisões de autorização — apenas renderiza estados recebidos e inicia ações autorizadas. Nenhuma validação de permissão no lado do cliente substitui a validação no backend. URLs assinadas de Storage MUST ser de curta duração e nunca expostas publicamente.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### III. RBAC by Named Capabilities
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+Permissões MUST ser modeladas como capacidades nomeadas (ex: `relatorios.exportar`, `projetos.editar`) e verificadas no backend via RLS/RPC. O frontend MUST usar os mesmos nomes de capacidade para controle de UI (ex: desabilitar botão, esconder seção), mas apenas como conveniência de UX — nunca como mecanismo de segurança. Novas capacidades MUST ser documentadas no schema e nos contratos.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### IV. No Mock Success
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+Nenhum teste, validação manual ou checklist pode ser considerado aprovado com dados mockados ou cenários simulados que não reflitam o ambiente real. Testes de aceite MUST usar o stack real (Supabase, Edge Functions, Storage privado). O artefato final entregue ao usuário (PDF, CSV) MUST ser gerado pelo pipeline real e validado visualmente. Estados de erro e empty states MUST ser testados com dados reais ou fixtures que reproduzam fielmente o payload do backend.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### V. Auditability & Documentation
+
+Toda decisão de arquitetura, mudança de contrato ou regra de negócio MUST ser registrada nos artefatos da feature (`research.md`, `data-model.md`, `contracts/`) e na memória do projeto (`.agents/`, `.sauron/`). O histórico de exportações e ações do usuário MUST ser rastreável. Features concluídas MUST atualizar a memória das features relacionadas (ex: feature 011 atualiza memória da feature 008).
+
+### VI. Supabase Security
+
+O bucket de Storage para artefatos exportados MUST permanecer privado. Nenhuma URL pública permanente pode ser gerada. O frontend NEVER deve ter acesso à service role key. Tokens JWT de usuário MUST ser usados para todas as chamadas autenticadas. RLS policies MUST ser revisadas a cada feature que toca o schema.
+
+## Security Requirements
+
+- Storage bucket `relatorios-exportados`: privado, sem políticas públicas.
+- URLs assinadas: duração máxima de 10 minutos (`DOWNLOAD_EXPIRES_IN = 600`).
+- Edge Functions: validam JWT antes de qualquer operação.
+- Frontend: nunca expõe `service_role` key; usa apenas `anon` key + JWT do usuário.
+- RLS: todas as tabelas com dados de usuário devem ter políticas RLS ativas.
+
+## Development Workflow
+
+1. **Specify**: Feature spec com FRs, SCs, user stories e edge cases.
+2. **Plan**: Pesquisa técnica, modelo de dados, contratos e constitution check.
+3. **Tasks**: Tarefas ordenadas por dependência, com testes antes de implementação.
+4. **Implement**: Testes → implementação → validação manual → documentação.
+5. **Analyze**: Cross-artifact consistency check antes de merge.
+
+**Quality Gates**:
+- Constitution check MUST passar antes de Phase 0 research e após Phase 1 design.
+- Checklist de export quality MUST ter todos os itens resolvidos.
+- `npm run test` e `npm run build` MUST passar.
+- Validação manual no navegador MUST cobrir todos os cenários do quickstart.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+Esta constituição tem autoridade sobre todas as práticas de desenvolvimento do projeto. Qualquer violação de um princípio MUST requer ajuste da spec, plan ou tasks — nunca diluição ou reinterpretação do princípio. Alterações na constituição MUST ser feitas via `/speckit-constitution` com documentação, aprovação e plano de migração quando aplicável.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2026-07-08 | **Last Amended**: 2026-07-08
