@@ -297,7 +297,10 @@ export default function RelatoriosPage() {
   return (
     <AppShell titulo="Relatórios & Exportação">
       <div className="relatorios-container">
-        {toastMsg && <div className="toast-notification">{toastMsg}</div>}
+        <div className={`toast-notification ${toastMsg ? 'show' : ''}`}>
+          <span className="toast-icon">✓</span>
+          <span>{toastMsg}</span>
+        </div>
 
         <header className="page-header">
           <div>
