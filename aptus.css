@@ -161,6 +161,12 @@ input, select, textarea { font: inherit; }
   background: var(--accent);
   display: inline-block;
 }
+.app-sidebar .logo .sidebar-logo {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+  flex-shrink: 0;
+}
 .app-sidebar nav { flex: 1; display: flex; flex-direction: column; gap: 2px; padding: 0 var(--space-3); }
 .app-sidebar nav a {
   display: flex;
@@ -323,9 +329,9 @@ input, select, textarea { font: inherit; }
 .app-shell.sidebar-collapsed { --sidebar-width: var(--sidebar-collapsed); }
 .app-shell.sidebar-collapsed .nav-section { text-align: center; padding: var(--space-4) 0 var(--space-1); }
 .app-shell.sidebar-collapsed .nav-section span { display: none; }
-.app-shell.sidebar-collapsed .app-sidebar .logo { justify-content: center; padding: 0; }
-.app-shell.sidebar-collapsed .app-sidebar .logo span:not(.logo-dot) { display: none; }
-.app-shell.sidebar-collapsed .app-sidebar .logo .logo-dot { display: none; }
+.app-shell.sidebar-collapsed .app-sidebar .logo { justify-content: center; padding: 44px 0 0; }
+.app-shell.sidebar-collapsed .app-sidebar .logo span:not(.sidebar-logo) { display: none; }
+.app-shell.sidebar-collapsed .app-sidebar .logo .sidebar-logo { display: block; }
 .app-shell.sidebar-collapsed .app-sidebar nav a { justify-content: center; padding: 10px; position: relative; border-left: none; }
 .app-shell.sidebar-collapsed .app-sidebar nav a.active .nav-icon {
   opacity: 1;
