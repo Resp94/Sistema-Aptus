@@ -167,7 +167,7 @@ export const Login: React.FC = () => {
     <div className="login-page">
       {/* Coluna da esquerda - Identidade visual */}
       <div className="login-brand">
-        <div className="brand-name"><span className="logo-dot"></span>Aptus Flow</div>
+        <div className="brand-name"><img src="/logo.png" alt="" className="brand-logo" />Aptus Flow</div>
         <p className="brand-sub">Gestão financeira inteligente para empresas de IA e automação.</p>
         
         <div className="brand-features">
@@ -220,7 +220,7 @@ export const Login: React.FC = () => {
       {/* Coluna da direita - Formulário */}
       <div className="login-form-area">
         <div className="mobile-brand-bar">
-          <span><span style={{ color: 'var(--accent)' }}>●</span> Aptus Flow</span>
+          <img src="/logo.png" alt="" className="mobile-brand-logo" /><span>Aptus Flow</span>
         </div>
 
         <div className="form-header">
