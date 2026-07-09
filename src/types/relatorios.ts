@@ -2,6 +2,7 @@ import type { StatusExportacao } from './common'
 
 export type FormatoRelatorio = 'PDF' | 'CSV'
 export type FormatoEntregaRelatorio = 'PDF' | 'ZIP_CSV'
+export type TipoArtefatoRelatorio = 'EXECUTIVO' | 'OPERACIONAL'
 
 /**
  * Item retornado por `listar_exportacoes_relatorios` (histórico de exportações).
@@ -76,6 +77,7 @@ export interface ExportacaoRelatorioMetadata {
   id: string
   tipo?: string
   formato?: FormatoRelatorio
+  formato_entrega?: FormatoEntregaRelatorio
   status_exibicao?: StatusExportacao
   data_inicial?: string
   data_final?: string

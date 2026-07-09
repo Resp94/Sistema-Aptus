@@ -1,18 +1,14 @@
 // Rendering helpers for the `relatorios-exportacao` Edge Function.
 //
-// Contract: specs/008-exportar-relatorios/contracts/edge-function-exportacao.md
+// Contract: specs/011-padrao-enterprise-relatorios/contracts/rotulos-negocio.md
+// and specs/011-padrao-enterprise-relatorios/contracts/pdf-executivo.md
 // (see "Rendering Rules" for PDF and CSV/ZIP requirements).
-//
-// Implementation (US1):
-// - PDF via `pdf-lib`.
-// - CSV serialized internally, packaged as ZIP via `fflate`.
-// Both dependencies are imported here via esm.sh, matching the import style
-// already used by `index.ts` (e.g. `@supabase/supabase-js` via esm.sh) and by
-// `renderers.test.ts` itself.
 
 import { zipSync } from 'https://esm.sh/fflate@0.8.3'
 import { PDFDocument, rgb, StandardFonts } from 'https://esm.sh/pdf-lib@1.17.1'
+import fontkit from 'https://esm.sh/@pdf-lib/fontkit@1.1.1'
 
+import { NOTO_SANS_BOLD_BASE64, NOTO_SANS_REGULAR_BASE64 } from './font-assets.ts'
 import type { RelatorioExportPayload } from './payload.ts'
 
 /** Result of rendering an export file, ready for Storage upload. */
@@ -24,7 +20,223 @@ export interface RenderedFile {
 }
 
 const NO_DATA_FALLBACK_MESSAGE =
-  'Nenhum dado encontrado para o periodo selecionado.'
+  'Não há dados disponíveis para o período selecionado. Selecione um intervalo diferente ou entre em contato com o administrador.'
+
+// ---------------------------------------------------------------------------
+// Business Label Map & PT-BR Value Formatters
+// ---------------------------------------------------------------------------
+
+export const LABEL_MAP: Record<string, Record<string, string>> = {
+  Financeiro: {
+    data: 'Data',
+    tipo: 'Tipo',
+    natureza: 'Natureza',
+    status: 'Status',
+    categoria: 'Categoria',
+    descricao: 'Descrição',
+    cliente: 'Cliente',
+    projeto: 'Projeto',
+    valor: 'Valor',
+  },
+  DRE: {
+    data: 'Data',
+    grupo_dre: 'Grupo DRE',
+    categoria: 'Categoria',
+    descricao: 'Descrição',
+    valor: 'Valor',
+  },
+  Clientes: {
+    id: 'ID',
+    nome_contato: 'Nome do Contato',
+    empresa: 'Empresa',
+    email: 'E-mail',
+    telefone: 'Telefone',
+    tipo: 'Tipo',
+    status: 'Status',
+    criado_em: 'Criado em',
+    atualizado_em: 'Atualizado em',
+    atendimentos_no_periodo: 'Atendimentos no Período',
+  },
+  Projetos: {
+    id: 'ID',
+    nome: 'Nome',
+    cliente: 'Cliente',
+    status: 'Status',
+    prazo: 'Prazo',
+    responsavel: 'Responsável',
+    progresso: 'Progresso',
+    orcamento: 'Orçamento',
+    orcamento_utilizado: 'Orçamento Utilizado',
+    horas_apontadas_no_periodo: 'Horas Apontadas no Período',
+    tarefas_concluidas_no_periodo: 'Tarefas Concluídas no Período',
+  },
+}
+
+export function formatarMoeda(valor: number): string {
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor)
+}
+
+export function formatarPorcentagem(valor: number): string {
+  return typeof valor === 'number' ? `${valor}%` : `${String(valor)}`
+}
+
+export function formatarHoras(valor: number): string {
+  return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(valor) + 'h'
+}
+
+export function formatarData(valor: unknown): string {
+  if (!valor) return ''
+  const str = String(valor)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+    const [ano, mes, dia] = str.split('-')
+    return `${dia}/${mes}/${ano}`
+  }
+  try {
+    const date = new Date(str)
+    if (!Number.isNaN(date.getTime())) {
+      const dia = String(date.getUTCDate()).padStart(2, '0')
+      const mes = String(date.getUTCMonth() + 1).padStart(2, '0')
+      const ano = date.getUTCFullYear()
+      return `${dia}/${mes}/${ano}`
+    }
+  } catch {
+    // fallback
+  }
+  return str
+}
+
+export function formatarDataHora(valor: unknown): string {
+  if (!valor) return ''
+  const str = String(valor)
+  try {
+    const date = new Date(str)
+    if (!Number.isNaN(date.getTime())) {
+      const dia = String(date.getUTCDate()).padStart(2, '0')
+      const mes = String(date.getUTCMonth() + 1).padStart(2, '0')
+      const ano = date.getUTCFullYear()
+      const horas = String(date.getUTCHours()).padStart(2, '0')
+      const minutos = String(date.getUTCMinutes()).padStart(2, '0')
+      return `${dia}/${mes}/${ano} ${horas}:${minutos}`
+    }
+  } catch {
+    // fallback
+  }
+  return str
+}
+
+export function formatarValorResumo(label: string, valor: unknown): string {
+  if (typeof valor !== 'number') return String(valor)
+
+  const labelsMoeda = [
+    'Receitas', 'Despesas', 'Saldo',
+    'Faturamento bruto', 'Deduções', 'Custos operacionais', 'Resultado líquido'
+  ]
+  const labelsHoras = ['Horas apontadas no período']
+
+  if (labelsMoeda.includes(label)) {
+    return formatarMoeda(valor)
+  }
+  if (labelsHoras.includes(label)) {
+    return formatarHoras(valor)
+  }
+  return new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 }).format(valor)
+}
+
+export function formatarCampoDetalhe(categoria: string, chave: string, valor: unknown): string {
+  if (valor === null || valor === undefined) return ''
+
+  if (chave === 'data' || chave === 'prazo') {
+    return formatarData(valor)
+  }
+  if (chave === 'criado_em' || chave === 'atualizado_em') {
+    return formatarDataHora(valor)
+  }
+  if (
+    chave === 'valor' ||
+    chave === 'orcamento' ||
+    chave === 'orcamento_utilizado'
+  ) {
+    return typeof valor === 'number' ? formatarMoeda(valor) : String(valor)
+  }
+  if (chave === 'horas_apontadas_no_periodo') {
+    return typeof valor === 'number' ? formatarHoras(valor) : String(valor)
+  }
+  if (chave === 'progresso') {
+    return typeof valor === 'number' ? formatarPorcentagem(valor) : String(valor)
+  }
+  if (chave === 'atendimentos_no_periodo' || chave === 'tarefas_concluidas_no_periodo') {
+    return typeof valor === 'number' ? new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 }).format(valor) : String(valor)
+  }
+  if (chave === 'tipo' && categoria === 'Financeiro') {
+    if (typeof valor === 'string') {
+      return valor.charAt(0).toUpperCase() + valor.slice(1).toLowerCase()
+    }
+  }
+  if (chave === 'status' && categoria === 'Financeiro') {
+    if (typeof valor === 'string') {
+      return valor.charAt(0).toUpperCase() + valor.slice(1).toLowerCase()
+    }
+  }
+  return String(valor)
+}
+
+export function removerAcentos(texto: string): string {
+  return texto
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+}
+
+export function tituloRelatorio(categoria: string): string {
+  return `Relatório ${categoria}`
+}
+
+// ---------------------------------------------------------------------------
+// Font Loading and Fallback (Noto Sans)
+// ---------------------------------------------------------------------------
+
+interface CarregadorFontesResult {
+  regular: any
+  bold: any
+  usandoFallback: boolean
+}
+
+function decodeBase64Font(base64: string): Uint8Array {
+  const binary = atob(base64)
+  const bytes = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; i += 1) {
+    bytes[i] = binary.charCodeAt(i)
+  }
+  return bytes
+}
+
+export async function carregarFontesNoto(doc: PDFDocument): Promise<CarregadorFontesResult> {
+  try {
+    doc.registerFontkit(fontkit)
+
+    const regularBytes = decodeBase64Font(NOTO_SANS_REGULAR_BASE64)
+    const boldBytes = decodeBase64Font(NOTO_SANS_BOLD_BASE64)
+
+    const fontRegular = await doc.embedFont(regularBytes, { subset: true })
+    const fontBold = await doc.embedFont(boldBytes, { subset: true })
+
+    return {
+      regular: fontRegular,
+      bold: fontBold,
+      usandoFallback: false
+    }
+  } catch (error) {
+    console.warn(
+      `[WARNING] Falha ao carregar fonte Noto Sans. Ativando fallback StandardFonts.Helvetica. Detalhe: ${error instanceof Error ? error.message : String(error)}`
+    )
+    const fontRegular = await doc.embedFont(StandardFonts.Helvetica)
+    const fontBold = await doc.embedFont(StandardFonts.HelveticaBold)
+    return {
+      regular: fontRegular,
+      bold: fontBold,
+      usandoFallback: true
+    }
+  }
+}
 
 // ---------------------------------------------------------------------------
 // PDF (pdf-lib)
@@ -34,27 +246,47 @@ const PAGE_WIDTH = 595.28 // A4, in points
 const PAGE_HEIGHT = 841.89
 const MARGIN = 50
 const LINE_HEIGHT = 16
+const CONTENT_WIDTH = PAGE_WIDTH - MARGIN * 2
+
+function wrapText(text: string, font: any, size: number, maxWidth: number): string[] {
+  if (font.widthOfTextAtSize(text, size) <= maxWidth) {
+    return [text]
+  }
+
+  const lines: string[] = []
+  let current = ''
+
+  for (const word of text.split(/\s+/)) {
+    const candidate = current ? `${current} ${word}` : word
+    if (font.widthOfTextAtSize(candidate, size) <= maxWidth) {
+      current = candidate
+      continue
+    }
+
+    if (current) {
+      lines.push(current)
+      current = word
+    } else {
+      lines.push(word)
+    }
+  }
+
+  if (current) {
+    lines.push(current)
+  }
+
+  return lines.length > 0 ? lines : ['']
+}
 
 /**
  * Renders the PDF report for a given payload.
- *
- * Requirements (edge-function-exportacao.md > Rendering Rules > PDF):
- * - Title, category, period, solicitante, generation and expiration timestamps.
- * - Executive summary before details.
- * - Paginated, readable details.
- * - Explicit no-data message when there is no data.
- *
- * Expiration timestamp is not part of the payload returned by the RPC (only
- * `geradoEm` is), so it is derived here from the 12-month retention rule
- * documented in plan.md ("arquivos validos por 12 meses a partir da
- * geracao"), purely for display purposes in the PDF header.
  */
 export async function renderPdf(
   payload: RelatorioExportPayload,
 ): Promise<RenderedFile> {
   const doc = await PDFDocument.create()
-  const fontRegular = await doc.embedFont(StandardFonts.Helvetica)
-  const fontBold = await doc.embedFont(StandardFonts.HelveticaBold)
+  const fontes = await carregarFontesNoto(doc)
+  const usandoFallback = fontes.usandoFallback
 
   let page = doc.addPage([PAGE_WIDTH, PAGE_HEIGHT])
   let y = PAGE_HEIGHT - MARGIN
@@ -70,15 +302,22 @@ export async function renderPdf(
     text: string,
     opts: { bold?: boolean; size?: number } = {},
   ) => {
-    ensureSpace()
-    page.drawText(text, {
-      x: MARGIN,
-      y,
-      size: opts.size ?? 11,
-      font: opts.bold ? fontBold : fontRegular,
-      color: rgb(0, 0, 0),
-    })
-    y -= LINE_HEIGHT
+    const size = opts.size ?? 11
+    const font = opts.bold ? fontes.bold : fontes.regular
+    const textoLimpo = usandoFallback ? removerAcentos(text) : text
+    const linhas = wrapText(textoLimpo, font, size, CONTENT_WIDTH)
+
+    for (const linha of linhas) {
+      ensureSpace()
+      page.drawText(linha, {
+        x: MARGIN,
+        y,
+        size,
+        font,
+        color: rgb(0, 0, 0),
+      })
+      y -= LINE_HEIGHT
+    }
   }
 
   const geradoEmDate = new Date(payload.geradoEm)
@@ -87,14 +326,14 @@ export async function renderPdf(
     expiraEmDate.setUTCFullYear(expiraEmDate.getUTCFullYear() + 1)
   }
 
-  drawText(`Relatorio de ${payload.tipo}`, { bold: true, size: 18 })
+  drawText(tituloRelatorio(payload.tipo), { bold: true, size: 18 })
   y -= LINE_HEIGHT / 2
   drawText(`Categoria: ${payload.tipo}`)
-  drawText(`Periodo: ${payload.periodo.data_inicial} a ${payload.periodo.data_final}`)
+  drawText(`Período: ${formatarData(payload.periodo.data_inicial)} a ${formatarData(payload.periodo.data_final)}`)
   drawText(`Solicitante: ${payload.solicitante.nome}`)
-  drawText(`Gerado em: ${payload.geradoEm}`)
+  drawText(`Gerado em: ${formatarDataHora(payload.geradoEm)}`)
   if (!Number.isNaN(expiraEmDate.getTime())) {
-    drawText(`Expira em: ${expiraEmDate.toISOString()}`)
+    drawText(`Expira em: ${formatarDataHora(expiraEmDate.toISOString())}`)
   }
 
   y -= LINE_HEIGHT / 2
@@ -103,20 +342,26 @@ export async function renderPdf(
     drawText(payload.mensagemSemDados ?? NO_DATA_FALLBACK_MESSAGE)
   } else {
     for (const item of payload.resumo) {
-      for (const [key, value] of Object.entries(item)) {
-        drawText(`${key}: ${String(value)}`)
-      }
+      const label = item.label ? String(item.label) : ''
+      const valor = item.valor
+      const valorFormatado = formatarValorResumo(label, valor)
+      drawText(`${label}: ${valorFormatado}`)
     }
   }
 
   y -= LINE_HEIGHT / 2
   drawText('Detalhes', { bold: true, size: 14 })
   if (payload.detalhes.length === 0) {
-    drawText(payload.mensagemSemDados ?? NO_DATA_FALLBACK_MESSAGE)
+    drawText(NO_DATA_FALLBACK_MESSAGE)
   } else {
+    const mapaTraducoes = LABEL_MAP[payload.tipo] || {}
     for (const row of payload.detalhes) {
       const line = Object.entries(row)
-        .map(([key, value]) => `${key}: ${String(value)}`)
+        .map(([key, value]) => {
+          const rotuloNegocio = mapaTraducoes[key] || key
+          const valorFormatado = formatarCampoDetalhe(payload.tipo, key, value)
+          return `${rotuloNegocio}: ${valorFormatado}`
+        })
         .join(' | ')
       drawText(line)
     }
@@ -134,12 +379,6 @@ export async function renderPdf(
 // CSV (internal serializer)
 // ---------------------------------------------------------------------------
 
-/**
- * Escapes a single CSV field per RFC 4180: values containing the delimiter
- * (`,`), a double quote or a line break (`\n`/`\r`) are wrapped in double
- * quotes, with internal double quotes doubled. The original line-break
- * character(s) inside the value are preserved as-is.
- */
 function escapeCsvField(value: unknown): string {
   const str = value === null || value === undefined ? '' : String(value)
   if (/[",\n\r]/.test(str)) {
@@ -148,14 +387,6 @@ function escapeCsvField(value: unknown): string {
   return str
 }
 
-/**
- * Serializes a set of rows into CSV text.
- *
- * Requirements (edge-function-exportacao.md > Rendering Rules > CSV):
- * - UTF-8.
- * - Escape delimiter, quotes and line breaks correctly.
- * - Headers must be present even when there are no data rows.
- */
 export function renderCsv(
   headers: string[],
   rows: Record<string, unknown>[],
@@ -167,57 +398,71 @@ export function renderCsv(
   return [headerLine, ...dataLines].join('\n')
 }
 
-/**
- * Derives CSV headers from a set of records (union of all keys, in
- * first-seen order), or falls back to a single `mensagem` column when there
- * are no records at all (no-data case).
- */
-function deriveHeaders(rows: Record<string, unknown>[]): string[] {
-  if (rows.length === 0) return ['mensagem']
-
-  const headers: string[] = []
-  const seen = new Set<string>()
-  for (const row of rows) {
-    for (const key of Object.keys(row)) {
-      if (!seen.has(key)) {
-        seen.add(key)
-        headers.push(key)
-      }
-    }
+function traduzirEFormatarDados(
+  rows: Record<string, unknown>[],
+  categoria: string,
+): { headers: string[]; rows: Record<string, unknown>[] } {
+  if (rows.length === 0) {
+    return { headers: [], rows: [] }
   }
-  return headers
+
+  const mapa = LABEL_MAP[categoria] || {}
+  const chavesOriginais = Object.keys(rows[0])
+  const headersTraduzidos = chavesOriginais.map(key => mapa[key] || key)
+
+  const novasLinhas = rows.map(row => {
+    const novaLinha: Record<string, unknown> = {}
+    for (const key of chavesOriginais) {
+      const headerTraduzido = mapa[key] || key
+      const valorFormatado = formatarCampoDetalhe(categoria, key, row[key])
+      novaLinha[headerTraduzido] = valorFormatado
+    }
+    return novaLinha
+  })
+
+  return {
+    headers: headersTraduzidos,
+    rows: novasLinhas
+  }
 }
 
-/**
- * Builds CSV text for a section (`resumo` or `detalhes`), keeping headers
- * and an explicit no-data message when there are no rows.
- */
 function renderSectionCsv(
   rows: Record<string, unknown>[],
-  mensagemSemDados: string | null,
+  _mensagemSemDados: string | null,
+  categoria: string,
 ): string {
+  const msg = NO_DATA_FALLBACK_MESSAGE
+
   if (rows.length === 0) {
-    return renderCsv(['mensagem'], [
-      { mensagem: mensagemSemDados ?? NO_DATA_FALLBACK_MESSAGE },
-    ])
+    return '\ufeff' + renderCsv(['Observacao'], [{ Observacao: msg }])
   }
-  return renderCsv(deriveHeaders(rows), rows)
+
+  const { headers, rows: rowsFormatados } = traduzirEFormatarDados(rows, categoria)
+  return '\ufeff' + renderCsv(headers, rowsFormatados)
 }
 
-/**
- * Builds the `resumo.csv` + `detalhes.csv` ZIP package for a given payload.
- *
- * Requirements (edge-function-exportacao.md > Rendering Rules > CSV):
- * - Must include both `resumo.csv` and `detalhes.csv`.
- * - `detalhes.csv` still includes headers and no-data context when empty.
- */
 export async function renderCsvZip(
   payload: RelatorioExportPayload,
 ): Promise<RenderedFile> {
-  const resumoCsv = renderSectionCsv(payload.resumo, payload.mensagemSemDados)
+  let resumoCsv = ''
+  if (payload.resumo.length === 0) {
+    resumoCsv = '\ufeff' + renderCsv(['Observacao'], [{ Observacao: NO_DATA_FALLBACK_MESSAGE }])
+  } else {
+    const resumoFormatado = payload.resumo.map(item => {
+      const label = item.label ? String(item.label) : ''
+      const valor = item.valor
+      return {
+        'Indicador': label,
+        'Valor': formatarValorResumo(label, valor)
+      }
+    })
+    resumoCsv = '\ufeff' + renderCsv(['Indicador', 'Valor'], resumoFormatado)
+  }
+
   const detalhesCsv = renderSectionCsv(
     payload.detalhes,
     payload.mensagemSemDados,
+    payload.tipo,
   )
 
   const encoder = new TextEncoder()
@@ -238,7 +483,7 @@ export async function renderCsvZip(
 // ---------------------------------------------------------------------------
 
 const MAX_DETAIL_ROWS = 5000
-const MAX_SIZE_BYTES = 10 * 1024 * 1024 // 10 MB, before compression
+const MAX_SIZE_BYTES = 10 * 1024 * 1024
 
 function exportTooLargeError(message: string): Error & { code: string } {
   const error = new Error(message) as Error & { code: string }
@@ -246,16 +491,6 @@ function exportTooLargeError(message: string): Error & { code: string } {
   return error
 }
 
-/**
- * Validates rendered/estimated size against the `EXPORT_TOO_LARGE` business
- * rule (common-volume target: up to 5,000 detailed rows or 10 MB before
- * compression, per edge-function-exportacao.md > Action `gerar` > Validation).
- *
- * Row count is checked directly against `payload.detalhes.length`. Size is
- * estimated from the JSON encoding of `resumo` + `detalhes` (the raw data
- * that both renderers turn into CSV/PDF), which is a conservative
- * pre-compression estimate independent of the final output format.
- */
 export function assertWithinSizeLimits(
   payload: RelatorioExportPayload,
 ): void {

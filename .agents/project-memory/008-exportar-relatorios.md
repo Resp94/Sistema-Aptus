@@ -34,7 +34,7 @@ Criada a feature Spec Kit `008-exportar-relatorios` para substituir o estado atu
 
 ## Planejamento tecnico
 
-Executado `/speckit-plan` para detalhar arquitetura, contratos de dados completos por categoria, persistencia de arquivos, historico, seguranca de download e testes por persona.
+- Executado `/speckit-plan` para detalhar arquitetura, contratos de dados completos por categoria, persistencia de arquivos, historico, seguranca de download e testes por persona.
 
 ### Decisoes de arquitetura
 
@@ -68,8 +68,6 @@ O checklist possui 46 itens de revisao de qualidade dos requisitos e do plano, c
 ### Validacao do checklist
 
 Validado item a item em 2026-07-04. Resultado: 32 de 46 checkpoints aprovados e 14 abertos.
-
-Pontos abertos antes de `/speckit-tasks`: fonte canonica das categorias exportaveis, campos completos por categoria, conteudo PDF/CSV por categoria, quantificacao de "relatorio completo", semantica exata de periodo de 12 meses, definicao de "volumes operacionais comuns", cobertura PDF/CSV por persona exportadora, boundary exatamente 12 meses, acessibilidade/responsividade do modal e historico, observabilidade, decisao final das bibliotecas PDF/ZIP, fonte canonica de categoria por persona, visibilidade da coluna solicitante por perfil e caminho unico para descontinuar a RPC legada.
 
 ### Fechamento dos checkpoints abertos
 
@@ -139,65 +137,29 @@ Executado `/speckit-implement` sobre `specs/008-exportar-relatorios/tasks.md` (8
 4. **Campos sem fonte no schema atual**: `projeto` nas linhas de Financeiro/DRE e sempre `NULL` (lancamentos nao tem `projeto_id`); "responsavel" de um projeto e derivado da primeira alocacao em `alocacoes_projeto` por ordem de criacao (projetos nao tem coluna propria de responsavel).
 5. **Ownership em `concluir_exportacao_relatorio`/`falhar_exportacao_relatorio`**: validado apenas por `criado_por = auth.uid()`, pois a arquitetura nao tem fila/worker assincrono — a Edge Function sempre chama essas RPCs com o JWT do proprio usuario que iniciou a exportacao.
 
-### Bugs reais encontrados e corrigidos durante a implementacao
-
-- **`listar_exportacoes_relatorios` lancava excecao para Comercial/Tecnico**: a checagem de permissao de modulo (`permissao_modulo('relatorios')`) estava posicionada antes do corte por perfil, entao qualquer perfil sem `pode_ler` em relatorios recebia uma excecao `permission_denied` em vez do historico vazio esperado pelo contrato (`rpc-exportacao-relatorios.md`: "Visualizador/Comercial/Tecnico: no exportable history"). Corrigido para retornar lista vazia (`RETURN;`) de forma graciosa, no mesmo padrao ja usado pela RPC irma `listar_categorias_relatorios`.
-- **`relatorios.service.ts` vazava mensagem tecnica generica do Supabase**: o client `@supabase/functions-js` sempre preenche `error.message` com o texto fixo `"Edge Function returned a non-2xx status code"` para qualquer resposta HTTP nao-2xx da Edge Function, independente do corpo JSON real de erro (`{ error: { code, message } }"`). Usar `error.message` diretamente (como um primeiro rascunho faria) mostraria sempre esse texto tecnico ao usuario final, nunca a mensagem de negocio (ex.: "Periodo maximo permitido e de 12 meses"). Corrigido com `resolverMensagemErroExportacao`, que le o corpo JSON real de `error.context` (uma `Response` ainda nao consumida) antes de cair para o mapa local de mensagens amigaveis por codigo.
-
-### Estado final dos testes
+### Status final dos testes da Feature 008
 
 - pgTAP (`npm run db:test`): 367 assertions.
 - Vitest (`npm run test`): 113 testes.
 - `npm run build`: OK.
 
-## Deliberacao 011 - Padrao enterprise para relatorios exportados
+---
 
-**Data**: 2026-07-08
+## Evolução na Feature 011 - Padrão Enterprise Relatórios
 
-### Motivo
+Em 2026-07-09, o sistema de exportação de relatórios construído na Feature 008 foi estendido e refinado sob a Feature 011 para atingir o padrão enterprise:
+1. **Download Sem Preview**: O frontend (`src/lib/download.ts`) realiza fetch assíncrono e gera um Blob para forçar o download local, impedindo previews integrados nos navegadores ou redirecionamento de rota.
+2. **Formatação de Negócio (PT-BR)**: A Edge Function (`supabase/functions/relatorios-exportacao/renderers.ts`) embutiu fontes Noto Sans e passou a usar templates específicos por categoria, formatando moedas (R$), datas (DD/MM/AAAA) e horas (h) em padrão nacional.
+3. **Empty States Robustos**: Quando o período filtrado não contém dados, o PDF mantém sua estrutura macro (cabeçalhos e resumos) e renderiza na área de detalhes a mensagem executiva padrão ("Não há dados disponíveis para o período selecionado...").
+4. **Nomenclatura e Identidade Visual**: Arquivos PDF possuem prefixo `relatorio-` e badge azul ("Documento Executivo") no histórico. Arquivos CSV/ZIP possuem prefixo `exportacao-` e badge cinza ("Exportação Operacional").
+5. **Melhorias de Acessibilidade e RBAC**: O botão de exportação é devidamente desabilitado e enriquecido com tooltips caso o perfil de usuário logado não possua a capacidade `relatorios.exportar`.
 
-A feature 008 entregou exportacao real, mas a validacao exploratoria mostrou dois desvios de produto:
+### Publicação e validação de produção em 2026-07-09
 
-- o PDF ainda aparece com serializacao tecnica e copy inadequada para uso executivo;
-- o fluxo de download pode abrir preview no navegador, o que conflita com a expectativa aprovada de entrega direta do documento.
-
-### Decisao
-
-Foi aberta a feature Spec Kit `011-padrao-enterprise-relatorios` para padronizar a experiencia sem reabrir a arquitetura inteira da exportacao.
-
-### Regras aprovadas
-
-- `PDF` passa a ser o documento executivo oficial.
-- Nao deve haver preview no fluxo normal de download de PDF.
-- O PDF deve usar linguagem PT-BR correta, hierarquia visual consistente e zero vazamento de chaves tecnicas.
-- Exportacoes tabulares permanecem operacionais, mas recebem correcoes de encoding e nomenclatura.
-- Itens expirados permanecem no historico, sem download.
-
-### Artefatos criados
-
-- `specs/011-padrao-enterprise-relatorios/spec.md`
-- `specs/011-padrao-enterprise-relatorios/plan.md`
-- `specs/011-padrao-enterprise-relatorios/research.md`
-- `specs/011-padrao-enterprise-relatorios/data-model.md`
-- `specs/011-padrao-enterprise-relatorios/quickstart.md`
-- `specs/011-padrao-enterprise-relatorios/contracts/pdf-executivo.md`
-- `specs/011-padrao-enterprise-relatorios/contracts/download-sem-preview.md`
-- `specs/011-padrao-enterprise-relatorios/contracts/exportacao-tabular.md`
-- `specs/011-padrao-enterprise-relatorios/contracts/historico-e-validade.md`
-
-## Backlog 011 gerado
-
-Executado `/speckit-tasks` em 2026-07-08 para `specs/011-padrao-enterprise-relatorios/tasks.md`.
-
-### Estrutura
-
-- Setup: 4 tarefas
-- Fundacional: 6 tarefas
-- US1 download sem preview: 10 tarefas
-- US2 PDF executivo: 11 tarefas
-- US3 diferenciacao PDF vs CSV/ZIP: 10 tarefas
-- Polish: 8 tarefas
-
-### MVP sugerido
-
-Implementar primeiro a US1 para corrigir o comportamento de download sem preview antes de mexer na qualidade visual do PDF e na diferenciacao de formatos.
+- Projeto Supabase: `lpwnaxlczwntylcmgotm`.
+- Edge Function: `relatorios-exportacao`, versão `5`.
+- Publicação executada com `supabase functions deploy relatorios-exportacao --project-ref lpwnaxlczwntylcmgotm --use-api`.
+- Validação via Supabase MCP confirmou `POST 200` no deployment da versão `5`.
+- Validação via Chrome DevTools MCP no `/relatorios` com usuário real `Jonathas` confirmou geração e download de PDF executivo.
+- PDF validado: `C:\Users\respl\Downloads\relatorio-financeiro-2026-07-01-2026-07-09 (2).pdf`.
+- Resultado visual: `Relatório Financeiro`, datas PT-BR, resumo sem vazamento `label`/`valor`, valores `R$`, Noto Sans empacotada via `font-assets.ts` e empty state quebrado em linhas sem corte lateral.

@@ -1,61 +1,64 @@
-// Tests for index.ts (T029).
-//
-// Contract: specs/008-exportar-relatorios/contracts/edge-function-exportacao.md
-//   > "Observability" section.
-// Plan: specs/008-exportar-relatorios/plan.md (Observability model),
-// data-model.md ("Observability Model").
-//
-// Scope of this file: the `gerar`/`download` observability requirement
-// (exportacao_id, usuario_id, tipo, formato, data_inicial, data_final,
-// status, duracao_ms, tamanho_bytes) plus a couple of sanity checks on the
-// HTTP contract already present in the scaffold (CORS, method, auth,
-// action routing). CSV escaping, ZIP contents, PDF no-data rendering and the
-// EXPORT_TOO_LARGE business rule are covered as unit tests in
-// `renderers.test.ts` instead, since they are pure functions there.
-//
-// Testability constraint (do not "fix" without a separate task): `index.ts`
-// calls `Deno.serve(...)` at module top level and does not export a request
-// handler, so there is no way to invoke its logic in isolation today. Per
-// this task's instructions we must test against today's scaffold as-is
-// (no implementation of index.ts), so these tests import the module (which
-// starts a real HTTP listener on the Deno.serve default port, 8000) and
-// drive it over `fetch`. That listener cannot be closed from here, so all
-// tests below disable Deno's resource/op sanitizers. This is a known
-// limitation: a future refactor exporting a plain `handleRequest(req)`
-// function (guarded by `if (import.meta.main) Deno.serve(handleRequest)`)
-// would make this file far more robust and would remove the port-8000
-// dependency; that refactor is out of scope for this task.
-//
-// Runtime: Deno (Supabase Edge Functions). No existing `*.test.ts` file or
-// Deno test convention was found elsewhere in `supabase/functions/`, so this
-// uses plain `Deno.test` with `https://deno.land/std` assertions.
-//
-// Suggested run command (from repo root):
-//   deno test --allow-net --allow-env supabase/functions/relatorios-exportacao/index.test.ts
-//
-// Required permissions: --allow-net (server + fetch) and --allow-env
-// (SUPABASE_URL / SUPABASE_ANON_KEY read by createUserScopedClient).
-
 import { assert, assertEquals } from 'https://deno.land/std@0.224.0/assert/mod.ts'
 
-// Dummy but well-formed values so `createClient(...)` inside
-// `createUserScopedClient` does not throw on an invalid URL before our
-// assertions even run.
+// Configura as variáveis de ambiente necessárias para a inicialização do módulo.
+// Apontamos para uma porta mock local que simularemos usando Deno.serve para interceptar chamadas RPC/Storage.
 Deno.env.set('SUPABASE_URL', 'http://127.0.0.1:54321')
 Deno.env.set('SUPABASE_ANON_KEY', 'test-anon-key')
 
-// Importing the module executes `Deno.serve(...)` (see index.ts), starting
-// a listener on the default port (8000) for the lifetime of this process.
+// Mock do Servidor do Supabase (para interceptar as chamadas feitas por index.ts)
+const mockSupabaseServer = Deno.serve({ port: 54321 }, async (req) => {
+  const url = new URL(req.url)
+
+  // Mock da RPC iniciar_exportacao_relatorio
+  if (url.pathname === '/rest/v1/rpc/iniciar_exportacao_relatorio') {
+    return new Response(JSON.stringify({
+      exportacao_id: '88888888-8888-8888-8888-888888888888',
+      exportacao_tipo: 'Financeiro',
+      exportacao_formato: 'PDF',
+      data_inicial: '2026-07-01',
+      data_final: '2026-07-31',
+      lancamentos: []
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+  }
+
+  // Mock da RPC concluir_exportacao_relatorio
+  if (url.pathname === '/rest/v1/rpc/concluir_exportacao_relatorio') {
+    return new Response(JSON.stringify({
+      gerado_em: '2026-07-09T10:00:00Z',
+      expira_em: '2026-07-09T10:10:00Z'
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+  }
+
+  // Mock da RPC autorizar_download_exportacao_relatorio
+  if (url.pathname === '/rest/v1/rpc/autorizar_download_exportacao_relatorio') {
+    return new Response(JSON.stringify({
+      id: '88888888-8888-8888-8888-888888888888',
+      arquivo_path: 'relatorios-exportados/uuid/financeiro.pdf',
+      arquivo_nome: 'relatorio-financeiro-2026-07-01-2026-07-31.pdf',
+      mime_type: 'application/pdf',
+      expira_em: '2026-07-09T10:10:00Z'
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+  }
+
+  // Mock do Storage Upload
+  if (url.pathname.startsWith('/storage/v1/object/relatorios-exportados')) {
+    return new Response(JSON.stringify({ Key: 'relatorios-exportados/path' }), { status: 200 })
+  }
+
+  // Mock do Storage Signed URL
+  if (url.pathname.startsWith('/storage/v1/object/sign/relatorios-exportados')) {
+    return new Response(JSON.stringify({
+      signedURL: 'http://127.0.0.1:54321/storage/v1/object/sign/relatorios-exportados/file.pdf?token=123'
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+  }
+
+  return new Response('Not Found', { status: 404 })
+})
+
+// Agora importamos a Edge Function (que iniciará Deno.serve na porta default 8000)
 import './index.ts'
 
 const BASE_URL = 'http://127.0.0.1:8000'
-
-// ---------------------------------------------------------------------------
-// Sanity checks on the HTTP contract that already exists in the scaffold.
-// These are expected to PASS today; they confirm the test harness itself
-// (server-on-import + fetch) is wired correctly before we rely on it for the
-// observability assertions below.
-// ---------------------------------------------------------------------------
 
 Deno.test({
   name: 'OPTIONS preflight is handled without requiring authentication',
@@ -105,22 +108,8 @@ Deno.test({
   },
 })
 
-// ---------------------------------------------------------------------------
-// Observability (the actual T029 requirement for this file).
-//
-// edge-function-exportacao.md > Observability requires that every `gerar`
-// action produce a traceable log/event carrying exportacao_id, usuario_id,
-// tipo, formato, data_inicial, data_final, status and duracao_ms (plus
-// tamanho_bytes when a file exists, and a sanitized error on failure).
-//
-// Today, `handleGerar` immediately returns a 501 NOT_IMPLEMENTED response
-// without emitting any structured log, so this test is expected to FAIL
-// until the real `gerar` flow (T036) emits these fields.
-// ---------------------------------------------------------------------------
-
 Deno.test({
-  name:
-    "gerar action emits an observability log/event with exportacao_id, usuario_id, tipo, formato, data_inicial, data_final, status and duracao_ms",
+  name: "gerar action emits an observability log/event and returns signed URL and metadata",
   sanitizeOps: false,
   sanitizeResources: false,
   fn: async () => {
@@ -145,12 +134,16 @@ Deno.test({
         body: JSON.stringify({
           action: 'gerar',
           tipo: 'Financeiro',
-          formato: 'CSV',
+          formato: 'PDF',
           data_inicial: '2026-07-01',
           data_final: '2026-07-31',
         }),
       })
-      await res.body?.cancel()
+      const json = await res.json()
+
+      assertEquals(res.status, 200)
+      assert(json.download_url.includes('token=123'))
+      assertEquals(json.exportacao.status_exibicao, 'Pronto')
     } finally {
       console.log = originalLog
       console.error = originalError
@@ -171,9 +164,65 @@ Deno.test({
     for (const field of requiredObservabilityFields) {
       assert(
         combinedOutput.includes(field),
-        `esperado log de observabilidade contendo o campo "${field}" para a acao 'gerar', ` +
-          `mas nenhum log foi emitido (fluxo 'gerar' ainda retorna 501 NOT_IMPLEMENTED sem registrar evento)`,
+        `esperado log de observabilidade contendo o campo "${field}" para a acao 'gerar'`
       )
     }
   },
+})
+
+Deno.test({
+  name: "download action authorizes and returns signed URL",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  fn: async () => {
+    const res = await fetch(BASE_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer fake-jwt-for-test',
+      },
+      body: JSON.stringify({
+        action: 'download',
+        exportacao_id: '88888888-8888-8888-8888-888888888888',
+      }),
+    })
+    const json = await res.json()
+
+    assertEquals(res.status, 200)
+    assert(json.download_url.includes('token=123'))
+    assertEquals(json.exportacao.arquivo_nome, 'relatorio-financeiro-2026-07-01-2026-07-31.pdf')
+  },
+})
+
+Deno.test({
+  name: "download action rejects invalid UUID",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  fn: async () => {
+    const res = await fetch(BASE_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer fake-jwt-for-test',
+      },
+      body: JSON.stringify({
+        action: 'download',
+        exportacao_id: 'invalido-uuid-123',
+      }),
+    })
+    const json = await res.json()
+
+    assertEquals(res.status, 400)
+    assertEquals(json.error.code, 'INVALID_REQUEST')
+  },
+})
+
+// Fechamento dos servidores ao fim da suite de testes
+Deno.test({
+  name: "cleanup servers",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  fn: async () => {
+    await mockSupabaseServer.shutdown()
+  }
 })

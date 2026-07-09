@@ -217,6 +217,28 @@
   opacity: 0.6;
 }
 
+.formato-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  line-height: 1.25rem;
+}
+
+.formato-pdf {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.formato-csv {
+  background: #e5e7eb;
+  color: #4b5563;
+}
+
 /* Modal de Exportação (T039/T040) */
 .form-group-row {
   display: grid;
@@ -285,5 +307,33 @@
   .status-badge {
     display: inline-block;
     font-size: var(--text-xs);
+  }
+}
+
+/* Notificação Toast */
+.toast-notification {
+  position: fixed;
+  top: var(--space-6);
+  right: var(--space-6);
+  background: var(--surface-highest, #1f2937);
+  color: var(--fg-on-dark, #ffffff);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--border-soft, #374151);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  z-index: 1000;
+  animation: slideIn 0.2s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
 }

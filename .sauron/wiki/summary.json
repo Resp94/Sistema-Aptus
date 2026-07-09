@@ -98,6 +98,26 @@
     "contentHash": ""
   },
   {
+    "type": "file",
+    "name": "Feature 008: Exportação de Relatórios",
+    "slug": "feature-008-exportar-relatorios",
+    "path": "modules/feature-008-exportar-relatorios.md",
+    "id": "file-feature-008-exportar-relatorios",
+    "domainId": "domain-modules",
+    "contentLength": 4819,
+    "contentHash": ""
+  },
+  {
+    "type": "file",
+    "name": "Feature 011: Padrão Enterprise Relatórios",
+    "slug": "feature-011-padrao-enterprise-relatorios",
+    "path": "modules/feature-011-padrao-enterprise-relatorios.md",
+    "id": "file-feature-011-padrao-enterprise-relatorios",
+    "domainId": "domain-modules",
+    "contentLength": 5954,
+    "contentHash": ""
+  },
+  {
     "type": "folder",
     "name": "Standards",
     "slug": "standards",

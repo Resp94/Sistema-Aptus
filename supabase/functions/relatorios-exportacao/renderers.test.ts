@@ -30,6 +30,7 @@ import { PDFDocument } from 'https://esm.sh/pdf-lib@1.17.1'
 
 import {
   assertWithinSizeLimits,
+  carregarFontesNoto,
   renderCsv,
   renderCsvZip,
   renderPdf,
@@ -192,6 +193,13 @@ Deno.test('renderCsvZip keeps detalhes.csv with headers and no-data context when
 // PDF rendering with no data (renderPdf)
 // ---------------------------------------------------------------------------
 
+Deno.test('carregarFontesNoto embeds the bundled Noto Sans fonts without fallback', async () => {
+  const doc = await PDFDocument.create()
+  const fontes = await carregarFontesNoto(doc)
+
+  assertEquals(fontes.usandoFallback, false)
+})
+
 Deno.test('renderPdf renders a valid, non-empty PDF with an explicit no-data message and does not throw', async () => {
   const payload = buildPayload({
     formato: 'PDF',
@@ -263,4 +271,51 @@ Deno.test('assertWithinSizeLimits throws an EXPORT_TOO_LARGE-coded error when es
     code?: string
   }
   assertEquals(error.code, 'EXPORT_TOO_LARGE')
+})
+
+// ---------------------------------------------------------------------------
+// PT-BR value formatting and label translations (T021 / T022)
+// ---------------------------------------------------------------------------
+
+import {
+  formatarMoeda,
+  formatarPorcentagem,
+  formatarHoras,
+  formatarData,
+  formatarDataHora,
+  formatarValorResumo,
+  formatarCampoDetalhe,
+  LABEL_MAP
+} from './renderers.ts'
+
+Deno.test('formatarMoeda formats numbers correctly to BRL currency string', () => {
+  const formatado = formatarMoeda(1250.5)
+  // Substitui espaços não quebráveis por espaço padrão para consistência nos testes
+  const limpo = formatado.replace(/\u00a0/g, ' ')
+  assert(limpo.includes('R$') && limpo.includes('1.250,50'))
+})
+
+Deno.test('formatarPorcentagem format numbers to percentage string', () => {
+  assertEquals(formatarPorcentagem(75.5), '75.5%')
+})
+
+Deno.test('formatarHoras formats hours decimal value correctly', () => {
+  const formatado = formatarHoras(8.5)
+  const limpo = formatado.replace(/\u00a0/g, ' ')
+  assertEquals(limpo, '8,50h')
+})
+
+Deno.test('formatarData converts ISO dates and Date strings to DD/MM/AAAA', () => {
+  assertEquals(formatarData('2026-07-09'), '09/07/2026')
+})
+
+Deno.test('LABEL_MAP contains all business translations for all 4 categories', () => {
+  assert(LABEL_MAP.Financeiro)
+  assert(LABEL_MAP.DRE)
+  assert(LABEL_MAP.Clientes)
+  assert(LABEL_MAP.Projetos)
+
+  assertEquals(LABEL_MAP.Financeiro.valor, 'Valor')
+  assertEquals(LABEL_MAP.Clientes.nome_contato, 'Nome do Contato')
+  assertEquals(LABEL_MAP.Projetos.horas_apontadas_no_periodo, 'Horas Apontadas no Período')
 })

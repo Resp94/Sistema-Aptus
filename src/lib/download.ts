@@ -1,5 +1,5 @@
 /**
- * Helpers de download de arquivos de exportação de relatórios (Feature 008).
+ * Helpers de download de arquivos de exportação de relatórios (Feature 008 / Feature 011).
  *
  * Os arquivos exportados residem em um bucket privado do Storage. A única forma
  * de acesso é uma URL assinada de curta duração (`download_url`) retornada pela
@@ -62,15 +62,25 @@ export function gerarNomeArquivoExportacao(
 
 /**
  * Dispara o download de um arquivo já disponível via URL assinada de curta duração,
- * usando um link temporário (`<a download>`) em vez de navegação direta (evita abrir
- * uma nova aba/troca de contexto e funciona tanto para PDF quanto para o ZIP de CSV).
+ * buscando o arquivo via fetch para convertê-lo a Blob e forçar o download local,
+ * impedindo qualquer visualização nativa de PDF (preview) do navegador.
+ * Realiza o cleanup do Object URL criado com URL.revokeObjectURL.
  */
-export function dispararDownloadArquivo(urlAssinada: string, nomeArquivo: string): void {
+export async function dispararDownloadArquivo(urlAssinada: string, nomeArquivo: string): Promise<void> {
+  const resposta = await fetch(urlAssinada)
+  if (!resposta.ok) {
+    throw new Error(`Falha ao obter arquivo para download: ${resposta.statusText}`)
+  }
+  const blob = await resposta.blob()
+  const objectUrl = URL.createObjectURL(blob)
+
   const link = document.createElement('a')
-  link.href = urlAssinada
+  link.href = objectUrl
   link.download = nomeArquivo
   link.rel = 'noopener'
   document.body.appendChild(link)
   link.click()
+
   document.body.removeChild(link)
+  URL.revokeObjectURL(objectUrl)
 }

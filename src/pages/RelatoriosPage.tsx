@@ -14,6 +14,12 @@ import './RelatoriosPage.css'
 
 const CATEGORIA_SEM_EXPORTACAO = 'Personalizado'
 
+const COPYS_BETA = {
+  INDICADOR: 'Experimental/Beta',
+  AVISO_PAGINA: 'Esta funcionalidade está em fase experimental e de deliberação. O formato executivo de relatórios está disponível para validação.',
+  AVISO_MODAL: 'Esta exportação utiliza o padrão executivo experimental (Beta) e está em fase de homologação.',
+}
+
 export default function RelatoriosPage() {
   const { perfil, permissoes, capacidades } = useAuth()
   const navigate = useNavigate()
@@ -206,7 +212,7 @@ export default function RelatoriosPage() {
       })
 
       const dadosDownload = obterDadosDownload(resposta)
-      dispararDownloadArquivo(dadosDownload.url, dadosDownload.nomeArquivo)
+      await dispararDownloadArquivo(dadosDownload.url, dadosDownload.nomeArquivo)
 
       showToast('Exportação gerada com sucesso!')
       setExportarModalOpen(false)
@@ -255,7 +261,7 @@ export default function RelatoriosPage() {
   }
 
   // Aciona o download de um item já pronto do histórico (US2 - T057). Busca uma
-  // signed URL de curta duração via `baixarExportacaoRelatorio` e dispara o
+  // signed URL de corta duração via `baixarExportacaoRelatorio` e dispara o
   // download local a partir dela — nunca reutiliza `arquivo_url` legado.
   const handleBaixarHistorico = async (item: ExportacaoRelatorioItem) => {
     if (!item.pode_baixar || baixandoHistoricoId) return
@@ -264,7 +270,7 @@ export default function RelatoriosPage() {
     try {
       const resposta = await relatoriosService.baixarExportacaoRelatorio({ exportacao_id: item.id })
       const dadosDownload = obterDadosDownload(resposta)
-      dispararDownloadArquivo(dadosDownload.url, dadosDownload.nomeArquivo)
+      await dispararDownloadArquivo(dadosDownload.url, dadosDownload.nomeArquivo)
     } catch (err: any) {
       console.error(err)
       showToast(err.message || 'Erro ao baixar exportação.')
@@ -295,16 +301,41 @@ export default function RelatoriosPage() {
 
         <header className="page-header">
           <div>
-            <h1 className="page-title">Relatórios Operacionais</h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h1 className="page-title">Relatórios Operacionais</h1>
+              <span
+                className="badge-beta"
+                title={COPYS_BETA.AVISO_PAGINA}
+                style={{
+                  fontSize: '11px',
+                  fontWeight: '600',
+                  backgroundColor: '#3b82f6',
+                  color: 'white',
+                  padding: '2px 6px',
+                  borderRadius: '4px'
+                }}
+              >
+                {COPYS_BETA.INDICADOR}
+              </span>
+            </div>
             <p className="page-subtitle">Visualize indicadores de desempenho, agende relatórios periódicos e exporte dados da empresa.</p>
           </div>
-          {temEscrita && categoriaAtiva && (
+          {categoriaAtiva && (
             <div className="header-buttons">
-              <button className="btn btn-outline" onClick={() => setAgendarModalOpen(true)}>
+              <button
+                className="btn btn-outline"
+                onClick={() => setAgendarModalOpen(true)}
+                disabled={!temEscrita}
+              >
                 Agendar Envio
               </button>
               {categoriaAtiva !== CATEGORIA_SEM_EXPORTACAO && (
-                <button className="btn btn-primary btn-icon" onClick={abrirModalExportar}>
+                <button
+                  className="btn btn-primary btn-icon"
+                  onClick={abrirModalExportar}
+                  disabled={!temEscrita}
+                  title={!temEscrita ? 'Você não tem permissão para exportar' : undefined}
+                >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                     <polyline points="7 10 12 15 17 10" />
@@ -329,7 +360,7 @@ export default function RelatoriosPage() {
               <ul className="categories-list">
                 {categorias.map(cat => (
                   <li key={cat}>
-                    <button 
+                    <button
                       className={`category-btn ${categoriaAtiva === cat ? 'active' : ''}`}
                       onClick={() => setCategoriaAtiva(cat)}
                     >
@@ -472,11 +503,17 @@ export default function RelatoriosPage() {
                         {historico.map(hist => {
                           const statusTexto = hist.status_exibicao === 'Indisponível' ? 'Não Configurado' : hist.status_exibicao
                           const statusClasse = (hist.status_exibicao || '').toLowerCase()
+                          const dataExpiracaoFormatada = formatarData(hist.expira_em)
+                          const tooltipExpirado = `Este relatório expirou em ${dataExpiracaoFormatada}. Gere um novo para o mesmo período.`
 
                           return (
                             <tr key={hist.id}>
                               <td><strong>{hist.tipo}</strong></td>
-                              <td>{hist.formato}</td>
+                              <td>
+                                <span className={`formato-badge formato-${hist.formato.toLowerCase()}`}>
+                                  {hist.formato}
+                                </span>
+                              </td>
                               <td className="periodo-cell">
                                 {formatarData(hist.data_inicial)} - {formatarData(hist.data_final)}
                               </td>
@@ -492,7 +529,16 @@ export default function RelatoriosPage() {
                               <td className="col-gerado-em">{formatarData(hist.gerado_em)}</td>
                               <td>{formatarData(hist.expira_em)}</td>
                               <td>
-                                {hist.pode_baixar ? (
+                                {hist.status_exibicao === 'Expirado' ? (
+                                  <button
+                                    className="btn btn-xs historico-download-link disabled"
+                                    disabled
+                                    title={tooltipExpirado}
+                                    style={{ opacity: 0.5, cursor: 'not-allowed' }}
+                                  >
+                                    Baixar
+                                  </button>
+                                ) : hist.pode_baixar ? (
                                   <a
                                     href="#"
                                     className="btn btn-xs historico-download-link"
@@ -540,6 +586,20 @@ export default function RelatoriosPage() {
                 <button type="button" className="modal-close-btn" aria-label="Fechar" onClick={fecharModalExportar}>×</button>
               </div>
               <form onSubmit={handleExportar} noValidate>
+                <div
+                  className="beta-modal-notice"
+                  style={{
+                    backgroundColor: '#eff6ff',
+                    border: '1px solid #bfdbfe',
+                    color: '#1e3a8a',
+                    padding: '8px 12px',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    marginBottom: '12px'
+                  }}
+                >
+                  {COPYS_BETA.AVISO_MODAL}
+                </div>
                 <p className="baixa-info-msg">
                   Gerando arquivo consolidado para: <strong>{categoriaAtiva}</strong>.
                 </p>
@@ -579,8 +639,8 @@ export default function RelatoriosPage() {
                     value={exportFormato}
                     onChange={(e) => setExportFormato(e.target.value as any)}
                   >
-                    <option value="PDF">Documento PDF (.pdf)</option>
-                    <option value="CSV">Planilha CSV (.csv)</option>
+                    <option value="PDF">Documento Executivo (.pdf)</option>
+                    <option value="CSV">Exportação Operacional (.zip)</option>
                   </select>
                 </div>
 
@@ -614,8 +674,8 @@ export default function RelatoriosPage() {
 
                 <div className="form-group">
                   <label>Frequência de Envio</label>
-                  <select 
-                    value={agendarFrequencia} 
+                  <select
+                    value={agendarFrequencia}
                     onChange={(e) => setAgendarFrequencia(e.target.value as any)}
                   >
                     <option value="Diário">Diário (Todo final de tarde)</option>
@@ -627,9 +687,9 @@ export default function RelatoriosPage() {
 
                 <div className="form-group">
                   <label>Primeiro Disparo (Data/Hora)</label>
-                  <input 
-                    type="datetime-local" 
-                    required 
+                  <input
+                    type="datetime-local"
+                    required
                     value={agendarDataHora}
                     onChange={(e) => setAgendarDataHora(e.target.value)}
                   />
