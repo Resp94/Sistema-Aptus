@@ -44,3 +44,9 @@ supabase/.temp/
 
 # Open Design (local tools/plugins)
 open-design/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example
