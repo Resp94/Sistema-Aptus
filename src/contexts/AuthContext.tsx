@@ -25,8 +25,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Carrega perfil + permissões + capacidades a partir da sessão ativa.
     // getPerfilUsuario lança (e faz signOut) quando o perfil está ausente/inativo.
-    async function carregarPerfil() {
-      if (ativo) setCarregando(true)
+    async function carregarPerfil(mostrarCarregando = true) {
+      if (mostrarCarregando && ativo) setCarregando(true)
       try {
         const [p, perms, caps] = await Promise.all([
           authService.getPerfilUsuario(),
@@ -45,14 +45,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setCapacidades([])
         }
       } finally {
-        if (ativo) setCarregando(false)
+        if (mostrarCarregando && ativo) setCarregando(false)
       }
     }
 
     async function inicializar() {
       const { data } = await supabase.auth.getSession()
       if (data.session) {
-        await carregarPerfil()
+        await carregarPerfil(true)
       } else if (ativo) {
         setPerfil(null)
         setPermissoes([])
@@ -68,7 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: sub } = supabase.auth.onAuthStateChange((evento, session) => {
       if (!ativo || evento === 'INITIAL_SESSION') return
       if (session) {
-        carregarPerfil()
+        carregarPerfil(false)
       } else {
         setPerfil(null)
         setPermissoes([])

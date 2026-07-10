@@ -641,6 +641,22 @@ Não faz parte desta página:
   - Alterado: `package-lock.json`
   - Alterado: `.sauron/wiki/knowledge/architecture.md`
 
+### 2026-07-09 — Correção de dependência da extensão pgcrypto na função criar_usuario_configuracoes
+- **What was done**: Atualizado o `search_path` da função RPC `criar_usuario_configuracoes` para incluir `extensions` (`SET search_path = public, extensions`) e aplicada a alteração no banco remoto do Supabase.
+- **Why it was done**: O cadastro de novos usuários falhava em produção com o erro `function gen_salt(unknown, integer) does not exist`. A função utiliza `crypt()` and `gen_salt()` que pertencem à extensão `pgcrypto` (instalada no schema `extensions`). Como a função definia de forma restrita `SET search_path = public` por segurança, ela não conseguia acessar os recursos da extensão no schema de extensões.
+- **Impact on the system**: O cadastro de usuários em produção agora consegue resolver as funções criptográficas da extensão `pgcrypto` sem falhas, completando a inserção e encriptação com sucesso.
+- **Files affected**:
+  - Alterado: `supabase/migrations/20260708025456_create_usuario_configuracoes.sql`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
+### 2026-07-09 — Correção de desmonte de rotas (Full Reload) no refresh de token do Supabase
+- **What was done**: Alterada a assinatura do método `carregarPerfil` no `AuthContext` para receber `mostrarCarregando = true` e alterada a escuta do `onAuthStateChange` para disparar `carregarPerfil(false)`.
+- **Why it was done**: O aplicativo React desmontava a rota ativa e resetava todo o estado (causando a perda de preenchimento de formulários) toda vez que a janela perdia e ganhava foco. Isso ocorria porque o Supabase disparava o evento `TOKEN_REFRESHED` em segundo plano, acionando o callback do `onAuthStateChange` que executava `carregarPerfil()`. Como `carregarPerfil` forçava `setCarregando(true)`, a rota protegida `ProtectedRoute` passava a retornar a tela de "Carregando...", desmontando os componentes sob o `<Outlet />` e apagando seus estados locais do React.
+- **Impact on the system**: O refresh de token do Supabase agora ocorre silenciosamente em segundo plano, atualizando o perfil de acesso e capacidades sem alternar o estado de carregamento global e, portanto, sem desmontar os componentes de interface ativos.
+- **Files affected**:
+  - Alterado: `src/contexts/AuthContext.tsx`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
 ## 5. Current State
 - Vincular o projeto local ao Supabase Cloud e documentar o processo de `db push`.
 - Atualizar esta página quando novas decisões arquiteturais forem tomadas.

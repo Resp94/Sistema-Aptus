@@ -2,7 +2,7 @@ CREATE OR REPLACE FUNCTION public.criar_usuario_configuracoes(payload jsonb)
 RETURNS boolean
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions
 SET row_security = off
 AS $$
 DECLARE
