@@ -100,6 +100,18 @@ Não faz parte desta página:
   - *Prós*: Eliminacao de warnings do linter remoto, grande ganho de performance em scans de tabelas centrais, seguranca blindada contra execucao anonima de RPCs de escrita.
   - *Contras*: Maior complexidade na escrita de migrations, necessidade de cobertura extensa pgTAP de grants para evitar regressao.
 
+### DA-008 — Desvinculação da pasta open-design do Git
+- **Problema**: O processo de deploy no Cloudflare Pages falhava na fase de clonagem (`Failed: error occurred while updating repository submodules`) devido à presença de um gitlink (submódulo órfão) da pasta `open-design` no índice do Git pai. Como a pasta não possuía mapeamento correspondente no arquivo `.gitmodules`, o comando recursivo de submódulos do Cloudflare falhava.
+- **Options Considered**:
+  - Criar um arquivo `.gitmodules` e registrar formalmente `open-design` como um submódulo Git remoto.
+  - Remover a pasta `open-design` completamente do projeto.
+  - Remover o gitlink do índice do Git pai (`git rm --cached open-design`) e ignorar a pasta no `.gitignore`, mantendo-a localmente no ambiente de desenvolvimento do usuário.
+- **Choice**: Remover o gitlink do índice do Git pai e adicionar `open-design/` ao `.gitignore`.
+- **Justification**: A pasta `open-design` contém apenas ferramentas locais e plugins usados no desenvolvimento local e pela IA (como Stitch). O código da aplicação construída pelo Vite não depende desses arquivos em tempo de build ou produção. Registrar um submódulo Git exigiria gerenciar um repositório remoto público/privado adicional desnecessariamente para o build de produção no Cloudflare.
+- **Trade-offs**:
+  - *Prós*: Correção imediata do build e deploy no Cloudflare Pages sem complexidades de rede ou autenticação de submódulos. A pasta local de desenvolvimento continua intacta.
+  - *Contras*: Outros desenvolvedores ou novas instâncias locais não receberão a pasta `open-design` automaticamente em um `git clone` comum (precisariam adicioná-la manualmente se for de fato necessário).
+
 ## 4. Change History
 
 ### 2026-06-26 — Implementação e ativação da nova stack tecnológica
@@ -611,6 +623,14 @@ Não faz parte desta página:
   - Alterado: `.sauron/wiki/modules/feature-005-demais-telas-perfis.md`
   - Alterado: `docs/banco-de-dados.md`
   - Alterado: `docs/telas.md`
+
+### 2026-07-09 — Correção de falha de deploy no Cloudflare Pages devido a submódulo fantasma
+- **What was done**: Removido o gitlink (submódulo fantasma) de `open-design` do índice do Git e adicionado `open-design/` ao `.gitignore` do repositório pai.
+- **Why it was done**: O Cloudflare Pages falhava no build ao tentar atualizar submódulos recursivamente (`git submodule update --init --recursive`), pois encontrava o gitlink de `open-design` mas não havia mapeamento para ele em `.gitmodules`. Como `open-design` é usado apenas localmente e não faz parte da build da aplicação final, ignorá-lo resolve o deploy.
+- **Impact on the system**: O deploy no Cloudflare Pages agora inicializa os submódulos sem erros. A pasta `open-design` continua existindo localmente mas o Git pai a ignora.
+- **Files affected**:
+  - Alterado: `.gitignore`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md` (Índice do Git atualizado via `git rm --cached`)
 
 ## 5. Current State
 - Vincular o projeto local ao Supabase Cloud e documentar o processo de `db push`.

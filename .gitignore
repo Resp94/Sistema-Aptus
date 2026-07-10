@@ -41,3 +41,6 @@ supabase/.temp/
 
 #Reference html
 .reference/
+
+# Open Design (local tools/plugins)
+open-design/
