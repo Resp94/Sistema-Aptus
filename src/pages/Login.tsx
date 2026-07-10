@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/auth.service';
 import { Toast } from '../components/ui/Toast';
+import { Logo } from '../components/Logo';
 import { rotaInicialPorPerfil } from '../lib/usuario';
 import './Login.css';
 
@@ -167,7 +168,7 @@ export const Login: React.FC = () => {
     <div className="login-page">
       {/* Coluna da esquerda - Identidade visual */}
       <div className="login-brand">
-        <div className="brand-name"><img src="/logo.png" alt="" className="brand-logo" />Aptus Flow</div>
+        <div className="brand-name"><Logo size="lg" className="brand-logo" /></div>
         <p className="brand-sub">Gestão financeira inteligente para empresas de IA e automação.</p>
         
         <div className="brand-features">

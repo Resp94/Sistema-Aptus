@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '../services/supabase';
 import { authService } from '../services/auth.service';
 import { Toast } from '../components/ui/Toast';
+import { Logo } from '../components/Logo';
 
 export const ResetPassword: React.FC = () => {
   const [password, setPassword] = useState('');
@@ -99,10 +100,7 @@ export const ResetPassword: React.FC = () => {
     <div className="login-page">
       <div className="login-brand">
         <div className="brand-logo">
-          <img src="/mqu1bpo3-Logo-Fundo-removido.png" alt="Aptus Flow" onError={(e) => {
-            // Fallback se a imagem não carregar na raiz
-            (e.target as HTMLImageElement).src = 'mqu1bpo3-Logo-Fundo-removido.png';
-          }} />
+          <Logo size="lg" showText={false} />
         </div>
         <div className="brand-name">Aptus Flow</div>
         <p className="brand-sub">Gestão financeira inteligente para empresas de IA e automação.</p>
@@ -110,7 +108,7 @@ export const ResetPassword: React.FC = () => {
 
       <div className="login-form-area">
         <div className="mobile-brand-bar">
-          <img src="mqu1bpo3-Logo-Fundo-removido.png" alt="Aptus Flow" />
+          <Logo size="sm" showText={false} className="mobile-brand-logo" />
           <span><span style={{ color: 'var(--accent)' }}>●</span> Aptus Flow</span>
         </div>
 
