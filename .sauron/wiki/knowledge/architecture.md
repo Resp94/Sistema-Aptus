@@ -632,6 +632,15 @@ Não faz parte desta página:
   - Alterado: `.gitignore`
   - Alterado: `.sauron/wiki/knowledge/architecture.md` (Índice do Git atualizado via `git rm --cached`)
 
+### 2026-07-09 — Resolução de inconsistência de dependências (npm ci) no Cloudflare Pages
+- **What was done**: Adicionados explicitamente `@emnapi/core` e `@emnapi/runtime` às `devDependencies` no `package.json` e executado `npm install` localmente para atualizar o `package-lock.json`.
+- **Why it was done**: O Cloudflare Pages usa o comando `npm clean-install` (ou `npm ci`) para instalar as dependências. Esse comando exige que o `package-lock.json` esteja perfeitamente sincronizado com a árvore de dependências. Como o Vite 8 utiliza internamente o Rolldown (empacotador Rust/WASM) que depende de pacotes WASM/WASI (`@emnapi/core`), a falta desse travamento explícito no lockfile gerado no Windows gerava inconsistências de sincronia quando o deploy rodava no ambiente Linux do Cloudflare, acusando pacotes em falta.
+- **Impact on the system**: O arquivo `package-lock.json` agora trava de forma consistente as versões exatas de `@emnapi/core` e `@emnapi/runtime` exigidas, eliminando a falha de validação do lockfile durante o deploy.
+- **Files affected**:
+  - Alterado: `package.json`
+  - Alterado: `package-lock.json`
+  - Alterado: `.sauron/wiki/knowledge/architecture.md`
+
 ## 5. Current State
 - Vincular o projeto local ao Supabase Cloud e documentar o processo de `db push`.
 - Atualizar esta página quando novas decisões arquiteturais forem tomadas.
