@@ -221,7 +221,7 @@ export const Login: React.FC = () => {
       {/* Coluna da direita - Formulário */}
       <div className="login-form-area">
         <div className="mobile-brand-bar">
-          <img src="/logo.png" alt="" className="mobile-brand-logo" /><span>Aptus Flow</span>
+          <Logo size="sm" showText={false} className="mobile-brand-logo" /><span>ptus Flow</span>
         </div>
 
         <div className="form-header">

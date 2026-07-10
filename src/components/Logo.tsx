@@ -59,7 +59,7 @@ export function Logo({ size = 'md', className, showText = true, textClassName }:
   return (
     <>
       {imgElement}
-      <span className={textClassName}>Aptus Flow</span>
+      <span className={textClassName}>ptus Flow</span>
     </>
   )
 }

@@ -102,14 +102,14 @@ export const ResetPassword: React.FC = () => {
         <div className="brand-logo">
           <Logo size="lg" showText={false} />
         </div>
-        <div className="brand-name">Aptus Flow</div>
+        <div className="brand-name">ptus Flow</div>
         <p className="brand-sub">Gestão financeira inteligente para empresas de IA e automação.</p>
       </div>
 
       <div className="login-form-area">
         <div className="mobile-brand-bar">
           <Logo size="sm" showText={false} className="mobile-brand-logo" />
-          <span><span style={{ color: 'var(--accent)' }}>●</span> Aptus Flow</span>
+          <span><span style={{ color: 'var(--accent)' }}>●</span> ptus Flow</span>
         </div>
 
         <div className="form-header">
